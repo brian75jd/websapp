@@ -1,1 +1,6 @@
-"venv/" 
+venv/ 
+__pycache__/
+*.py
+*.log
+db.sqlite3 
+.DS_Store
