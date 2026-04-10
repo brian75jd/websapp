@@ -1,0 +1,529 @@
+{% extends "base/base.html" %}
+{% block title %}search{% endblock title %}
+
+{% block content %}
+  <style>
+    :root{
+      --primary:#1a6fd4;--primary-light:#3d8ef0;--primary-soft:#e8f1fd;
+      --primary-dark:#1255a8;--bg:#f0f4fb;--card:#fff;
+      --border:#dce8f8;--text:#0d1a2e;--text-muted:#6b82a0;--text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08);--shadow-md:0 4px 24px rgba(26,111,212,0.12);
+      --nav-height:64px;--radius:14px;--radius-sm:10px;
+      --danger:#ef4444;--success:#22c55e;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100%;overflow-x:hidden;overflow-y:auto;padding-bottom:calc(var(--nav-height)+16px);}
+
+    /* SEARCH HEADER */
+    .search-header{
+      position:sticky;top:0;z-index:100;background:var(--card);
+      border-bottom:1.5px solid var(--border);
+      padding:10px 14px;
+      box-shadow:0 2px 10px rgba(26,111,212,0.07);
+    }
+    .search-bar{
+      display:flex;align-items:center;gap:10px;
+      background:var(--bg);border:1.5px solid var(--border);
+      border-radius:30px;padding:10px 16px;
+      transition:all 0.2s;
+    }
+    .search-bar:focus-within{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(26,111,212,0.1);}
+    .search-bar i{color:var(--text-light);font-size:0.95rem;flex-shrink:0;transition:color 0.2s;}
+    .search-bar:focus-within i{color:var(--primary);}
+    #searchInput{
+      flex:1;border:none;background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--text);outline:none;
+    }
+    #searchInput::placeholder{color:var(--text-light);}
+    .clear-btn{
+      background:none;border:none;color:var(--text-light);
+      font-size:0.85rem;cursor:pointer;padding:2px 4px;
+      display:none;transition:color 0.2s;
+    }
+    .clear-btn.show{display:block;}
+    .clear-btn:hover{color:var(--primary);}
+
+    /* FILTER TABS — below search, sticky */
+    .filter-tabs{
+      position:sticky;top:56px;z-index:99;
+      display:flex;background:var(--card);
+      border-bottom:1.5px solid var(--border);
+      overflow-x:auto;scrollbar-width:none;
+      padding:0 14px;gap:0;
+    }
+    .filter-tabs::-webkit-scrollbar{display:none;}
+    .ftab{
+      flex-shrink:0;padding:10px 16px;border:none;background:transparent;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.8rem;
+      color:var(--text-muted);cursor:pointer;border-bottom:2.5px solid transparent;
+      transition:all 0.2s;white-space:nowrap;
+    }
+    .ftab.active{color:var(--primary);border-bottom-color:var(--primary);}
+    .ftab:hover:not(.active){color:var(--text);}
+
+    /* PAGE BODY */
+    .page-body{padding:14px 12px 0;}
+
+    /* SECTION TITLE */
+    .section-title{
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
+      font-size:0.82rem;color:var(--text);
+      margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;
+    }
+    .section-title a{font-size:0.75rem;color:var(--primary);font-weight:600;cursor:pointer;text-decoration:none;}
+    .section-block{margin-bottom:20px;}
+
+    /* RECENT SEARCHES */
+    .recent-item{
+      display:flex;align-items:center;gap:12px;padding:10px 12px;
+      background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);
+      margin-bottom:7px;cursor:pointer;transition:all 0.18s;
+    }
+    .recent-item:hover{background:var(--primary-soft);border-color:var(--border);}
+    .recent-icon{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.85rem;flex-shrink:0;}
+    .recent-text{flex:1;font-size:0.88rem;color:var(--text);font-weight:500;}
+    .recent-rm{background:none;border:none;color:var(--text-light);cursor:pointer;font-size:0.78rem;padding:4px;transition:color 0.15s;}
+    .recent-rm:hover{color:var(--danger);}
+
+    /* TRENDING TAGS */
+    .tag-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+    .trend-tag{
+      background:var(--card);border:1.5px solid var(--border);
+      border-radius:30px;padding:7px 14px;cursor:pointer;
+      font-size:0.8rem;font-weight:600;color:var(--text-muted);
+      transition:all 0.2s;display:flex;align-items:center;gap:6px;
+    }
+    .trend-tag:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);}
+    .trend-tag i{font-size:0.72rem;color:var(--primary);}
+    .tag-count{font-size:0.68rem;color:var(--text-light);font-weight:400;}
+
+    /* PEOPLE CARD */
+    .people-list{display:flex;flex-direction:column;gap:7px;}
+    .person-card{
+      display:flex;align-items:center;gap:12px;padding:12px 12px;
+      background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);
+      transition:all 0.18s;cursor:pointer;
+      animation:fadeUp 0.3s ease both;
+    }
+    .person-card:hover{box-shadow:var(--shadow);transform:translateX(2px);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+    .person-avatar{position:relative;flex-shrink:0;}
+    .person-avatar img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:block;}
+    .online-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;background:var(--success);border-radius:50%;border:2px solid white;}
+    .person-info{flex:1;min-width:0;}
+    .person-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);}
+    .person-sub{font-size:0.76rem;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .person-mutual{font-size:0.71rem;color:var(--primary);font-weight:500;margin-top:2px;}
+    .follow-btn{
+      background:var(--primary);color:white;border:none;
+      padding:7px 14px;border-radius:20px;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.76rem;
+      cursor:pointer;transition:all 0.2s;flex-shrink:0;
+    }
+    .follow-btn:hover{background:var(--primary-dark);}
+    .follow-btn.following{background:var(--primary-soft);color:var(--primary);border:1.5px solid var(--primary);}
+
+    /* GROUP CARD */
+    .group-card{
+      display:flex;align-items:center;gap:12px;padding:12px 12px;
+      background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);
+      margin-bottom:7px;cursor:pointer;transition:all 0.18s;
+      animation:fadeUp 0.3s ease both;
+    }
+    .group-card:hover{box-shadow:var(--shadow);transform:translateX(2px);}
+    .group-icon-wrap{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .group-info{flex:1;min-width:0;}
+    .group-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);}
+    .group-sub{font-size:0.75rem;color:var(--text-muted);margin-top:2px;}
+    .join-btn{background:var(--primary-soft);color:var(--primary);border:1.5px solid var(--primary);padding:6px 13px;border-radius:20px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.75rem;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+    .join-btn:hover{background:var(--primary);color:white;}
+    .join-btn.joined{background:var(--primary);color:white;}
+
+    /* POST CARD (search result) */
+    .post-result{
+      background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);
+      padding:12px 12px;margin-bottom:7px;cursor:pointer;transition:all 0.18s;
+      animation:fadeUp 0.3s ease both;
+    }
+    .post-result:hover{box-shadow:var(--shadow);transform:translateX(2px);}
+    .post-result-top{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+    .post-result-top img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border);}
+    .post-result-author{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.86rem;color:var(--text);}
+    .post-result-time{font-size:0.72rem;color:var(--text-light);margin-top:1px;}
+    .post-result-text{font-size:0.86rem;color:var(--text);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+    .post-result-text .hl{color:var(--primary);font-weight:600;background:var(--primary-soft);border-radius:3px;padding:0 2px;}
+    .post-result-img{width:100%;height:140px;object-fit:cover;border-radius:8px;margin-top:8px;display:block;}
+    .post-result-stats{display:flex;gap:14px;margin-top:8px;}
+    .stat{font-size:0.72rem;color:var(--text-light);display:flex;align-items:center;gap:4px;}
+    .stat i{color:var(--primary-light);font-size:0.7rem;}
+
+    /* EMPTY / NO RESULTS */
+    .empty-state{text-align:center;padding:50px 20px;}
+    .empty-state i{font-size:2.6rem;color:var(--border);margin-bottom:14px;display:block;}
+    .empty-state h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;color:var(--text);margin-bottom:6px;}
+    .empty-state p{font-size:0.82rem;color:var(--text-muted);}
+
+    /* BOTTOM NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--card);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 14px rgba(26,111,212,0.08);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--text-light);font-size:0.61rem;font-weight:500;padding:6px 0;transition:color 0.2s;position:relative;cursor:pointer;}
+    .nav-item i{font-size:1.22rem;transition:transform 0.2s;}
+    .nav-item:hover,.nav-item.active{color:var(--primary);}
+    .nav-item:hover i{transform:translateY(-2px);}
+    .nav-active-dot{width:5px;height:5px;background:var(--primary);border-radius:50%;position:absolute;bottom:2px;}
+    .nav-item:not(.active) .nav-active-dot{display:none;}
+    .nav-badge{position:absolute;top:2px;right:calc(50% - 16px);background:#e53935;color:white;font-size:0.58rem;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height)+12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:9px 20px;border-radius:30px;font-size:0.81rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+</head>
+<body>
+
+<!-- SEARCH HEADER -->
+<div class="search-header">
+  <div class="search-bar">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search people, posts, groups..." oninput="onSearch(this.value)" autocomplete="off"/>
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
+
+<!-- FILTER TABS — only shown during active search -->
+<div class="filter-tabs" id="filterTabs" style="display:none">
+  <button class="ftab active" onclick="setTab('all',this)">All</button>
+  <button class="ftab" onclick="setTab('people',this)">People</button>
+  <button class="ftab" onclick="setTab('posts',this)">Posts</button>
+  <button class="ftab" onclick="setTab('groups',this)">Groups</button>
+</div>
+
+<div class="page-body" id="pageBody"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── DATA ──
+  function Clicked(val){
+    window.location.href =`/profile/poster_detail/${val}/`
+  }
+  const PEOPLE = [
+    {id:1,first_name:'Sarah','last_name': 'Banda',username:'sarahbanda',dept:'Computer Science · Year 3',seed:'sarah',online:true,mutual:'12',following:true},
+    {id:2,name:'Brian Kamwendo',username:'briankamwendo',dept:'Engineering · Year 2',seed:'brian',online:true,mutual:'8 mutual friends',following:true},
+    {id:3,name:'Clara Dube',username:'claradube',dept:'Biology · Year 4',seed:'clara',online:false,mutual:'5 mutual friends',following:false},
+    {id:4,name:'David Osei',username:'davidosei',dept:'Business Admin · Year 1',seed:'david',online:true,mutual:'3 mutual friends',following:false},
+    {id:5,name:'Emily Rosario',username:'emilyrosario',dept:'Architecture · Year 3',seed:'emily',online:false,mutual:'9 mutual friends',following:false},
+    {id:6,name:'James Phiri',username:'jamesphiri',dept:'Medicine · Year 5',seed:'james',online:false,mutual:'2 mutual friends',following:true},
+    {id:7,name:'Lucy Tembo',username:'lucytembo',dept:'Architecture · Year 4',seed:'lucy',online:true,mutual:'7 mutual friends',following:false},
+    {id:8,name:'Priya Nkhoma',username:'priyankhoma',dept:'Law · Year 3',seed:'priya',online:false,mutual:'11 mutual friends',following:false},
+    {id:9,name:'Tom Zgambo',username:'tomzgambo',dept:'Engineering · Year 2',seed:'tom',online:false,mutual:'4 mutual friends',following:false},
+  ];
+
+  const GROUPS = [
+    {id:1,name:'CS Study Circle',icon:'💻',cat:'Academic',members:142,color:'#e8f1fd',joined:true},
+    {id:2,name:'AI & Machine Learning Hub',icon:'🤖',cat:'Technology',members:89,color:'#ede9fe',joined:true},
+    {id:3,name:'Photography Club',icon:'📷',cat:'Arts',members:67,color:'#fef9c3',joined:false},
+    {id:4,name:'Student Council',icon:'🏛️',cat:'Community',members:510,color:'#dcfce7',joined:true},
+    {id:5,name:'Engineering Projects Lab',icon:'⚙️',cat:'Technology',members:201,color:'#fee2e2',joined:false},
+    {id:6,name:'Campus Sports Hub',icon:'⚽',cat:'Sports',members:823,color:'#fef3c7',joined:false},
+    {id:7,name:'Biology Research Network',icon:'🔬',cat:'Academic',members:114,color:'#dcfce7',joined:false},
+  ];
+
+  const POSTS = [
+    {id:1,author:'Sarah Banda',seed:'sarah',time:'2h ago',text:'Just finished my final year project on machine learning! It has been an incredible journey from data preprocessing to model deployment.',thumb:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&q=80',likes:142,comments:38,views:'1.2k'},
+    {id:2,author:'James Phiri',seed:'james',time:'5h ago',text:'Lab session was absolutely amazing today! We examined live cell cultures under the electron microscope. Biology never gets old.',thumb:'https://images.unsplash.com/photo-1532094349884-543559c7671e?w=300&q=80',likes:89,comments:21,views:'654'},
+    {id:3,author:'Priya Nkhoma',seed:'priya',time:'1d ago',text:'Reminder: Annual Cultural Day is this Friday! We have an incredible lineup — traditional dances, art exhibitions, food stalls and live music.',thumb:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=300&q=80',likes:312,comments:74,views:'2.8k'},
+    {id:4,author:'Tom Zgambo',seed:'tom',time:'2d ago',text:'Built my first working robot prototype! It took 3 weeks but it finally moves on its own using ultrasonic sensors.',thumb:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=300&q=80',likes:207,comments:55,views:'1.9k'},
+    {id:5,author:'Lucy Tembo',seed:'lucy',time:'3h ago',text:'Campus life this week has been beautiful! From studio sessions to rooftop critiques, every corner has been buzzing with creativity.',thumb:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=300&q=80',likes:218,comments:47,views:'1.8k'},
+  ];
+
+  const RECENT = ['machine learning', 'Sarah Banda', 'Cultural Day', 'Engineering'];
+  let recentSearches = [...RECENT];
+  let followState = {};
+  let joinState = {};
+  let currentTab = 'all';
+  let searchTimer;
+
+  PEOPLE.forEach(p => followState[p.id] = p.following);
+  GROUPS.forEach(g => joinState[g.id] = g.joined);
+
+    function getCSRFToken() {
+    let cookieValue = null;
+    document.cookie.split(';').forEach(cookie => {
+      const trimmed = cookie.trim();
+      if (trimmed.startsWith('csrftoken=')) {
+        cookieValue = trimmed.substring('csrftoken='.length);
+      }
+    });
+    return cookieValue;
+  }
+
+  let API_PEOPLE = [];
+  let API_POSTS = [];
+
+  // ── INIT: show home screen ──
+  function renderHome() {
+    document.getElementById('filterTabs').style.display = 'none';
+    const body = document.getElementById('pageBody');
+
+    let recentHtml = recentSearches.length ? `
+      <div class="section-block">
+        <div class="section-title">Recent Searches <a onclick="clearAllRecent()">Clear all</a></div>
+        ${recentSearches.map((s,i) => `
+          <div class="recent-item" onclick="doSearch('${s}')">
+            <div class="recent-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <span class="recent-text">${s}</span>
+            <button class="recent-rm" onclick="event.stopPropagation();rmRecent(${i})"><i class="fa-solid fa-xmark"></i></button>
+          </div>`).join('')}
+      </div>` : '';
+
+    const trendTags = [
+      {tag:'#MachineLearning',count:'234 posts'},{tag:'#CulturalDay',count:'189 posts'},
+      {tag:'#Engineering',count:'312 posts'},{tag:'#Biology',count:'145 posts'},
+      {tag:'#StudentLife',count:'521 posts'},{tag:'#Research',count:'98 posts'},
+      {tag:'#Photography',count:'276 posts'},{tag:'#AI',count:'167 posts'},
+      {tag:'#Coding',count:'203 posts'},{tag:'#Arts',count:'119 posts'},
+    ];
+    
+    /*Suggested People To follow*/
+
+    const suggestPeople = PEOPLE.filter(p => !followState[p.id]).slice(0, 3);
+
+    body.innerHTML = `
+      ${recentHtml}
+      <div class="section-block">
+        <div class="section-title">Trending Topics</div>
+        <div class="tag-cloud">
+          ${trendTags.map(t => `
+            <div class="trend-tag" onclick="doSearch('${t.tag}')">
+              <i class="fa-solid fa-fire-flame-curved"></i>${t.tag}
+              <span class="tag-count">${t.count}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="section-title">People You May Know <a onclick="doSearch('')">See all</a></div>
+        <div class="people-list">
+          ${suggestPeople.map((p,i) => renderPersonCard(p, i)).join('')}
+        </div>
+      </div>`;
+  }
+
+  // ── SEARCH ──
+function onSearch(val) {
+  fetch(`{% url "posts:search_db" %}`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken(),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({ value: val })
+  })
+  .then(res => res.json())
+  .then(data => {
+    // ✅ store backend results
+    API_PEOPLE = data.users || [];
+    API_POSTS = data.posts || [];
+
+    // 👉 now render using backend data
+    renderResults(val.toLowerCase().trim());
+  });
+
+  clearTimeout(searchTimer);
+  document.getElementById('clearBtn').classList.toggle('show', val.length > 0);
+
+  if (!val.trim()) { 
+    renderHome(); 
+    return; 
+  }
+}
+
+  function doSearch(term) {
+    
+    const inp = document.getElementById('searchInput');
+    inp.value = term;
+    inp.focus();
+    document.getElementById('clearBtn').classList.add('show');
+    runSearch(term);
+  }
+
+  function runSearch(val) {
+    const q = val.toLowerCase().trim();
+    if (!q) { renderHome(); return; }
+
+    // Save to recent
+    if (!recentSearches.includes(val) && val.length > 1) {
+      recentSearches.unshift(val);
+      if (recentSearches.length > 5) recentSearches.pop();
+    }
+
+    document.getElementById('filterTabs').style.display = 'flex';
+    renderResults(q);
+    
+  }
+
+  function renderResults(q) {
+    
+    /*
+    const people = PEOPLE.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.username.toLowerCase().includes(q) ||
+      p.dept.toLowerCase().includes(q)
+    );
+    const groups = GROUPS.filter(g =>
+      g.name.toLowerCase().includes(q) ||
+      g.cat.toLowerCase().includes(q)
+    );
+    const posts = POSTS.filter(p =>
+      p.text.toLowerCase().includes(q) ||
+      p.author.toLowerCase().includes(q)
+    );*/
+    const people = API_PEOPLE;
+    const posts = API_POSTS;
+
+    const body = document.getElementById('pageBody');
+    const tab = currentTab;
+
+    if (!people.length && !groups.length && !posts.length) {
+      body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>No results found</h3><p>Try different keywords or check the spelling.</p></div>`;
+      return;
+    }
+
+    let html = '';
+
+    if ((tab === 'all' || tab === 'people') && people.length) {
+      html += `<div class="section-block"><div class="section-title">People (${people.length})</div><div class="people-list">${people.map((p,i) => renderPersonCard(p,i,q)).join('')}</div></div>`;
+    }
+    /*
+    if ((tab === 'all' || tab === 'groups') && groups.length) {
+      html += `<div class="section-block"><div class="section-title">Groups (${groups.length})</div>${groups.map((g,i) => renderGroupCard(g,i,q)).join('')}</div>`;
+    }
+      */
+    if ((tab === 'all' || tab === 'posts') && posts.length) {
+      html += `<div class="section-block"><div class="section-title">Posts (${posts.length})</div>${posts.map((p,i) => renderPostCard(p,i,q)).join('')}</div>`;
+    }
+
+    if (!html) {
+      html = `<div class="empty-state"><i class="fa-solid fa-filter"></i><h3>No ${tab} results</h3><p>Try switching to a different tab.</p></div>`;
+    }
+
+    body.innerHTML = html;
+  }
+
+  function highlight(text, q) {
+    
+    if (!q) return text;
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    return text;
+  }
+
+  function renderPersonCard(p, i, q = '') {
+    const isFollowing = followState[p.id];
+    return `<div class="person-card" style="animation-delay:${i*0.05}s" >
+      <div class="person-avatar">
+        <img src="${p.profile}" alt="${p.username}"/>
+        ${p.online ? '<span class="online-dot"></span>' : ''}
+      </div>
+      <div class="person-info" onclick='Clicked(${p.id})'>
+        <div class="person-name">${p.first_name} ${p.last_name}</div>
+        <div class="person-sub">@${p.username} · </div>
+        <div class="person-mutual"><i class="fa-solid fa-user-group" style="font-size:0.65rem;"></i> ${p.mutual} mutual friends</div>
+      </div>
+      <button class="follow-btn${isFollowing?' following':''}" onclick="toggleFollow(${p.id},this)">
+        ${p.isFollowing ? '✓ Following' : 'Follow'}
+      </button>
+    </div>`;
+  }
+
+  function renderGroupCard(g, i, q = '') {
+    const joined = joinState[g.id];
+    return `<div class="group-card" style="animation-delay:${i*0.05}s">
+      <div class="group-icon-wrap" style="background:${g.color};">${g.icon}</div>
+      <div class="group-info">
+        <div class="group-name">${highlight(g.name, q)}</div>
+        <div class="group-sub">${g.cat} · ${g.members.toLocaleString()} members</div>
+      </div>
+      <button class="join-btn${joined?' joined':''}" onclick="toggleJoin(${g.id},this,'${g.name}')">
+        ${joined ? '✓ Joined' : 'Join'}
+      </button>
+    </div>`;
+  }
+
+  function renderPostCard(p, i, q = '') {
+    return `<div class="post-result" style="animation-delay:${i*0.05}s">
+      <div class="post-result-top">
+        <img src="${p.image}" alt="${p.author}"/>
+        <div>
+          <div class="post-result-author">${p.first_name} ${p.last_name}</div>
+          <div class="post-result-time">${p.time}</div>
+        </div>
+      </div>
+      <div class="post-result-text">${highlight(p.content, q)}</div>
+      ${p.thumb ? `<img class="post-result-img" src="${p.thumb}" alt="post"/>` : ''}
+      <div class="post-result-stats">
+        <span class="stat"><i class="fa-solid fa-heart"></i>${p.total_likes}</span>
+        <span class="stat"><i class="fa-solid fa-comment"></i>${p.total_comments}</span>
+        <span class="stat"><i class="fa-solid fa-eye"></i>${p.views}</span>
+      </div>
+    </div>`;
+  }
+
+  function setTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const q = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (q) renderResults(q);
+  }
+
+  function toggleFollow(id, btn) {
+    fetch('{% url "usermanager:follow_user" %}',{
+      method:'POST',
+      headers:{
+        'X-CSRFToken':getCSRFToken(),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({ user_id: id })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+       btn.textContent = `${data.detail}`;
+      showToast(`${data.detail}`)
+    })
+    .catch(error =>{
+      console.log(error)
+
+    })
+  }
+
+  function toggleJoin(id, btn, name) {
+    joinState[id] = !joinState[id];
+    const j = joinState[id];
+    btn.textContent = j ? '✓ Joined' : 'Join';
+    btn.classList.toggle('joined', j);
+    showToast(j ? `Joined "${name}"! 🎉` : `Left "${name}"`);
+  }
+
+  function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('clearBtn').classList.remove('show');
+    currentTab = 'all';
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.ftab').classList.add('active');
+    renderHome();
+  }
+
+  function rmRecent(i) {
+    recentSearches.splice(i, 1);
+    renderHome();
+  }
+  function clearAllRecent() { recentSearches = []; renderHome(); }
+
+  let tT; function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2400);}
+  function go(url,el){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));el.classList.add('active');setTimeout(()=>window.location.href=url,120);}
+
+  renderHome();
+</script>
+
+{% endblock content %}

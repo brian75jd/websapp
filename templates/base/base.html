@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> {% block title %}{% endblock title %} </title>
+     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  
+    <style>
+   :root {
+      --primary:#1a6fd4; --primary-light:#3d8ef0; --primary-soft:#e8f1fd;
+      --primary-dark:#1255a8; --white:#ffffff; --bg:#f0f4fb; --card:#ffffff;
+      --border:#dce8f8; --text:#0d1a2e; --text-muted:#6b82a0; --text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08); --shadow-md:0 4px 24px rgba(26,111,212,0.13);
+      --nav-height:64px; --radius:16px; --radius-sm:10px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:calc(var(--nav-height) + 16px);}
+    /* BOTTOM NAV — always on top (z:500) */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--white);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 14px rgba(26,111,212,0.08);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:var(--text-light);font-size:0.65rem;font-weight:500;padding:6px 0;transition:color 0.2s;position:relative;cursor:pointer;}
+    .nav-item i{font-size:1.3rem;transition:transform 0.2s;}
+    .nav-item:hover,.nav-item.active{color:var(--primary);}
+    .nav-item:hover i{transform:translateY(-2px);}
+    .nav-active-dot{width:5px;height:5px;background:var(--primary);border-radius:50%;position:absolute;bottom:2px;}
+    .nav-item:not(.active) .nav-active-dot{display:none;}
+    .nav-badge{position:absolute;top:2px;right:calc(50% - 16px);background:#e53935;color:white;font-size:0.6rem;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;}
+    
+</style>
+<!--  <a class="nav-item" onclick="setActive(this)" href={% url "appsettings:settings" %}><i class="fa-solid fa-gear"></i><span></span><span class="nav-active-dot"></span></a>-->
+</head>
+<body>
+    {% block content %}
+    {% endblock content %}
+      {% block navbar %}
+<nav class="bottom-nav">
+  <a class="nav-item "  onclick='FeedNav()'><i class="fa-solid fa-house"></i><span></span><span class="nav-active-dot"></span></a>
+  <a class="nav-item" onclick="ChatListNav()"><i class="fa-regular fa-comment-dots"></i><span></span><span class="nav-badge">3</span><span class="nav-active-dot"></span></a>
+  <a class="nav-item" onclick="setActive(this)" href={% url "groups:group" %}><i class="fa-solid fa-users" ></i><span></span><span class="nav-active-dot"></span></a>
+  <a class="nav-item" onclick="EventsNav();"><i class="fa-solid fa-calendar" ></i><span></span><span class="nav-active-dot"></span></a>
+  <a class="nav-item" onclick="setActive(this)" href = {% url "profile:profile" %}><i class="fa-regular fa-user" ></i><span></span><span class="nav-active-dot"></span></a>
+  <a class="nav-item" onclick="setActive(this)" href={% url "appsettings:settings" %}><i class="fa-solid fa-gear"></i><span></span><span class="nav-active-dot"></span></a>
+      {% endblock navbar %}
+    
+
+<script>
+    function FeedNav(){
+        window.location.href = '/feed/';
+
+    }
+    function ChatListNav(){
+        window.location.href = '/chat/';
+
+    }
+    function EventsNav(){
+        window.location.href = '/events/';
+    }
+
+</script>
+</body>
+</html>

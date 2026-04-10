@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SchoolConnect – Almost Done!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary:#1a6fd4; --primary-light:#3d8ef0; --primary-soft:#e8f1fd;
+      --primary-dark:#1255a8; --white:#ffffff; --bg:#f0f4fb;
+      --border:#dce8f8; --text:#0d1a2e; --text-muted:#6b82a0; --text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08); --shadow-md:0 8px 32px rgba(26,111,212,0.18);
+      --radius:16px; --radius-sm:10px; --danger:#ef4444; --success:#22c55e;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--bg);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow-x:hidden;
+      padding:20px 0;
+    }
+
+    /* BG */
+    .bg-blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+    .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.15;animation:blobFloat 9s ease-in-out infinite;}
+    .blob-1{width:350px;height:350px;background:var(--primary);bottom:-80px;right:-60px;animation-delay:0s;}
+    .blob-2{width:280px;height:280px;background:#3d8ef0;top:-60px;left:-50px;animation-delay:3s;}
+    .blob-3{width:180px;height:180px;background:var(--success);top:30%;left:5%;animation-delay:6s;}
+    @keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(18px,-18px) scale(1.07);}}
+    .bg-pattern{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle at 1px 1px, rgba(26,111,212,0.06) 1px, transparent 0);background-size:28px 28px;}
+
+    /* CARD */
+    .signup-card{
+      position:relative;z-index:10;
+      background:rgba(255,255,255,0.93);
+      backdrop-filter:blur(20px);
+      border:1.5px solid rgba(220,232,248,0.8);
+      border-radius:28px;
+      padding:36px 32px 32px;
+      width:100%;
+      max-width:440px;
+      margin:20px;
+      box-shadow:var(--shadow-md), 0 1px 0 rgba(255,255,255,0.8) inset;
+      animation:cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+    /* LOGO */
+    .logo-row{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
+    .logo-icon-sm{width:42px;height:42px;background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;box-shadow:0 4px 14px rgba(26,111,212,0.3);}
+    .logo-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;font-size:1.3rem;color:var(--text);letter-spacing:-0.3px;}
+    .logo-name span{color:var(--primary);}
+
+    /* PROGRESS */
+    .progress-wrap{margin-bottom:28px;}
+    .progress-steps{display:flex;align-items:center;margin-bottom:10px;}
+    .step{display:flex;align-items:center;flex:1;}
+    .step-circle{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.82rem;border:2px solid var(--border);background:white;color:var(--text-light);transition:all 0.3s;flex-shrink:0;}
+    .step-circle.active{background:var(--primary);border-color:var(--primary);color:white;box-shadow:0 2px 10px rgba(26,111,212,0.3);}
+    .step-circle.done{background:var(--success);border-color:var(--success);color:white;}
+    .step-line{flex:1;height:2px;transition:background 0.4s;margin:0 4px;}
+    .step-line.done{background:var(--success);}
+    .step-line.pending{background:var(--border);}
+    .progress-labels{display:flex;justify-content:space-between;}
+    .step-label{font-size:0.72rem;font-weight:600;color:var(--text-light);flex:1;text-align:center;}
+    .step-label.active{color:var(--primary);}
+    .step-label.done{color:var(--success);}
+
+    /* GREETING BANNER */
+    .greeting-banner{
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));
+      border-radius:var(--radius-sm);
+      padding:14px 16px;
+      display:flex;align-items:center;gap:12px;
+      margin-bottom:22px;
+      animation:fadeUp 0.4s ease 0.1s both;
+    }
+    .greeting-avatar{
+      width:42px;height:42px;border-radius:50%;
+      background:rgba(255,255,255,0.25);
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-size:1.1rem;flex-shrink:0;
+    }
+    .greeting-text{color:white;}
+    .greeting-text strong{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.92rem;display:block;}
+    .greeting-text span{font-size:0.78rem;opacity:0.85;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* HEADING */
+    .form-heading{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text);margin-bottom:4px;}
+    .form-subheading{font-size:0.84rem;color:var(--text-muted);margin-bottom:22px;line-height:1.5;}
+
+    /* FIELD */
+    .field-group{margin-bottom:16px;animation:fadeUp 0.4s ease both;}
+    .field-group:nth-child(1){animation-delay:0.12s;}
+    .field-group:nth-child(2){animation-delay:0.18s;}
+    .field-group:nth-child(3){animation-delay:0.24s;}
+    .field-label{display:block;font-size:0.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:7px;}
+    .field-wrap{position:relative;}
+    .field-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:0.88rem;pointer-events:none;transition:color 0.2s;}
+    .field-input{
+      width:100%;background:var(--bg);border:1.5px solid var(--border);
+      border-radius:var(--radius-sm);padding:13px 16px 13px 40px;
+      font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);
+      outline:none;transition:all 0.2s;appearance:none;
+    }
+    .field-input:focus{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(26,111,212,0.1);}
+    .field-wrap:focus-within .field-icon{color:var(--primary);}
+    .field-input.error{border-color:var(--danger);background:#fff5f5;}
+    .field-error{font-size:0.74rem;color:var(--danger);margin-top:5px;display:none;align-items:center;gap:4px;}
+    .field-error.show{display:flex;}
+    .field-hint{font-size:0.73rem;color:var(--text-light);margin-top:4px;}
+
+    /* SELECT ARROW */
+    .select-wrap{position:relative;}
+    .select-wrap::after{
+      content:'\f107';font-family:'Font Awesome 6 Free';font-weight:900;
+      position:absolute;right:14px;top:50%;transform:translateY(-50%);
+      color:var(--text-muted);pointer-events:none;font-size:0.85rem;
+    }
+    .field-select{
+      width:100%;background:var(--bg);border:1.5px solid var(--border);
+      border-radius:var(--radius-sm);padding:13px 40px 13px 40px;
+      font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);
+      outline:none;transition:all 0.2s;cursor:pointer;appearance:none;
+    }
+    .field-select:focus{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(26,111,212,0.1);}
+    .field-select.error{border-color:var(--danger);background:#fff5f5;}
+
+    /* PHONE COUNTRY */
+    .phone-wrap{display:flex;gap:8px;}
+    .country-code-btn{
+      background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);
+      padding:13px 12px;font-family:'DM Sans',sans-serif;font-size:0.88rem;
+      color:var(--text);cursor:pointer;white-space:nowrap;
+      display:flex;align-items:center;gap:6px;transition:all 0.2s;flex-shrink:0;
+    }
+    .country-code-btn:hover,.country-code-btn:focus{border-color:var(--primary);background:var(--primary-soft);outline:none;}
+
+    /* DOB HINT */
+    .dob-age{font-size:0.73rem;color:var(--primary);font-weight:600;margin-top:4px;min-height:16px;}
+
+    /* PROFILE PREVIEW */
+    .profile-preview{
+      background:var(--primary-soft);border:1.5px solid var(--border);
+      border-radius:var(--radius-sm);padding:14px;
+      display:flex;align-items:center;gap:12px;margin:20px 0;
+      animation:fadeUp 0.4s ease 0.28s both;
+    }
+    .preview-avatar{
+      width:46px;height:46px;border-radius:50%;
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-size:1.2rem;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;
+      flex-shrink:0;
+    }
+    .preview-info{flex:1;}
+    .preview-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.92rem;color:var(--text);}
+    .preview-username{font-size:0.78rem;color:var(--primary);font-weight:500;margin-top:1px;}
+    .preview-dept{font-size:0.76rem;color:var(--text-muted);margin-top:2px;}
+
+    /* SUBMIT */
+    .submit-btn{
+      width:100%;
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));
+      color:white;border:none;padding:14px;border-radius:var(--radius-sm);
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.97rem;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:all 0.2s;box-shadow:0 4px 16px rgba(26,111,212,0.3);
+      position:relative;overflow:hidden;
+      animation:fadeUp 0.4s ease 0.38s both;
+    }
+    .submit-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);}
+    .submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(26,111,212,0.38);}
+    .submit-btn:active{transform:translateY(0);}
+    .submit-btn.loading{pointer-events:none;opacity:0.82;}
+    .btn-spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    .back-link{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:0.84rem;color:var(--text-muted);cursor:pointer;text-decoration:none;transition:color 0.2s;animation:fadeUp 0.4s ease 0.42s both;}
+    .back-link:hover{color:var(--primary);}
+
+    /* SUCCESS OVERLAY */
+    .success-overlay{
+      position:fixed;inset:0;background:rgba(13,26,46,0.5);
+      z-index:800;display:none;align-items:center;justify-content:center;
+    }
+    .success-overlay.show{display:flex;}
+    .success-card{
+      background:white;border-radius:28px;padding:44px 36px;text-align:center;
+      max-width:340px;width:90%;
+      animation:successPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      box-shadow:0 20px 60px rgba(26,111,212,0.2);
+    }
+    @keyframes successPop{from{opacity:0;transform:scale(0.7);}to{opacity:1;transform:scale(1);}}
+    .success-icon{
+      width:80px;height:80px;border-radius:50%;
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 20px;font-size:2rem;color:white;
+      box-shadow:0 8px 24px rgba(34,197,94,0.35);
+      animation:iconBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+    }
+    @keyframes iconBounce{from{opacity:0;transform:scale(0.4);}to{opacity:1;transform:scale(1);}}
+    .success-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.35rem;color:var(--text);margin-bottom:8px;}
+    .success-subtitle{font-size:0.86rem;color:var(--text-muted);line-height:1.6;margin-bottom:28px;}
+    .success-btn{
+      width:100%;background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));
+      color:white;border:none;padding:14px;border-radius:var(--radius-sm);
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;
+      cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(26,111,212,0.3);
+    }
+    .success-btn:hover{transform:translateY(-1px);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="bg-pattern"></div>
+
+<div class="signup-card">
+
+  <!-- LOGO -->
+  <div class="logo-row">
+    <div class="logo-icon-sm"><i class="fa-solid fa-graduation-cap"></i></div>
+    <div class="logo-name">School<span>Connect</span></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step">
+        <div class="step-circle done" id="step1-circle"><i class="fa-solid fa-check"></i></div>
+        <div class="step-line done" id="step-line"></div>
+      </div>
+      <div class="step" style="flex:0;">
+        <div class="step-circle active" id="step2-circle">2</div>
+      </div>
+    </div>
+    <div class="progress-labels">
+      <div class="step-label done">Your Info</div>
+      <div class="step-label active">Almost Done</div>
+    </div>
+  </div>
+
+  <!-- GREETING BANNER -->
+  <div class="greeting-banner" id="greetingBanner">
+    <div class="greeting-avatar"><i class="fa-solid fa-hand-wave"></i></div>
+    <div class="greeting-text">
+      <strong id="greetingName">Hey there!</strong>
+      <span>Just a few more details and you're in 🎉</span>
+    </div>
+  </div>
+
+  <div class="form-heading">Almost there! 🏁</div>
+  <div class="form-subheading">Step 2 of 2 — complete your student profile so classmates can find you.</div>
+
+  <!-- PHONE NUMBER -->
+<form action="" method='POST' id='form'>
+  {% csrf_token %}
+  <div class="field-group">
+    <label class="field-label">Phone Number</label>
+    <div class="phone-wrap">
+      <div class="field-wrap" style="flex:1;">
+        <i class="fa-solid fa-phone field-icon"></i>
+        <input class="field-input" type="tel" id="phoneNumber" placeholder="0991 234 567" oninput="clearErr('phoneNumber')" name = 'phone_number'/>
+      </div>
+    </div>
+    <div>
+      {% if form.phone_number.errors %}
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <small style='color:red;'>{{form.phone_number.errors.0}}</small>
+        {% endif %}
+    </div>
+  </div>
+
+  <!-- DATE OF BIRTH -->
+  <div class="field-group">
+    <label class="field-label">Date of Birth</label>
+    <div class="field-wrap">
+      <i class="fa-solid fa-cake-candles field-icon"></i>
+      <input class="field-input" type="date" id="dateOfBirth" onchange="calcAge()" oninput="clearErr('dateOfBirth')" name='date_of_birth'/>
+    </div>
+    <div class="dob-age" id="dobAge"></div>
+    <div >
+        {% if form.date_of_birth.errors %}
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <small style='color:red;'>{{form.date_of_birth.errors.0}}</small>
+        {% endif %}
+    </div>
+  </div>
+
+  <!-- DEPARTMENT -->
+  <div class="field-group">
+    <label class="field-label">Department / Faculty</label>
+    <div class="select-wrap field-wrap">
+      <i class="fa-solid fa-building-columns field-icon"></i>
+      <select class="field-select" id="department" name='department'>
+        <option value="" disabled selected>Select your department...</option>
+        <optgroup label="Sciences & Technology">
+          <option value="Computer Science">Computer Science</option>
+          <option value="Information Technology">Information Technology</option>
+          <option value="Software Engineering">Software Engineering</option>
+          <option value="Electrical Engineering">Electrical Engineering</option>
+          <option value="Mechanical Engineering">Mechanical Engineering</option>
+          <option value="Civil Engineering">Civil Engineering</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Mathematics & Statistics">Mathematics & Statistics</option>
+          <option value="Biology">Biology</option>
+          <option value="Environmental Science">Environmental Science</option>
+        </optgroup>
+        <optgroup label="Health & Medicine">
+          <option value="Medicine & Surgery">Medicine & Surgery</option>
+          <option value="Nursing">Nursing</option>
+          <option value="Pharmacy">Pharmacy</option>
+          <option value="Public Health">Public Health</option>
+          <option value="Nutrition & Dietetics">Nutrition & Dietetics</option>
+        </optgroup>
+        <optgroup label="Business & Economics">
+          <option value="Business Administration">Business Administration</option>
+          <option value="Economics">Economics</option>
+          <option value="Accounting & Finance">Accounting & Finance</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Human Resource Management">Human Resource Management</option>
+        </optgroup>
+        <optgroup label="Arts, Law & Social Sciences">
+          <option value="Law">Law</option>
+          <option value="Journalism & Media">Journalism & Media</option>
+          <option value="Sociology">Sociology</option>
+          <option value="Psychology">Psychology</option>
+          <option value="Political Science">Political Science</option>
+          <option value="Education">Education</option>
+          <option value="History & Heritage">History & Heritage</option>
+          <option value="English & Literature">English & Literature</option>
+          <option value="Fine Arts & Design">Fine Arts & Design</option>
+          <option value="Architecture">Architecture</option>
+          <option value="Music">Music</option>
+        </optgroup>
+        <optgroup label="Agriculture & Natural Resources">
+          <option value="Agriculture">Agriculture</option>
+          <option value="Forestry">Forestry</option>
+          <option value="Natural Resources Management">Natural Resources Management</option>
+          <option value="Fisheries & Aquaculture">Fisheries & Aquaculture</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="field-error" id="departmentError"><i class="fa-solid fa-circle-exclamation"></i> Please select your department</div>
+  </div>
+
+  <!-- YEAR OF STUDY -->
+  <div class="field-group">
+    <label class="field-label">Gender</label>
+    <div class="select-wrap field-wrap">
+      <i class="fa-solid fa-calendar-alt field-icon"></i>
+      <select class="field-select" id="yearOfStudy" onchange="updatePreview();clearErr('yearOfStudy')" name='gender'>
+        <option value="" disabled selected>Select your gender...</option>
+        <option value="male">male</option>
+        <option value="female">female</option>
+      </select>
+    </div>
+    <div class="field-error" id="yearOfStudyError"><i class="fa-solid fa-circle-exclamation"></i> Please select your year of study</div>
+  </div>
+
+  <!-- LIVE PROFILE PREVIEW -->
+  <div class="profile-preview" id="profilePreview" style="display:none;">
+    <div class="preview-avatar" id="previewInitials">A</div>
+    <div class="preview-info">
+      <div class="preview-name" id="previewName">Your Name</div>
+      <div class="preview-username" id="previewUsername">@username</div>
+      <div class="preview-dept" id="previewDept">Dept · Year</div>
+    </div>
+  </div>
+
+  <!-- COMPLETE BUTTON -->
+  <button class="submit-btn" id="completeBtn" onclick="completeSignup()">
+    <span id="completeBtnText">Create My Account</span>
+    <i class="fa-solid fa-rocket" id="completeBtnIcon"></i>
+    <div class="btn-spinner" id="completeSpinner"></div>
+  </button>
+
+  <a class="back-link" href="school-connect-signup.html">
+    <i class="fa-solid fa-arrow-left"></i> Back to Step 1
+  </a>
+
+</div>
+
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+    <div class="success-title">Welcome aboard! 🎉</div>
+    <div class="success-subtitle" id="successMsg">
+      Your account has been created. You're now part of the SchoolConnect community!
+    </div>
+    <button class="success-btn" onclick="goToFeed()">
+      <i class="fa-solid fa-house"></i> Go to My Feed
+    </button>
+  </div>
+</div>
+</form>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── LOAD PHASE 1 DATA ──
+  const phase1 = JSON.parse(sessionStorage.getItem('sc_signup') || '{}');
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (phase1.firstName) {
+      document.getElementById('greetingName').textContent = `Hey, ${phase1.firstName}! 👋`;
+      updatePreview();
+    }
+
+    // Set max date for DOB (must be at least 15 years old)
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() - 15);
+    document.getElementById('dateOfBirth').max = maxDate.toISOString().split('T')[0];
+    document.getElementById('dateOfBirth').min = '1970-01-01';
+  });
+
+  // ── COUNTRY CODE CYCLE ──
+  const countryCodes = [
+    {flag:'🇲🇼', code:'+265', name:'Malawi'},
+  ];
+  let countryIndex = 0;
+  function cycleCountryCode() {
+    countryIndex = (countryIndex + 1) % countryCodes.length;
+    const c = countryCodes[countryIndex];
+    document.getElementById('countryFlag').textContent = c.flag;
+    document.getElementById('countryCode').textContent = c.code;
+    showToast(`${c.flag} ${c.name} (${c.code})`);
+  }
+
+  // ── AGE CALCULATOR ──
+  function calcAge() {
+    const val = document.getElementById('dateOfBirth').value;
+    const dobAge = document.getElementById('dobAge');
+    if (!val) { dobAge.textContent = ''; return; }
+    const today = new Date();
+    const dob = new Date(val);
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    if (age < 15) {
+      dobAge.textContent = '⚠️ You must be at least 15 to register';
+      dobAge.style.color = 'var(--danger)';
+    } else {
+      dobAge.textContent = `🎂 You are ${age} years old`;
+      dobAge.style.color = 'var(--primary)';
+    }
+  }
+
+  // ── LIVE PREVIEW ──
+  function updatePreview() {
+    const dept = document.getElementById('department').value;
+    const year = document.getElementById('yearOfStudy').value;
+    const preview = document.getElementById('profilePreview');
+
+    if (!dept && !year) { preview.style.display = 'none'; return; }
+    preview.style.display = 'flex';
+
+    const fullName = `${phase1.firstName || ''} ${phase1.lastName || ''}`.trim() || 'Your Name';
+    const initials = fullName.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0,2);
+    document.getElementById('previewInitials').textContent = initials || '?';
+    document.getElementById('previewName').textContent = fullName;
+    document.getElementById('previewUsername').textContent = `@${phase1.username || 'username'}`;
+    document.getElementById('previewDept').textContent = [dept, year].filter(Boolean).join(' · ');
+  }
+
+  // ── CLEAR ERROR ──
+  function clearErr(id) {
+    const inp = document.getElementById(id);
+    if (inp) { inp.classList.remove('error'); }
+    const err = document.getElementById(id + 'Error');
+    if (err) err.classList.remove('show');
+  }
+
+  // ── COMPLETE SIGNUP ──
+  function completeSignup() {
+    let valid = true;
+
+    const phone = document.getElementById('phoneNumber').value.trim();
+    const dob   = document.getElementById('dateOfBirth').value;
+    const dept  = document.getElementById('department').value;
+    const year  = document.getElementById('yearOfStudy').value;
+
+    if (!phone || phone.length < 7) {
+      document.getElementById('phoneNumber').classList.add('error');
+      document.getElementById('phoneNumberError').classList.add('show');
+      valid = false;
+    }
+
+    if (!dob) {
+      document.getElementById('dateOfBirth').classList.add('error');
+      document.getElementById('dateOfBirthError').classList.add('show');
+      valid = false;
+    } else {
+      const today = new Date();
+      const dobDate = new Date(dob);
+      let age = today.getFullYear() - dobDate.getFullYear();
+      if (today.getMonth() - dobDate.getMonth() < 0 || (today.getMonth() - dobDate.getMonth() === 0 && today.getDate() < dobDate.getDate())) age--;
+      if (age < 15) {
+        document.getElementById('dateOfBirth').classList.add('error');
+        document.getElementById('dateOfBirthError').classList.add('show');
+        document.getElementById('dateOfBirthError').querySelector('span') && (document.getElementById('dateOfBirthError').querySelector('span').textContent = 'You must be at least 15 to register');
+        showToast('You must be at least 15 years old to register');
+        valid = false;
+      }
+    }
+
+    if (!dept) {
+      document.getElementById('department').classList.add('error');
+      document.getElementById('departmentError').classList.add('show');
+      valid = false;
+    }
+
+    if (!year) {
+      document.getElementById('yearOfStudy').classList.add('error');
+      document.getElementById('yearOfStudyError').classList.add('show');
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // Loading
+    const btn = document.getElementById('completeBtn');
+    document.getElementById('completeBtnText').textContent = 'Creating account...';
+    document.getElementById('completeBtnIcon').style.display = 'none';
+    document.getElementById('completeSpinner').style.display = 'block';
+    btn.classList.add('loading');
+
+    // Simulate API call
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      document.getElementById('completeSpinner').style.display = 'none';
+      document.getElementById('completeBtnIcon').style.display = 'block';
+      document.getElementById('completeBtnText').textContent = 'Create My Account';
+
+      // Show success
+      const name = phase1.firstName || 'Student';
+      document.getElementById('successMsg').textContent =
+        `Welcome, ${name}! Your account is ready. You're now part of the SchoolConnect community — connect, share, and grow together! 🚀`;
+      document.getElementById('successOverlay').classList.add('show');
+
+      // Clean up
+      sessionStorage.removeItem('sc_signup');
+    }, 2000);
+  }
+
+  function goToFeed() {
+    window.location.href = 'school-connect.html';
+  }
+
+  // ── TOAST ──
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>

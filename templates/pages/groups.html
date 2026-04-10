@@ -1,0 +1,568 @@
+{% extends "base/base.html" %}
+{% block title %}Groups{% endblock title %}
+
+
+{% block content %}
+<style>
+    :root {
+      --primary:#1a6fd4; --primary-light:#3d8ef0; --primary-soft:#e8f1fd;
+      --primary-dark:#1255a8; --white:#ffffff; --bg:#f0f4fb; --card:#ffffff;
+      --border:#dce8f8; --text:#0d1a2e; --text-muted:#6b82a0; --text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08); --shadow-md:0 4px 24px rgba(26,111,212,0.13);
+      --nav-height:64px; --radius:16px; --radius-sm:10px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:calc(var(--nav-height)+16px);}
+
+    /* HEADER */
+    .top-header{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1.5px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+    .logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.35rem;color:var(--primary);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px;}
+    .logo span{color:var(--text);}
+    .logo-icon{width:34px;height:34px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:0.9rem;}
+    .header-right{display:flex;align-items:center;gap:10px;}
+    .header-icon-btn{width:38px;height:38px;border-radius:50%;border:none;background:var(--primary-soft);color:var(--primary);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;}
+    .header-icon-btn:hover{background:var(--border);}
+
+    /* BODY PADDING */
+    .page-body{padding:14px 14px 0;}
+
+    /* CREATE GROUP BUTTON */
+    .create-group-btn{width:100%;background:var(--primary);color:white;border:none;padding:14px 20px;border-radius:var(--radius);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;box-shadow:0 4px 14px rgba(26,111,212,0.25);animation:fadeUp 0.3s ease both;}
+    .create-group-btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,111,212,0.3);}
+    .create-group-btn:active{transform:translateY(0);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+    /* SEARCH */
+    .search-wrap{margin:12px 0;background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);}
+    .search-wrap i{color:var(--text-muted);}
+    .search-wrap input{flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;}
+
+    /* TABS */
+    .tabs{display:flex;background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow);}
+    .tab-btn{flex:1;padding:11px;border:none;background:transparent;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+    .tab-btn.active{background:var(--primary);color:white;}
+    .tab-btn:first-child{border-radius:calc(var(--radius-sm) - 2px) 0 0 calc(var(--radius-sm) - 2px);}
+    .tab-btn:last-child{border-radius:0 calc(var(--radius-sm) - 2px) calc(var(--radius-sm) - 2px) 0;}
+
+    /* SECTION LABEL */
+    .section-label{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.82rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;display:flex;align-items:center;gap:6px;}
+    .section-label i{color:var(--primary);}
+
+    /* GROUP CARD */
+    .group-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;animation:fadeUp 0.4s ease both;cursor:pointer;transition:box-shadow 0.2s,transform 0.2s;}
+    .group-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+
+    .group-banner{height:90px;position:relative;overflow:hidden;}
+    .group-banner img{width:100%;height:100%;object-fit:cover;display:block;}
+    .group-banner-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(13,26,46,0.6));}
+    .group-privacy-badge{position:absolute;top:10px;right:10px;background:rgba(255,255,255,0.22);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.35);color:white;font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;}
+
+    .group-body{padding:12px 14px 14px;display:flex;gap:12px;align-items:flex-start;}
+    .group-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+    .group-content{flex:1;min-width:0;}
+    .group-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.97rem;color:var(--text);}
+    .group-meta{font-size:0.78rem;color:var(--text-muted);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .group-meta .dot{width:3px;height:3px;background:var(--text-light);border-radius:50%;}
+    .group-desc{font-size:0.82rem;color:var(--text-muted);margin-top:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .group-members{display:flex;align-items:center;margin-top:8px;gap:6px;}
+    .member-avatars{display:flex;}
+    .member-avatars img{width:22px;height:22px;border-radius:50%;border:2px solid white;margin-left:-6px;object-fit:cover;}
+    .member-avatars img:first-child{margin-left:0;}
+    .member-count{font-size:0.77rem;color:var(--text-muted);font-weight:500;}
+
+    .group-actions{display:flex;gap:8px;margin-top:10px;}
+    .btn-joined{background:var(--primary-soft);color:var(--primary);border:1.5px solid var(--primary);padding:7px 16px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.78rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px;}
+    .btn-joined:hover{background:#fee2e2;color:#e53935;border-color:#e53935;}
+    .btn-visit{background:transparent;color:var(--text-muted);border:1.5px solid var(--border);padding:7px 16px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.78rem;cursor:pointer;transition:all 0.2s;}
+    .btn-visit:hover{background:var(--bg);color:var(--primary);}
+
+    /* SUGGESTION CARD */
+    .suggest-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;animation:fadeUp 0.4s ease both;}
+    .suggest-banner{height:70px;position:relative;overflow:hidden;}
+    .suggest-banner img{width:100%;height:100%;object-fit:cover;display:block;}
+    .suggest-banner-overlay{position:absolute;inset:0;}
+
+    .suggest-body{padding:10px 14px 14px;display:flex;gap:10px;align-items:center;}
+    .suggest-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+    .suggest-content{flex:1;min-width:0;}
+    .suggest-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);}
+    .suggest-meta{font-size:0.76rem;color:var(--text-muted);margin-top:2px;}
+    .suggest-reason{font-size:0.73rem;color:var(--primary);font-weight:600;margin-top:3px;display:flex;align-items:center;gap:4px;}
+    .btn-join{background:var(--primary);color:white;border:none;padding:7px 18px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.78rem;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+    .btn-join:hover{background:var(--primary-dark);}
+    .btn-join.joined{background:var(--primary-soft);color:var(--primary);border:1.5px solid var(--primary);}
+
+    /* TABS CONTENT */
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+    .empty-state i{font-size:2.5rem;color:var(--border);margin-bottom:12px;display:block;}
+    .empty-state p{font-size:0.9rem;}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:24px 20px 32px;animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 18px;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);margin-bottom:20px;text-align:center;}
+    .modal-field{margin-bottom:16px;}
+    .modal-field label{display:block;font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px;}
+    .modal-field input,.modal-field textarea,.modal-field select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .modal-field input:focus,.modal-field textarea:focus,.modal-field select:focus{border-color:var(--primary);background:var(--primary-soft);}
+    .modal-field textarea{resize:vertical;min-height:80px;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .btn-primary{flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+    .btn-primary:hover{background:var(--primary-dark);}
+    .btn-secondary{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;}
+
+    /* EMOJI CATEGORY PICKER */
+    .emoji-category-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+    .emoji-opt{width:42px;height:42px;border-radius:10px;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;transition:all 0.15s;}
+    .emoji-opt:hover,.emoji-opt.selected{border-color:var(--primary);background:var(--primary-soft);}
+
+    /* NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--white);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 14px rgba(26,111,212,0.08);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:var(--text-light);font-size:0.65rem;font-weight:500;padding:6px 0;transition:color 0.2s;position:relative;cursor:pointer;}
+    .nav-item i{font-size:1.3rem;transition:transform 0.2s;}
+    .nav-item:hover,.nav-item.active{color:var(--primary);}
+    .nav-item:hover i{transform:translateY(-2px);}
+    .nav-active-dot{width:5px;height:5px;background:var(--primary);border-radius:50%;position:absolute;bottom:2px;}
+    .nav-item:not(.active) .nav-active-dot{display:none;}
+    .nav-badge{position:absolute;top:2px;right:calc(50% - 16px);background:#e53935;color:white;font-size:0.6rem;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height)+14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="top-header">
+  <div class="logo">
+    <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+    School<span>Connect</span>
+  </div>
+  <div class="header-right">
+    <button class="header-icon-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+    <button class="header-icon-btn"><i class="fa-solid fa-bell"></i></button>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- CREATE GROUP -->
+  <button class="create-group-btn" onclick="openCreateModal()">
+    <i class="fa-solid fa-plus"></i> Create a New Group
+  </button>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" placeholder="Search groups..." oninput="filterGroups(this.value)"/>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('joined',this)">My Groups</button>
+    <button class="tab-btn" onclick="switchTab('discover',this)">Discover</button>
+    <button class="tab-btn" onclick="switchTab('invites',this)">Invites</button>
+  </div>
+
+  <!-- MY GROUPS TAB -->
+  <div class="tab-content active" id="tab-joined">
+    <div class="section-label"><i class="fa-solid fa-users"></i> Groups You Follow</div>
+    <div id="joinedGroupsList"></div>
+  </div>
+
+  <!-- DISCOVER TAB -->
+  <div class="tab-content" id="tab-discover">
+    <div class="section-label"><i class="fa-solid fa-compass"></i> Suggested For You</div>
+    <div id="suggestedGroupsList"></div>
+
+    <div class="section-label" style="margin-top:20px;"><i class="fa-solid fa-fire"></i> Popular Groups</div>
+    <div id="popularGroupsList"></div>
+  </div>
+
+  <!-- INVITES TAB -->
+  <div class="tab-content" id="tab-invites">
+    <div class="section-label"><i class="fa-solid fa-envelope"></i> Group Invitations</div>
+    <div id="invitesList"></div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- BOTTOM NAV -->
+
+<!-- CREATE GROUP MODAL -->
+<div class="modal-overlay" id="createModal" onclick="closeCreateModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Create a Group</div>
+
+    <div class="modal-field">
+      <label>Group Name</label>
+      <input type="text" id="newGroupName" placeholder="e.g. CS Study Circle"/>
+    </div>
+
+    <div class="modal-field">
+      <label>Group Icon</label>
+      <div class="emoji-category-grid" id="emojiPicker">
+        <div class="emoji-opt selected" onclick="selectEmoji(this)">📚</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">💻</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🔬</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🎨</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">⚽</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🎵</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🏛️</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🌍</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">⚙️</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🤖</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">📷</div>
+        <div class="emoji-opt" onclick="selectEmoji(this)">🍕</div>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <label>Description</label>
+      <textarea id="newGroupDesc" placeholder="What is this group about?"></textarea>
+    </div>
+
+    <div class="modal-field">
+      <label>Category</label>
+      <select id="newGroupCat">
+        <option>Academic</option>
+        <option>Sports & Recreation</option>
+        <option>Arts & Culture</option>
+        <option>Technology</option>
+        <option>Social & Community</option>
+        <option>Career & Professional</option>
+        <option>Health & Wellness</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <div class="modal-field">
+      <label>Privacy</label>
+      <select id="newGroupPrivacy">
+        <option value="Public">🌐 Public — Anyone can find and join</option>
+        <option value="Private">🔒 Private — Members must be approved</option>
+      </select>
+    </div>
+
+    <div class="modal-field">
+      <label>Cover Color / Theme</label>
+      <select id="newGroupColor">
+        <option value="blue">🔵 Ocean Blue</option>
+        <option value="green">🟢 Forest Green</option>
+        <option value="purple">🟣 Royal Purple</option>
+        <option value="orange">🟠 Sunset Orange</option>
+        <option value="red">🔴 Crimson Red</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeCreateModalBtn()">Cancel</button>
+      <button class="btn-primary" onclick="createGroup()">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── DATA ──
+  const joinedGroups = [
+    { id:1, name:'CS Study Circle', icon:'💻', category:'Academic', members:142, privacy:'Public',
+      desc:'A space for CS students to collaborate, share resources, and study together.',
+      banner:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80',
+      color:'#1a6fd4', seeds:['sarah','brian','clara'] },
+    { id:2, name:'AI & Machine Learning Hub', icon:'🤖', category:'Technology', members:89, privacy:'Public',
+      desc:'Exploring the world of artificial intelligence, neural networks and data science.',
+      banner:'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600&q=80',
+      color:'#7c3aed', seeds:['david','emily','tom'] },
+    { id:3, name:'Photography Club', icon:'📷', category:'Arts & Culture', members:67, privacy:'Private',
+      desc:'Capturing moments that matter. Share your shots, get feedback, and grow as a photographer.',
+      banner:'https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=600&q=80',
+      color:'#b45309', seeds:['priya','alice','emily'] },
+    { id:4, name:'Student Council Updates', icon:'🏛️', category:'Social & Community', members:510, privacy:'Public',
+      desc:'Official channel for student council announcements, events and campus news.',
+      banner:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&q=80',
+      color:'#059669', seeds:['priya','brian','sarah'] },
+    { id:5, name:'Engineering Projects Lab', icon:'⚙️', category:'Technology', members:201, privacy:'Private',
+      desc:'Collaborate on hardware and software engineering projects. Build. Break. Repeat.',
+      banner:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=600&q=80',
+      color:'#dc2626', seeds:['tom','david','brian'] },
+  ];
+
+  const suggestedGroups = [
+    { id:10, name:'Biology Research Network', icon:'🔬', category:'Academic', members:114, privacy:'Public',
+      desc:'Connecting biology students with research opportunities and lab discussions.',
+      banner:'https://images.unsplash.com/photo-1532094349884-543559c7671e?w=600&q=80',
+      color:'#10b981', seeds:['james','clara','emily'],
+      reason:'Because you follow Biology posts' },
+    { id:11, name:'Open Source Malawi', icon:'🌍', category:'Technology', members:53, privacy:'Public',
+      desc:'Building open source tools that solve local problems. Code for impact.',
+      banner:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80',
+      color:'#1a6fd4', seeds:['sarah','brian','david'],
+      reason:'Based on your interests' },
+    { id:12, name:'Music & Arts Collective', icon:'🎵', category:'Arts & Culture', members:177, privacy:'Public',
+      desc:'A creative space for musicians, artists and performers on campus.',
+      banner:'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600&q=80',
+      color:'#9333ea', seeds:['emily','priya','clara'],
+      reason:'3 of your friends are members' },
+  ];
+
+  const popularGroups = [
+    { id:20, name:'Campus Sports Hub', icon:'⚽', category:'Sports', members:823, privacy:'Public',
+      desc:'Everything sports on campus — football, basketball, athletics and more!',
+      banner:'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&q=80',
+      color:'#f59e0b', seeds:['david','tom','brian'] },
+    { id:21, name:'Student Entrepreneur Society', icon:'🚀', category:'Career', members:392, privacy:'Public',
+      desc:'Where the next generation of business leaders and innovators connect.',
+      banner:'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80',
+      color:'#ef4444', seeds:['sarah','priya','emily'] },
+  ];
+
+  const inviteGroups = [
+    { id:30, name:'Architecture Studio', icon:'🏗️', category:'Academic', members:44, privacy:'Private',
+      desc:'Year 4 Architecture design critiques and studio collaboration space.',
+      banner:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+      color:'#6366f1', seeds:['lucy','clara','priya'],
+      invitedBy:'Lucy Tembo' },
+  ];
+
+  // Track join states
+  const joinedIds = new Set(joinedGroups.map(g=>g.id));
+  const joinedSuggestIds = new Set();
+
+  // ── RENDER ──
+  function avatarStack(seeds) {
+    return seeds.map(s => `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${s}" alt="${s}"/>`).join('');
+  }
+
+  function renderJoinedGroups(filter='') {
+    const el = document.getElementById('joinedGroupsList');
+    const list = joinedGroups.filter(g => g.name.toLowerCase().includes(filter.toLowerCase()));
+    if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-users-slash"></i><p>No groups match your search.</p></div>'; return; }
+    el.innerHTML = list.map((g,i) => `
+      <div class="group-card" style="animation-delay:${i*0.06}s">
+        <div class="group-banner">
+          <img src="${g.banner}" alt="${g.name}"/>
+          <div class="group-banner-overlay"></div>
+          <div class="group-privacy-badge"><i class="fa-solid fa-${g.privacy==='Public'?'globe':'lock'}"></i> ${g.privacy}</div>
+        </div>
+        <div class="group-body">
+          <div class="group-icon" style="background:${g.color}22;">${g.icon}</div>
+          <div class="group-content">
+            <div class="group-name">${g.name}</div>
+            <div class="group-meta">
+              <span>${g.category}</span><span class="dot"></span>
+              <span>${g.members.toLocaleString()} members</span>
+            </div>
+            <div class="group-desc">${g.desc}</div>
+            <div class="group-members">
+              <div class="member-avatars">${avatarStack(g.seeds)}</div>
+              <span class="member-count">+${g.members-3} others</span>
+            </div>
+            <div class="group-actions">
+              <button class="btn-joined" onclick="leaveGroup(this,${g.id})">
+                <i class="fa-solid fa-check"></i> Joined
+              </button>
+              <button class="btn-visit" onclick="showToast('Opening ${g.name}...')">Visit Group</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderSuggestedGroups() {
+    document.getElementById('suggestedGroupsList').innerHTML = suggestedGroups.map((g,i) => `
+      <div class="suggest-card" style="animation-delay:${i*0.07}s">
+        <div class="suggest-banner"><img src="${g.banner}" alt="${g.name}"/><div class="suggest-banner-overlay"></div></div>
+        <div class="suggest-body">
+          <div class="suggest-icon" style="background:${g.color}22;">${g.icon}</div>
+          <div class="suggest-content">
+            <div class="suggest-name">${g.name}</div>
+            <div class="suggest-meta">${g.category} · ${g.members} members</div>
+            <div class="suggest-reason"><i class="fa-solid fa-wand-magic-sparkles"></i> ${g.reason}</div>
+          </div>
+          <button class="btn-join" id="join-suggest-${g.id}" onclick="joinSuggested(this,${g.id},'${g.name}')">Join</button>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('popularGroupsList').innerHTML = popularGroups.map((g,i) => `
+      <div class="suggest-card" style="animation-delay:${i*0.08+0.2}s">
+        <div class="suggest-banner"><img src="${g.banner}" alt="${g.name}"/><div class="suggest-banner-overlay"></div></div>
+        <div class="suggest-body">
+          <div class="suggest-icon" style="background:${g.color}22;">${g.icon}</div>
+          <div class="suggest-content">
+            <div class="suggest-name">${g.name}</div>
+            <div class="suggest-meta">${g.category} · ${g.members.toLocaleString()} members</div>
+            <div class="suggest-reason"><i class="fa-solid fa-fire"></i> Trending on campus</div>
+          </div>
+          <button class="btn-join" id="join-popular-${g.id}" onclick="joinSuggested(this,${g.id},'${g.name}')">Join</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderInvites() {
+    const el = document.getElementById('invitesList');
+    if (!inviteGroups.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-envelope-open"></i><p>No pending invitations.</p></div>'; return; }
+    el.innerHTML = inviteGroups.map((g,i) => `
+      <div class="group-card" style="animation-delay:${i*0.07}s" id="invite-card-${g.id}">
+        <div class="group-banner">
+          <img src="${g.banner}" alt="${g.name}"/>
+          <div class="group-banner-overlay"></div>
+          <div class="group-privacy-badge"><i class="fa-solid fa-lock"></i> ${g.privacy}</div>
+        </div>
+        <div class="group-body">
+          <div class="group-icon" style="background:${g.color}22;">${g.icon}</div>
+          <div class="group-content">
+            <div class="group-name">${g.name}</div>
+            <div class="group-meta"><span>${g.category}</span><span class="dot"></span><span>${g.members} members</span></div>
+            <div class="group-desc">${g.desc}</div>
+            <div class="suggest-reason" style="margin-top:6px;font-size:0.78rem;"><i class="fa-solid fa-user-plus"></i> Invited by <strong>${g.invitedBy}</strong></div>
+            <div class="group-actions" style="margin-top:10px;">
+              <button class="btn-join" onclick="acceptInvite(${g.id},'${g.name}')">Accept</button>
+              <button class="btn-visit" onclick="declineInvite(${g.id})">Decline</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── ACTIONS ──
+  function leaveGroup(btn, id) {
+    if (btn.textContent.trim().startsWith('Leave')) {
+      // Undo
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Joined';
+      btn.classList.remove('danger-btn');
+      showToast('Rejoined group!');
+    } else {
+      btn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Leave?';
+      showToast('Click again to confirm leaving');
+      setTimeout(() => {
+        if (btn.innerHTML.includes('Leave')) btn.innerHTML = '<i class="fa-solid fa-check"></i> Joined';
+      }, 3000);
+    }
+  }
+
+  function joinSuggested(btn, id, name) {
+    if (btn.classList.contains('joined')) {
+      btn.textContent = 'Join';
+      btn.classList.remove('joined');
+      showToast(`Left "${name}"`);
+    } else {
+      btn.textContent = '✓ Joined';
+      btn.classList.add('joined');
+      showToast(`Joined "${name}"! 🎉`);
+    }
+  }
+
+  function acceptInvite(id, name) {
+    const card = document.getElementById(`invite-card-${id}`);
+    card.style.transition = 'opacity 0.3s, transform 0.3s';
+    card.style.opacity = '0'; card.style.transform = 'scale(0.95)';
+    setTimeout(() => { card.remove(); checkEmptyInvites(); }, 300);
+    showToast(`Joined "${name}"! 🎉`);
+  }
+  function declineInvite(id) {
+    const card = document.getElementById(`invite-card-${id}`);
+    card.style.transition = 'opacity 0.3s'; card.style.opacity = '0';
+    setTimeout(() => { card.remove(); checkEmptyInvites(); }, 300);
+    showToast('Invitation declined');
+  }
+  function checkEmptyInvites() {
+    if (!document.getElementById('invitesList').children.length) {
+      document.getElementById('invitesList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-envelope-open"></i><p>No pending invitations.</p></div>';
+    }
+  }
+
+  // ── FILTER ──
+  function filterGroups(val) {
+    const active = document.querySelector('.tab-content.active').id;
+    if (active === 'tab-joined') renderJoinedGroups(val);
+  }
+
+  // ── TABS ──
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${name}`).classList.add('active');
+  }
+
+  // ── CREATE GROUP MODAL ──
+  let selectedEmoji = '📚';
+  function selectEmoji(el) {
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedEmoji = el.textContent;
+  }
+  function openCreateModal() { document.getElementById('createModal').classList.add('open'); }
+  function closeCreateModal(e) { if (e.target === document.getElementById('createModal')) closeCreateModalBtn(); }
+  function closeCreateModalBtn() { document.getElementById('createModal').classList.remove('open'); }
+
+  function createGroup() {
+    const name = document.getElementById('newGroupName').value.trim();
+    const desc = document.getElementById('newGroupDesc').value.trim();
+    const cat  = document.getElementById('newGroupCat').value;
+    const priv = document.getElementById('newGroupPrivacy').value;
+    if (!name) { showToast('Please enter a group name'); return; }
+
+    const colors = {blue:'#1a6fd4',green:'#059669',purple:'#9333ea',orange:'#f97316',red:'#ef4444'};
+    const color = colors[document.getElementById('newGroupColor').value];
+    const banners = [
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80',
+    ];
+
+    const newGroup = {
+      id: Date.now(), name, icon: selectedEmoji, category: cat, members: 1,
+      privacy: priv, desc: desc || 'A new group on SchoolConnect.',
+      banner: banners[Math.floor(Math.random()*banners.length)],
+      color, seeds:['me']
+    };
+    joinedGroups.unshift(newGroup);
+    renderJoinedGroups();
+    closeCreateModalBtn();
+    document.getElementById('newGroupName').value = '';
+    document.getElementById('newGroupDesc').value = '';
+
+    // Switch to My Groups
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelector('.tab-btn').classList.add('active');
+    document.getElementById('tab-joined').classList.add('active');
+
+    showToast(`"${name}" created successfully! 🎉`);
+  }
+
+  // ── TOAST ──
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // ── NAV ──
+  function setActive(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+
+  // ── INIT ──
+  renderJoinedGroups();
+  renderSuggestedGroups();
+  renderInvites();
+</script>
+
+{% endblock content %}

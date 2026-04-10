@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2 id = 'count'>{{message}}</h2>
+    <form action="" id='form'>
+        <input type="text" id='input-text'>
+        <button type="submit">send</button>
+    </form>
+    
+
+</body>
+<script>
+    const room = "room1";
+
+    // ✅ ONE socket only (correct URL)
+    const socket = new WebSocket(`ws://localhost:8000/ws/chatroom/`);
+
+    const count = document.getElementById('count');
+    const form = document.getElementById('form');
+    const inputText = document.getElementById('input-text');
+    const messages = document.getElementById('message');
+    console.log({{request.user.id}})
+
+    // ✅ Receive messages
+    socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        console.log(data);
+
+        messages.insertAdjacentHTML('beforeend', `
+            <div> 
+            <strong>${data.username}</strong>
+                <p>${data.message}</p>
+            </div>
+        `);
+
+        count.innerText = data.message;
+    };
+
+    // ✅ Send message on submit
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const message = inputText.value;
+
+        socket.send(JSON.stringify({
+            message: message
+        }));
+
+        inputText.value = '';
+    });
+
+</script>
+</html>

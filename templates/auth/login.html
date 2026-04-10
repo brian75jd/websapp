@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SchoolConnect – Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary:#1a6fd4; --primary-light:#3d8ef0; --primary-soft:#e8f1fd;
+      --primary-dark:#1255a8; --white:#ffffff; --bg:#f0f4fb;
+      --border:#dce8f8; --text:#0d1a2e; --text-muted:#6b82a0; --text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08); --shadow-md:0 8px 32px rgba(26,111,212,0.18);
+      --radius:16px; --radius-sm:10px; --danger:#ef4444;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--bg);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* ANIMATED BACKGROUND */
+    .bg-blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+    .blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:0.18;animation:blobFloat 8s ease-in-out infinite;}
+    .blob-1{width:380px;height:380px;background:var(--primary);top:-80px;left:-80px;animation-delay:0s;}
+    .blob-2{width:300px;height:300px;background:#3d8ef0;bottom:-60px;right:-60px;animation-delay:2.5s;}
+    .blob-3{width:200px;height:200px;background:#1255a8;top:50%;left:60%;animation-delay:5s;}
+    @keyframes blobFloat{
+      0%,100%{transform:translate(0,0) scale(1);}
+      50%{transform:translate(20px,-20px) scale(1.08);}
+    }
+
+    /* GEOMETRIC PATTERN */
+    .bg-pattern{
+      position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(26,111,212,0.07) 1px, transparent 0);
+      background-size:28px 28px;
+    }
+
+    /* CARD */
+    .login-card{
+      position:relative;z-index:10;
+      background:rgba(255,255,255,0.92);
+      backdrop-filter:blur(20px);
+      border:1.5px solid rgba(220,232,248,0.8);
+      border-radius:28px;
+      padding:40px 32px 36px;
+      width:100%;
+      max-width:420px;
+      margin:20px;
+      box-shadow:var(--shadow-md), 0 1px 0 rgba(255,255,255,0.8) inset;
+      animation:cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes cardIn{
+      from{opacity:0;transform:translateY(24px) scale(0.98);}
+      to{opacity:1;transform:translateY(0) scale(1);}
+    }
+
+    /* LOGO */
+    .logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:32px;}
+    .logo-icon-big{
+      width:64px;height:64px;
+      background:linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+      border-radius:20px;
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-size:1.6rem;
+      box-shadow:0 8px 24px rgba(26,111,212,0.35);
+      margin-bottom:14px;
+      animation:iconPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+    }
+    @keyframes iconPop{from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
+    .logo-text{font-family:'Plus Jakarta Sans',sans-serif;font-weight:900;font-size:1.7rem;color:var(--text);letter-spacing:-0.5px;}
+    .logo-text span{color:var(--primary);}
+    .logo-tagline{font-size:0.83rem;color:var(--text-muted);margin-top:4px;font-weight:400;}
+
+    /* HEADING */
+    .form-heading{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.25rem;color:var(--text);margin-bottom:6px;}
+    .form-subheading{font-size:0.85rem;color:var(--text-muted);margin-bottom:26px;}
+
+    /* FIELD */
+    .field-group{margin-bottom:16px;}
+    .field-label{display:block;font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:7px;}
+    .field-wrap{position:relative;}
+    .field-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:0.9rem;pointer-events:none;transition:color 0.2s;}
+    .field-input{
+      width:100%;
+      background:var(--bg);
+      border:1.5px solid var(--border);
+      border-radius:var(--radius-sm);
+      padding:13px 44px 13px 42px;
+      font-family:'DM Sans',sans-serif;
+      font-size:0.93rem;
+      color:var(--text);
+      outline:none;
+      transition:all 0.2s;
+    }
+    .field-input:focus{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px rgba(26,111,212,0.1);}
+    .field-input:focus ~ .field-icon,
+    .field-wrap:focus-within .field-icon{color:var(--primary);}
+    .field-input.error{border-color:var(--danger);background:#fff5f5;}
+    .field-error{font-size:0.75rem;color:var(--danger);margin-top:5px;display:none;align-items:center;gap:4px;}
+    .field-error.show{display:flex;}
+
+    /* PASSWORD TOGGLE */
+    .pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-light);font-size:0.9rem;cursor:pointer;padding:4px;transition:color 0.2s;}
+    .pw-toggle:hover{color:var(--primary);}
+
+    /* REMEMBER / FORGOT ROW */
+    .row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+    .remember-label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.84rem;color:var(--text-muted);user-select:none;}
+    .remember-label input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;border-radius:4px;}
+    .forgot-link{font-size:0.84rem;color:var(--primary);font-weight:600;text-decoration:none;cursor:pointer;transition:color 0.2s;}
+    .forgot-link:hover{color:var(--primary-dark);text-decoration:underline;}
+
+    /* SUBMIT BUTTON */
+    .submit-btn{
+      width:100%;
+      background:linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+      color:white;
+      border:none;
+      padding:14px;
+      border-radius:var(--radius-sm);
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-weight:700;
+      font-size:0.97rem;
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:all 0.2s;
+      box-shadow:0 4px 16px rgba(26,111,212,0.3);
+      letter-spacing:0.2px;
+      position:relative;
+      overflow:hidden;
+    }
+    .submit-btn::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+    }
+    .submit-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(26,111,212,0.38);}
+    .submit-btn:active{transform:translateY(0);}
+    .submit-btn.loading{pointer-events:none;opacity:0.8;}
+    .btn-spinner{display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* DIVIDER */
+    .divider{display:flex;align-items:center;gap:12px;margin:22px 0;}
+    .divider-line{flex:1;height:1px;background:var(--border);}
+    .divider-text{font-size:0.78rem;color:var(--text-light);font-weight:500;}
+
+    /* SOCIAL BUTTONS */
+    .social-btns{display:flex;gap:10px;}
+    .social-btn{
+      flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+      padding:11px;border-radius:var(--radius-sm);
+      border:1.5px solid var(--border);background:white;
+      font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;
+      color:var(--text);cursor:pointer;transition:all 0.2s;
+    }
+    .social-btn:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);}
+    .social-btn img{width:18px;height:18px;}
+
+    /* SIGNUP LINK */
+    .signup-row{text-align:center;margin-top:24px;font-size:0.86rem;color:var(--text-muted);}
+    .signup-row a{color:var(--primary);font-weight:700;text-decoration:none;cursor:pointer;}
+    .signup-row a:hover{text-decoration:underline;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* FORGOT MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(13,26,46,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:420px;padding:24px 24px 36px;animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.05rem;color:var(--text);margin-bottom:6px;}
+    .modal-subtitle{font-size:0.83rem;color:var(--text-muted);margin-bottom:20px;line-height:1.5;}
+    .modal-actions{display:flex;gap:10px;margin-top:18px;}
+    .btn-secondary{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;}
+    .btn-primary-sm{flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+    .btn-primary-sm:hover{background:var(--primary-dark);}
+
+    /* STAGGER ANIMS */
+    .field-group{animation:fadeUp 0.4s ease both;}
+    .field-group:nth-child(1){animation-delay:0.15s;}
+    .field-group:nth-child(2){animation-delay:0.2s;}
+    .row-between{animation:fadeUp 0.4s ease 0.25s both;}
+    .submit-btn{animation:fadeUp 0.4s ease 0.3s both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  </style>
+</head>
+<body>
+
+<!-- BACKGROUND -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="bg-pattern"></div>
+
+<!-- LOGIN CARD -->
+<div class="login-card">
+
+  <!-- LOGO -->
+  <div class="logo-wrap"><!--
+    <div class="logo-icon-big"><i class="fa-solid fa-graduation-cap"></i></div>  -->
+    <div class="logo-text">W<span>ebs</span></div>
+
+  </div>
+
+  <!-- USERNAME -->
+  <div class="field-group">
+    <form action="" method ="POST" onsubmit='HandleLogin(event)'>
+      {% csrf_token %}
+    <label class="field-label"></label>
+    <div class="field-wrap">
+      <i class="fa-solid fa-at field-icon"></i>
+      <input class="field-input" 
+      type="text"
+      name = 'username'
+       id="loginUsername" 
+      value = "{{form.username.value|default:""}}"
+       placeholder="Username/Phone number" 
+       autocomplete="username"/>
+      <div class="field-error" id="usernameError"><i class="fa-solid fa-circle-exclamation"></i> 
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSWORD -->
+  <div class="field-group">
+    <label class="field-label"></label>
+    <div class="field-wrap">
+      <i class="fa-solid fa-lock field-icon"></i>
+      <input class="field-input" type="password" name='password' id="loginPassword" value = "{{form.password.value|default:""}}"  placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')"/>
+      <button class="pw-toggle" type="button" onclick="togglePw('loginPassword',this)"><i class="fa-solid fa-eye-slash"></i></button>
+    </div>
+    <div class="field-error" id="passwordError"><i class="fa-solid fa-circle-exclamation"></i> Please enter your password</div>
+  </div>
+
+  <!-- REMEMBER / FORGOT -->
+  <div class="row-between">
+    <label class="remember-label">
+      <input type="checkbox" id="rememberMe"/> Remember me
+    </label>
+    <span class="forgot-link" onclick="openForgot()">Forgot password?</span>
+  </div>
+
+  <!-- SUBMIT -->
+  <button class="submit-btn" id="loginBtn">
+    <span id="loginBtnText">Sign In</span>
+    <i class="fa-solid fa-arrow-right" id="loginBtnIcon"></i>
+    <div class="btn-spinner" id="loginSpinner"></div>
+  </button>
+
+  <!-- DIVIDER -->
+  <div class="divider">
+    <div class="divider-line"></div>
+    <span class="divider-text">or continue with</span>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- SOCIAL -->
+  <!-- SIGN UP LINK -->
+  <div class="signup-row">
+    Don't have an account? <a href="{% url "authuser:signup" %}">Create one</a>
+  </div>
+  </form>
+
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="forgotModal" onclick="if(event.target===this)closeForgot()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Reset Password 🔑</div>
+    <div class="modal-subtitle">Enter your email address and we'll send you a link to reset your password.</div>
+    <div class="field-group" style="margin-bottom:0;">
+      <label class="field-label">Email Address</label>
+      <div class="field-wrap">
+        <i class="fa-solid fa-envelope field-icon"></i>
+        <input class="field-input" type="email" id="forgotEmail" placeholder="you@student.edu.mw"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeForgot()">Cancel</button>
+      <button class="btn-primary-sm" onclick="sendReset()">Send Reset Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function getCSRFToken() {
+    let cookieValue = null;
+    document.cookie.split(';').forEach(cookie => {
+      const trimmed = cookie.trim();
+      if (trimmed.startsWith('csrftoken=')) {
+        cookieValue = trimmed.substring('csrftoken='.length);
+      }
+    });
+    return cookieValue;
+  }
+
+  // PASSWORD TOGGLE
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      icon.className = 'fa-solid fa-eye';
+    } else {
+      inp.type = 'password';
+      icon.className = 'fa-solid fa-eye-slash';
+    }
+  } 
+
+function HandleLogin(e){
+    e.preventDefault();
+    const identifier = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const btn = document.getElementById('loginBtn');
+
+    if(!identifier || !password){
+        showToast('Both fields are required');
+        return;
+    }
+
+    // ✅ START SPINNER HERE
+    document.getElementById('loginBtnText').textContent = 'Signing in...';
+    document.getElementById('loginBtnIcon').style.display = 'none';
+    document.getElementById('loginSpinner').style.display = 'block';
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    fetch("{% url 'authuser:login' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            identifier: identifier,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success){
+        showToast(`${data.detail}`);
+        btn.disabled = true;
+          window.location.href = `${data.url}`;}
+      else{
+        showToast(`${data.detail}`)
+      }
+    })
+    .catch(error => {
+        showToast(error)
+    })
+    .finally(() => {
+        // ✅ STOP SPINNER (VERY IMPORTANT)
+        document.getElementById('loginBtnText').textContent = 'Sign In';
+        document.getElementById('loginBtnIcon').style.display = 'inline-block';
+        document.getElementById('loginSpinner').style.display = 'none';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    });
+}
+
+  // FORGOT
+  function openForgot() { document.getElementById('forgotModal').classList.add('open'); }
+  function closeForgot() { document.getElementById('forgotModal').classList.remove('open'); }
+  function sendReset() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) { showToast('Please enter your email address'); return; }
+    closeForgot();
+    showToast('Reset link sent! Check your inbox 📧');
+  }
+
+  // TOAST
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  } 
+</script>
+</body>
+</html>

@@ -1,0 +1,660 @@
+{% extends "base/base.html" %}
+
+{% block title %}Events{% endblock title %}
+
+{% block content %}
+<style>
+  :root{
+    --primary:#1a6fd4;--primary-light:#3d8ef0;--primary-soft:#e8f1fd;
+    --primary-dark:#1255a8;--bg:#f0f4fb;--card:#fff;
+    --border:#dce8f8;--text:#0d1a2e;--text-muted:#6b82a0;--text-light:#9ab0c8;
+    --shadow:0 2px 12px rgba(26,111,212,0.08);--shadow-md:0 4px 24px rgba(26,111,212,0.13);
+    --nav-height:64px;--radius:14px;--radius-sm:10px;
+    --danger:#ef4444;--success:#22c55e;
+    --ev-gold:#f5c518;--ev-gold-dk:#9a7d0a;
+    --ev-red:#cc1f1f;--ev-blk:#111;--ev-blk-soft:#1c1c1c;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;padding-bottom:calc(var(--nav-height)+20px);}
+
+  /* HEADER */
+  .top-header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1.5px solid var(--border);padding:0 16px;height:58px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+  .hdr-text{}
+  .hdr-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.08rem;color:var(--text);}
+  .hdr-sub{font-size:0.71rem;color:var(--text-muted);margin-top:1px;}
+  .hamburger-btn{width:40px;height:40px;background:var(--ev-blk);color:var(--ev-gold);border:none;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all 0.2s;position:relative;flex-shrink:0;}
+  .hamburger-btn:hover{background:var(--ev-blk-soft);}
+  .hbadge{position:absolute;top:-5px;right:-5px;background:var(--ev-red);color:white;font-size:0.58rem;font-weight:700;border-radius:10px;padding:2px 6px;min-width:17px;text-align:center;line-height:1.3;display:none;border:2px solid var(--card);}
+
+  /* FILTER STRIP */
+  .filter-strip{display:flex;gap:7px;padding:11px 14px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border);}
+  .filter-strip::-webkit-scrollbar{display:none;}
+  .fpill{flex-shrink:0;padding:6px 13px;border-radius:30px;border:1.5px solid var(--border);background:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.74rem;color:var(--text-muted);cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:5px;}
+  .fpill:hover{border-color:var(--primary);color:var(--primary);}
+  .fpill.active{background:var(--primary);color:white;border-color:var(--primary);}
+  .fpill i{font-size:0.66rem;}
+
+  /* PAGE BODY */
+  .page-body{padding:14px 13px 0;}
+  .section-lbl{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:0 2px 11px;display:flex;align-items:center;gap:6px;}
+  .section-lbl i{color:var(--ev-gold);font-size:0.7rem;}
+
+  /* EVENT CARD */
+  .event-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px;animation:fadeUp 0.35s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .event-card.t-academic{border-top:4px solid var(--primary);}
+  .event-card.t-social{border-top:4px solid var(--ev-gold);}
+  .event-card.t-sports{border-top:4px solid var(--ev-red);}
+  .event-card.t-cultural{border-top:4px solid #8b5cf6;}
+  .event-card.t-workshop{border-top:4px solid var(--success);}
+
+  /* POSTER */
+  .poster-wrap{position:relative;overflow:hidden;height:210px;background:#000;cursor:pointer;}
+  .poster-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.38s;opacity:0.9;}
+  .poster-wrap:hover img{transform:scale(1.05);opacity:1;}
+  .poster-gradient{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 35%,rgba(0,0,0,0.76) 100%);pointer-events:none;}
+  .type-badge{position:absolute;top:11px;left:11px;border-radius:20px;padding:4px 11px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.69rem;letter-spacing:0.3px;text-transform:uppercase;pointer-events:none;}
+  .tb-academic{background:var(--primary);color:white;}
+  .tb-social{background:var(--ev-gold);color:var(--ev-blk);}
+  .tb-sports{background:var(--ev-red);color:white;}
+  .tb-cultural{background:#8b5cf6;color:white;}
+  .tb-workshop{background:var(--success);color:white;}
+
+  /* download icon on poster */
+  .poster-dl{position:absolute;top:9px;right:9px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:white;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;text-decoration:none;}
+  .poster-wrap:hover .poster-dl{opacity:1;}
+  @media(hover:none){.poster-dl{opacity:1;}}
+
+  /* title area bottom of poster */
+  .poster-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 14px 14px;pointer-events:none;}
+  .poster-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.02rem;color:white;line-height:1.3;margin-bottom:2px;}
+  .poster-org{font-size:0.73rem;color:rgba(255,255,255,0.72);}
+
+  /* EVENT BODY */
+  .event-body{padding:13px 15px 14px;}
+
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
+  .info-cell{display:flex;align-items:flex-start;gap:9px;}
+  .info-cell.full{grid-column:1/-1;}
+  .iico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.76rem;flex-shrink:0;margin-top:1px;}
+  .ic-cal{background:#e8f1fd;color:var(--primary);}
+  .ic-clk{background:#fef3c7;color:#b45309;}
+  .ic-loc{background:#dcfce7;color:#166534;}
+  .ic-tkt{background:#fee2e2;color:#991b1b;}
+  .info-content{}
+  .info-lbl{font-size:0.66rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+  .info-val{font-size:0.84rem;color:var(--text);font-weight:500;margin-top:1px;line-height:1.4;}
+
+  /* description */
+  .ev-desc{font-size:0.83rem;color:var(--text-muted);line-height:1.65;border-top:1px solid var(--border);padding-top:10px;margin-bottom:12px;}
+  .rm-btn{background:none;border:none;color:var(--primary);font-size:0.81rem;font-weight:600;cursor:pointer;padding:0;margin-left:3px;}
+
+  /* footer */
+  .ev-footer{display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:11px;}
+  .av-stack{display:flex;}
+  .av-stack img{width:25px;height:25px;border-radius:50%;object-fit:cover;border:2px solid white;margin-left:-7px;}
+  .av-stack img:first-child{margin-left:0;}
+  .av-label{font-size:0.75rem;color:var(--text-muted);margin-left:7px;}
+  .plan-btn{margin-left:auto;padding:9px 17px;border-radius:30px;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.81rem;cursor:pointer;transition:all 0.22s;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;}
+  .plan-btn.off{background:var(--ev-blk);color:var(--ev-gold);}
+  .plan-btn.off:hover{background:var(--ev-blk-soft);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.22);}
+  .plan-btn.on{background:var(--ev-red);color:white;}
+  .plan-btn.on:hover{background:#b91c1c;}
+
+  /* BACKDROP */
+  .backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:500;display:none;}
+  .backdrop.open{display:block;animation:bfade 0.2s ease;}
+  @keyframes bfade{from{opacity:0;}to{opacity:1;}}
+
+  /* DRAWER */
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,93vw);background:var(--ev-blk);z-index:501;display:flex;flex-direction:column;transform:translateX(110%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);}
+  .drawer.open{transform:translateX(0);}
+
+  .dr-head{background:var(--ev-blk-soft);padding:18px 15px 14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
+  .dr-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;}
+  .dr-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.98rem;color:var(--ev-gold);display:flex;align-items:center;gap:7px;}
+  .dr-close{width:33px;height:33px;border:none;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.65);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.87rem;transition:background 0.2s;}
+  .dr-close:hover{background:rgba(255,255,255,0.14);}
+  .dr-sub{font-size:0.73rem;color:rgba(255,255,255,0.4);}
+
+  .dr-body{flex:1;overflow-y:auto;padding:10px 11px;}
+  .dr-body::-webkit-scrollbar{width:3px;}
+  .dr-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
+
+  .dr-empty{text-align:center;padding:48px 18px;}
+  .dr-empty i{font-size:2.3rem;color:rgba(255,255,255,0.13);display:block;margin-bottom:13px;}
+  .dr-empty p{font-size:0.83rem;color:rgba(255,255,255,0.37);line-height:1.65;}
+  .dr-empty strong{color:var(--ev-gold);}
+
+  /* planned item */
+  .pi{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:8px;animation:fadeUp 0.22s ease both;}
+  .pi:hover{background:rgba(255,255,255,0.07);}
+  .pi-thumb{width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);}
+  .pi-info{flex:1;min-width:0;}
+  .pi-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.83rem;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pi-date{font-size:0.71rem;color:var(--ev-gold);margin-top:3px;display:flex;align-items:center;gap:4px;}
+  .pi-date i{font-size:0.63rem;}
+  .pi-venue{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pi-del{width:30px;height:30px;border:none;background:rgba(204,31,31,0.18);color:#f87171;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.73rem;transition:all 0.18s;flex-shrink:0;}
+  .pi-del:hover{background:var(--ev-red);color:white;}
+
+  .dr-foot{padding:11px 13px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+  .clear-btn{width:100%;padding:10px;border-radius:30px;border:1px solid rgba(204,31,31,0.45);background:transparent;color:#f87171;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+  .clear-btn:hover{background:var(--ev-red);color:white;border-color:var(--ev-red);}
+
+  /* LIGHTBOX */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:700;display:none;flex-direction:column;align-items:center;justify-content:center;}
+  .lightbox.open{display:flex;animation:bfade 0.2s ease;}
+  .lb-bar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:linear-gradient(to bottom,rgba(0,0,0,0.6),transparent);z-index:10;}
+  .lb-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);backdrop-filter:blur(4px);color:white;font-size:0.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;text-decoration:none;}
+  .lb-btn:hover{background:rgba(255,255,255,0.25);}
+  .lb-ev-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.84rem;color:rgba(255,255,255,0.9);max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lb-img-area{display:flex;align-items:center;justify-content:center;width:100%;padding-top:56px;}
+  .lightbox img{max-width:94vw;max-height:calc(100vh - 72px);border-radius:10px;object-fit:contain;display:block;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:calc(var(--nav-height)+12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--ev-blk);color:var(--ev-gold);border:1px solid rgba(245,197,24,0.28);padding:9px 20px;border-radius:30px;font-size:0.8rem;font-weight:600;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;font-family:'Plus Jakarta Sans',sans-serif;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+
+<!-- HEADER -->
+<header class="top-header">
+  <div class="hdr-text">
+    <div class="hdr-title">Campus Events</div>
+    <div class="hdr-sub">Discover what's happening at your school</div>
+  </div>
+  <button class="hamburger-btn" onclick="openDrawer()" title="My planned events">
+    <i class="fa-solid fa-bars"></i>
+    <span class="hbadge" id="hbadge">0</span>
+  </button>
+</header>
+
+<!-- FILTER STRIP -->
+<div class="filter-strip">
+  <button class="fpill active" onclick="setFilter('all',this)">All Events</button>
+  <button class="fpill" onclick="setFilter('academic',this)"><i class="fa-solid fa-book-open"></i>Academic</button>
+  <button class="fpill" onclick="setFilter('social',this)"><i class="fa-solid fa-users"></i>Social</button>
+  <button class="fpill" onclick="setFilter('sports',this)"><i class="fa-solid fa-futbol"></i>Sports</button>
+  <button class="fpill" onclick="setFilter('cultural',this)"><i class="fa-solid fa-masks-theater"></i>Cultural</button>
+  <button class="fpill" onclick="setFilter('workshop',this)"><i class="fa-solid fa-screwdriver-wrench"></i>Workshop</button>
+</div>
+
+<!-- PAGE BODY -->
+<div class="page-body">
+  <div class="section-lbl">
+    <i class="fa-solid fa-calendar-days"></i>
+    Upcoming Events
+  </div>
+  <div id="eventList"></div>
+</div>
+
+<!-- DRAWER BACKDROP -->
+<div class="backdrop" id="backdrop" onclick="closeDrawer()"></div>
+
+<!-- SIDE DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="dr-head">
+    <div class="dr-head-row">
+      <div class="dr-title">
+        <i class="fa-solid fa-star" style="font-size:0.82rem;color:var(--ev-gold);"></i>
+        My Planned Events
+      </div>
+      <button class="dr-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="dr-sub" id="drSub">No events planned yet</div>
+  </div>
+
+  <div class="dr-body" id="drBody">
+    <div class="dr-empty" id="drEmpty">
+      <i class="fa-regular fa-calendar-xmark"></i>
+      <p>You haven't planned any events yet.<br/>Tap <strong>Plan to Attend</strong> on any event to save it here.</p>
+    </div>
+  </div>
+
+  <div id="drFoot" style="display:none;">
+    <div class="dr-foot">
+      <button class="clear-btn" onclick="clearAll()">
+        <i class="fa-solid fa-trash-can"></i> Clear All Planned Events
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="handleLbClick(event)">
+  <div class="lb-bar">
+    <button class="lb-btn" onclick="closeLb();event.stopPropagation();">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <span class="lb-ev-name" id="lbName"></span>
+    <a class="lb-btn" id="lbDl" download="event-poster.jpg" onclick="event.stopPropagation();">
+      <i class="fa-solid fa-download"></i>
+    </a>
+  </div>
+  <div class="lb-img-area">
+    <img id="lbImg" src="" alt="event poster"/>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ──────────────────────────────
+   DATA
+────────────────────────────── */
+const EVENTS = [
+  {
+    id:1,type:'academic',
+    name:'Annual Science & Technology Expo 2025',
+    organizer:'Faculty of Science',
+    date:'Friday, 18 Apr 2025',
+    start:'09:00 AM',end:'05:00 PM',
+    venue:'Main Exhibition Hall, Block C',
+    capacity:'500 seats available',
+    desc:'Showcasing groundbreaking student research projects, live demonstrations, and keynote addresses from industry leaders in AI, biotech, and renewable energy. Open to all students and faculty members. Registration at the door.',
+    poster:'https://images.unsplash.com/photo-1532094349884-543559c7671e?w=600&q=80',
+    seeds:['alice','brian','clara'],count:214,
+  },
+  {
+    id:2,type:'social',
+    name:'Annual Cultural Day 2025',
+    organizer:'Student Council',
+    date:'Saturday, 26 Apr 2025',
+    start:'12:00 PM',end:'09:00 PM',
+    venue:'University Grounds — Central Lawn',
+    capacity:'Open event — free entry',
+    desc:'Traditional dances, art exhibitions, food stalls from 20+ cultures, and a live music night headlined by local artists. Wear your cultural attire and bring the whole family. Biggest social event of the academic year!',
+    poster:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&q=80',
+    seeds:['priya','david','emily','tom'],count:628,
+  },
+  {
+    id:3,type:'sports',
+    name:'Inter-Faculty Football Tournament',
+    organizer:'Sports & Recreation Department',
+    date:'Sunday, 27 Apr 2025',
+    start:'08:00 AM',end:'06:00 PM',
+    venue:'University Sports Complex, Field A',
+    capacity:'300 spectator seats',
+    desc:'Eight faculty teams compete for the championship trophy. Quarter-finals and semi-finals in the morning, grand final at 4pm. Free entry for all students with a valid student ID card. Snacks available at the stadium canteen.',
+    poster:'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=600&q=80',
+    seeds:['james','brian','tom'],count:312,
+  },
+  {
+    id:4,type:'workshop',
+    name:'Machine Learning Bootcamp',
+    organizer:'CS Department & AI Society',
+    date:'Monday, 28 Apr 2025',
+    start:'10:00 AM',end:'04:00 PM',
+    venue:'Computer Lab 3, Engineering Block',
+    capacity:'40 seats — registration required',
+    desc:'Hands-on one-day bootcamp covering Python data pipelines, scikit-learn model training, evaluation metrics, and deploying your first ML app. Suitable for Year 2 and above. Bring a charged laptop with Python 3.10+ installed.',
+    poster:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80',
+    seeds:['alice','clara'],count:38,
+  },
+  {
+    id:5,type:'cultural',
+    name:'Photography & Visual Arts Exhibition',
+    organizer:'Photography Club',
+    date:'Wednesday, 30 Apr 2025',
+    start:'02:00 PM',end:'07:00 PM',
+    venue:'Gallery Space, Humanities Block',
+    capacity:'Free entry — no registration',
+    desc:'A curated exhibition of 60+ works by student photographers and visual artists from across all departments. Opening night includes a panel discussion with two visiting professional photographers. Light refreshments will be served.',
+    poster:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+    seeds:['emily','priya'],count:97,
+  },
+  {
+    id:6,type:'academic',
+    name:'Guest Lecture: Ethics in Artificial Intelligence',
+    organizer:'Faculty of Computing',
+    date:'Thursday, 1 May 2025',
+    start:'03:00 PM',end:'05:00 PM',
+    venue:'Lecture Theatre 1, Block A',
+    capacity:'200 seats available',
+    desc:"Dr. Amara Diallo from the Oxford Internet Institute explores the societal implications of AI, algorithmic bias, surveillance capitalism, and what responsible technology development looks like. Q&A session follows the lecture.",
+    poster:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80',
+    seeds:['alice','brian','priya','clara'],count:156,
+  },
+  {
+    id:7,type:'social',
+    name:'End of Semester Pool Party',
+    organizer:'Student Union',
+    date:'Friday, 9 May 2025',
+    start:'04:00 PM',end:'10:00 PM',
+    venue:'University Swimming Pool & Deck',
+    capacity:'Ticketed — limited to 150 students',
+    desc:"Celebrate the end of semester with live DJs, food trucks, and a great atmosphere by the pool. Tickets available from the Student Union office — MK3,500 per person. Must be 18+. Wristbands distributed at the gate.",
+    poster:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=600&q=80',
+    seeds:['tom','james','emily'],count:143,
+  },
+];
+
+const TYPE_CLS   = {academic:'t-academic',social:'t-social',sports:'t-sports',cultural:'t-cultural',workshop:'t-workshop'};
+const BADGE_CLS  = {academic:'tb-academic',social:'tb-social',sports:'tb-sports',cultural:'tb-cultural',workshop:'tb-workshop'};
+const BADGE_LBL  = {academic:'Academic',social:'Social',sports:'Sports',cultural:'Cultural',workshop:'Workshop'};
+
+let planned = new Set();
+let activeFilter = 'all';
+
+/* ──────────────────────────────
+   RENDER EVENTS
+────────────────────────────── */
+window.addEventListener('DOMContentLoaded',()=>{
+  FetchEvent();
+})
+function FetchEvent(){
+  fetch('{% url "events:get_events" %}',{
+    method:'GET'
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.events.length===0) return;
+    const event = data.events.map((n,index)=>({
+      'id':n.id,
+      'type':n.type,
+      'name':n.title,
+      'organizer':"None",
+      'date':n.date,
+      'poster':n.poster
+    }));
+
+    let NewEvent = [...EVENTS,...event]
+    renderEvents();
+    console.log('data added',NewEvent)
+  })
+}
+function renderEvents() {
+  const list   = document.getElementById('eventList');
+  const events = activeFilter === 'all' ? EVENTS : EVENTS.filter(e => e.type === activeFilter);
+
+  if (!events.length) {
+    list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+      <i class="fa-regular fa-calendar-xmark" style="font-size:2.4rem;color:var(--border);display:block;margin-bottom:12px;"></i>
+      <p style="font-size:0.86rem;">No events in this category yet.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = events.map((ev, i) => cardHTML(ev, i)).join('');
+}
+
+function cardHTML(ev, i) {
+  const on    = planned.has(ev.id);
+  const words = ev.desc.split(' ');
+  const short = words.slice(0, 22).join(' ');
+  const more  = words.length > 22;
+  const rest  = more ? ' ' + words.slice(22).join(' ') : '';
+
+  const stack = ev.seeds.slice(0, 3).map(s =>
+    `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${s}" alt="${s}"/>`
+  ).join('');
+
+  return `
+  <div class="event-card ${TYPE_CLS[ev.type]}" style="animation-delay:${i*0.055}s" id="ecard-${ev.id}">
+
+    <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.name.replace(/'/g,"\\'")}')">
+      <img src="${ev.poster}" alt="${ev.name}" loading="lazy"/>
+      <div class="poster-gradient"></div>
+      <span class="type-badge ${BADGE_CLS[ev.type]}">${BADGE_LBL[ev.type]}</span>
+      <a class="poster-dl" href="${ev.poster}" download="event-poster.jpg"
+         title="Download poster" onclick="event.stopPropagation();showToast('Downloading poster...')">
+        <i class="fa-solid fa-download"></i>
+      </a>
+      <div class="poster-bottom">
+        <div class="poster-name">${ev.name}</div>
+        <div class="poster-org">${ev.organizer}</div>
+      </div>
+    </div>
+
+    <div class="event-body">
+
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="iico ic-cal"><i class="fa-solid fa-calendar-day"></i></div>
+          <div class="info-content">
+            <div class="info-lbl">Date</div>
+            <div class="info-val">${ev.date}</div>
+          </div>
+        </div>
+        <div class="info-cell">
+          <div class="iico ic-clk"><i class="fa-regular fa-clock"></i></div>
+          <div class="info-content">
+            <div class="info-lbl">Time</div>
+            <div class="info-val">${ev.start} &ndash; ${ev.end}</div>
+          </div>
+        </div>
+        <div class="info-cell full">
+          <div class="iico ic-loc"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="info-content">
+            <div class="info-lbl">Venue</div>
+            <div class="info-val">${ev.venue}</div>
+          </div>
+        </div>
+        <div class="info-cell full">
+          <div class="iico ic-tkt"><i class="fa-solid fa-ticket"></i></div>
+          <div class="info-content">
+            <div class="info-lbl">Capacity</div>
+            <div class="info-val">${ev.capacity}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ev-desc">
+        <span class="dv">${short}</span>
+        <span class="de" style="display:none">${rest}</span>
+        ${more ? `<button class="rm-btn" onclick="togDesc(this)">...more</button>` : ''}
+      </div>
+
+      <div class="ev-footer">
+        <div class="av-stack">${stack}</div>
+        <span class="av-label">${ev.count.toLocaleString()} interested</span>
+        <button class="plan-btn ${on ? 'on' : 'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})">
+          <i class="fa-${on ? 'solid fa-check' : 'regular fa-calendar-plus'}"></i>
+          ${on ? 'Planned' : 'Plan to Attend'}
+        </button>
+      </div>
+
+    </div>
+  </div>`;
+}
+
+/* ──────────────────────────────
+   PLAN TOGGLE
+────────────────────────────── */
+function togglePlan(id) {
+  const ev  = EVENTS.find(e => e.id === id);
+  const btn = document.getElementById(`pb-${id}`);
+  if (!ev || !btn) return;
+
+  if (planned.has(id)) {
+    planned.delete(id);
+    btn.className   = 'plan-btn off';
+    btn.innerHTML   = '<i class="fa-regular fa-calendar-plus"></i> Plan to Attend';
+    showToast('Removed from your plans');
+  } else {
+    planned.add(id);
+    btn.className   = 'plan-btn on';
+    btn.innerHTML   = '<i class="fa-solid fa-check"></i> Planned';
+    showToast('Added to your planned events!');
+  }
+  updateBadge();
+  if (document.getElementById('drawer').classList.contains('open')) rebuildDrawer();
+}
+
+function updateBadge() {
+  const badge = document.getElementById('hbadge');
+  badge.textContent   = planned.size;
+  badge.style.display = planned.size > 0 ? 'flex' : 'none';
+}
+
+/* ──────────────────────────────
+   DRAWER
+────────────────────────────── */
+function openDrawer() {
+  rebuildDrawer();
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('backdrop').classList.add('open');
+  history.pushState({ drawer:true }, '');
+}
+
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('open');
+  if (history.state && history.state.drawer) history.back();
+}
+
+function rebuildDrawer() {
+  const body  = document.getElementById('drBody');
+  const empty = document.getElementById('drEmpty');
+  const foot  = document.getElementById('drFoot');
+  const sub   = document.getElementById('drSub');
+  const n     = planned.size;
+
+  sub.textContent = n > 0 ? `${n} event${n > 1 ? 's' : ''} planned` : 'No events planned yet';
+
+  /* remove old .pi items */
+  body.querySelectorAll('.pi').forEach(el => el.remove());
+
+  if (n === 0) {
+    empty.style.display = 'block';
+    foot.style.display  = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  foot.style.display  = 'block';
+
+  const frag = document.createDocumentFragment();
+  [...planned].forEach((id, idx) => {
+    const ev = EVENTS.find(e => e.id === id);
+    if (!ev) return;
+    const d = document.createElement('div');
+    d.className = 'pi';
+    d.id = `pi-${ev.id}`;
+    d.style.animationDelay = `${idx * 0.05}s`;
+    d.innerHTML = `
+      <img class="pi-thumb" src="${ev.poster}" alt="${ev.name}" loading="lazy"/>
+      <div class="pi-info">
+        <div class="pi-name">${ev.name}</div>
+        <div class="pi-date"><i class="fa-solid fa-calendar-day"></i>${ev.date}</div>
+        <div class="pi-venue">${ev.venue}</div>
+      </div>
+      <button class="pi-del" onclick="removePlanned(${ev.id})" title="Remove">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>`;
+    frag.appendChild(d);
+  });
+  body.appendChild(frag);
+}
+
+function removePlanned(id) {
+  planned.delete(id);
+
+  const item = document.getElementById(`pi-${id}`);
+  if (item) {
+    item.style.transition = 'opacity 0.2s, transform 0.2s';
+    item.style.opacity    = '0';
+    item.style.transform  = 'translateX(28px)';
+    setTimeout(() => { item.remove(); rebuildDrawer(); }, 220);
+  }
+
+  const btn = document.getElementById(`pb-${id}`);
+  if (btn) {
+    btn.className = 'plan-btn off';
+    btn.innerHTML = '<i class="fa-regular fa-calendar-plus"></i> Plan to Attend';
+  }
+
+  updateBadge();
+  showToast('Removed from your plans');
+}
+
+function clearAll() {
+  planned.forEach(id => {
+    const btn = document.getElementById(`pb-${id}`);
+    if (btn) {
+      btn.className = 'plan-btn off';
+      btn.innerHTML = '<i class="fa-regular fa-calendar-plus"></i> Plan to Attend';
+    }
+  });
+  planned.clear();
+  updateBadge();
+  rebuildDrawer();
+  showToast('All planned events cleared');
+}
+
+/* ──────────────────────────────
+   FILTER
+────────────────────────────── */
+function setFilter(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.fpill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderEvents();
+}
+
+/* ──────────────────────────────
+   DESCRIPTION TOGGLE
+────────────────────────────── */
+function togDesc(btn) {
+  const desc  = btn.closest('.ev-desc');
+  const extra = desc.querySelector('.de');
+  const shown = extra.style.display !== 'none';
+  extra.style.display = shown ? 'none' : 'inline';
+  btn.textContent     = shown ? '...more' : ' less';
+}
+
+/* ──────────────────────────────
+   LIGHTBOX
+────────────────────────────── */
+function openLb(src, name) {
+  event.stopPropagation();
+  document.getElementById('lbImg').src   = src;
+  document.getElementById('lbDl').href   = src;
+  document.getElementById('lbName').textContent = name;
+  document.getElementById('lightbox').classList.add('open');
+  history.pushState({ lb:true }, '');
+}
+function closeLb() {
+  document.getElementById('lightbox').classList.remove('open');
+  if (history.state && history.state.lb) history.back();
+}
+function handleLbClick(e) {
+  if (e.target === document.getElementById('lightbox') ||
+      e.target.classList.contains('lb-img-area')) closeLb();
+}
+
+/* ──────────────────────────────
+   BACK BUTTON
+────────────────────────────── */
+window.addEventListener('popstate', () => {
+  if (document.getElementById('lightbox').classList.contains('open')) {
+    document.getElementById('lightbox').classList.remove('open');
+    return;
+  }
+  if (document.getElementById('drawer').classList.contains('open')) {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('backdrop').classList.remove('open');
+  }
+});
+
+/* ──────────────────────────────
+   TOAST
+────────────────────────────── */
+let tT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tT);
+  tT = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ──────────────────────────────
+   INIT
+────────────────────────────── */
+renderEvents();
+</script>
+{% endblock content %}

@@ -1,0 +1,913 @@
+{% extends "base/base.html" %}
+{% block title %}settings{% endblock title %}
+
+{% block content %}
+  <style>
+     /* DARK MODE */
+    body.dark{
+      --bg:#0d1117; --card:#161b22; --border:#21262d; --text:#e6edf3;
+      --text-muted:#8b949e; --text-light:#484f58; --primary-soft:#112240;
+      --white:#161b22; --shadow:0 2px 12px rgba(0,0,0,0.3);
+    }
+    body.dark .bottom-nav{background:#161b22;}
+    body.dark .top-header{background:#161b22;}
+    body.dark .modal{background:#1c2128;}
+    body.dark .modal-field input,
+    body.dark .modal-field select,
+    body.dark .modal-field textarea{background:#0d1117;color:#e6edf3;border-color:#21262d;}
+
+    /* HEADER */
+    .top-header{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1.5px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(26,111,212,0.07);transition:background 0.3s,border-color 0.3s;}
+    .back-btn{width:36px;height:36px;border:none;background:var(--primary-soft);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.95rem;transition:background 0.2s;flex-shrink:0;}
+    .back-btn:hover{background:var(--border);}
+    .header-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);}
+
+    /* PAGE BODY */
+    .page-body{padding:16px 14px 0;}
+
+    /* PROFILE PEEK */
+    .profile-peek{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:14px;cursor:pointer;transition:box-shadow 0.2s,transform 0.2s;animation:fadeUp 0.35s ease both;}
+    .profile-peek:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .peek-avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid var(--primary-soft);flex-shrink:0;}
+    .peek-info{flex:1;}
+    .peek-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:1rem;color:var(--text);}
+    .peek-username{color:var(--text-muted);font-size:0.82rem;margin-top:2px;}
+    .peek-badge{background:var(--primary-soft);color:var(--primary);font-size:0.72rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:5px;display:inline-block;}
+    .peek-chevron{color:var(--text-light);font-size:1rem;}
+
+    /* SECTION */
+    .settings-section{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;animation:fadeUp 0.4s ease both;}
+
+    .section-header-row{padding:12px 16px 8px;border-bottom:1px solid var(--border);}
+    .section-header-label{font-size:0.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;}
+    .section-header-label i{color:var(--primary);}
+
+    /* SETTING ROW */
+    .setting-row{display:flex;align-items:center;gap:14px;padding:13px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background 0.15s;position:relative;}
+    .setting-row:first-of-type{border-top:none;}
+    .setting-row:hover{background:var(--primary-soft);}
+    .setting-row.danger:hover{background:#fee2e2;}
+    .setting-row.danger .row-icon{background:#fee2e2;color:var(--danger);}
+    .setting-row.danger .row-label{color:var(--danger);}
+    .setting-row.warning:hover{background:#fef3c7;}
+    .setting-row.warning .row-icon{background:#fef3c7;color:var(--warning);}
+    .setting-row.warning .row-label{color:var(--warning);}
+
+    .row-icon{width:36px;height:36px;border-radius:10px;background:var(--primary-soft);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;transition:background 0.2s;}
+    .row-content{flex:1;}
+    .row-label{font-size:0.9rem;font-weight:500;color:var(--text);}
+    .row-sublabel{font-size:0.75rem;color:var(--text-muted);margin-top:1px;}
+    .row-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+    .row-chevron{color:var(--text-light);font-size:0.8rem;}
+    .row-value{font-size:0.8rem;color:var(--text-muted);}
+
+    /* TOGGLE SWITCH */
+    .toggle{position:relative;width:46px;height:26px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:30px;cursor:pointer;transition:background 0.25s;}
+    .toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform 0.25s;box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+    .toggle input:checked + .toggle-slider{background:var(--primary);}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(20px);}
+
+    /* VERSION BADGE */
+    .version-row{text-align:center;padding:20px;color:var(--text-light);font-size:0.78rem;}
+    .version-row .app-logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:var(--primary);margin-bottom:4px;}
+    .version-row .app-logo span{color:var(--text-muted);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:var(--card);border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:24px 20px 32px;animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 18px;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);margin-bottom:6px;text-align:center;}
+    .modal-subtitle{font-size:0.83rem;color:var(--text-muted);text-align:center;margin-bottom:20px;}
+    .modal-field{margin-bottom:16px;}
+    .modal-field label{display:block;font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px;}
+    .modal-field input,.modal-field select,.modal-field textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--primary);background:var(--primary-soft);}
+    .modal-field textarea{resize:vertical;min-height:80px;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .btn-primary{flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+    .btn-primary:hover{background:var(--primary-dark);}
+    .btn-secondary{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;}
+    .btn-danger{flex:1;background:var(--danger);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+    .btn-danger:hover{background:#dc2626;}
+
+    /* PASSWORD STRENGTH */
+    .strength-bar{display:flex;gap:4px;margin-top:8px;}
+    .strength-seg{flex:1;height:4px;border-radius:4px;background:var(--border);transition:background 0.3s;}
+    .strength-label{font-size:0.74rem;margin-top:4px;font-weight:600;}
+
+    /* THEME PICKER */
+    .theme-options{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+    .theme-opt{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+    .theme-swatch{width:52px;height:52px;border-radius:14px;border:3px solid transparent;transition:all 0.2s;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+    .theme-opt.selected .theme-swatch{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-soft);}
+    .theme-name{font-size:0.7rem;color:var(--text-muted);font-weight:600;}
+
+    /* LANGUAGE / FONT SIZE OPTIONS */
+    .option-list{display:flex;flex-direction:column;gap:2px;}
+    .option-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:var(--radius-sm);cursor:pointer;transition:background 0.15s;}
+    .option-item:hover{background:var(--primary-soft);}
+    .option-item.selected{background:var(--primary-soft);}
+    .option-item .opt-label{font-size:0.9rem;font-weight:500;color:var(--text);}
+    .option-item .check-icon{color:var(--primary);font-size:0.9rem;opacity:0;}
+    .option-item.selected .check-icon{opacity:1;}
+
+    /* NAV */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--white);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 14px rgba(26,111,212,0.08);transition:background 0.3s,border-color 0.3s;}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;color:var(--text-light);font-size:0.65rem;font-weight:500;padding:6px 0;transition:color 0.2s;position:relative;cursor:pointer;}
+    .nav-item i{font-size:1.3rem;transition:transform 0.2s;}
+    .nav-item:hover,.nav-item.active{color:var(--primary);}
+    .nav-item:hover i{transform:translateY(-2px);}
+    .nav-active-dot{width:5px;height:5px;background:var(--primary);border-radius:50%;position:absolute;bottom:2px;}
+    .nav-item:not(.active) .nav-active-dot{display:none;}
+    .nav-badge{position:absolute;top:2px;right:calc(50% - 16px);background:#e53935;color:white;font-size:0.6rem;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height)+14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--white);padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* CONFIRM MODAL special */
+    .confirm-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 14px;}
+    .confirm-icon.danger{background:#fee2e2;}
+    .confirm-icon.warning{background:#fef3c7;}
+
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="top-header">
+  <button class="back-btn" onclick="window.history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <span class="header-title">Settings</span>
+</header>
+
+<div class="page-body">
+
+  <!-- PROFILE PEEK -->
+  <div class="profile-peek" onclick="{% url "profile:profile" %}" style="animation-delay:0.04s">
+          {% if request.user.photo %}
+        <img class="peek-avatar" src="{{request.user.photo.url}}" alt="Me"/>
+      {% else %}
+      {% if request.user.gender == 'male' %}
+      
+        <img class="peek-avatar" src="/media/default/male.png" alt="Me"/>
+
+        {% else %}
+        <img class="peek-avatar" src="/media/default/female.png" alt="Me"/>
+        
+      {% endif %}
+    {% endif %}
+          
+    <div class="peek-info">
+      <div class="peek-name">{{request.user.first_name}} {{request.user.last_name}}</div>
+      <div class="peek-username">@{{request.user.username}} · {{request.user.email}}</div>
+      <span class="peek-badge">View & Edit Profile</span>
+    </div>
+    <i class="fa-solid fa-chevron-right peek-chevron"></i>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div class="settings-section" style="animation-delay:0.08s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-user-shield"></i> Account</div>
+    </div>
+    <div class="setting-row" onclick="openModal('changePasswordModal')">
+      <div class="row-icon"><i class="fa-solid fa-lock"></i></div>
+      <div class="row-content"><div class="row-label">Change Password</div><div class="row-sublabel">Last changed 3 months ago</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('changeEmailModal')">
+      <div class="row-icon"><i class="fa-solid fa-envelope"></i></div>
+      <div class="row-content"><div class="row-label">Email Address</div><div class="row-sublabel">alex.mwanza@student.edu.mw</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('changePhoneModal')">
+      <div class="row-icon"><i class="fa-solid fa-phone"></i></div>
+      <div class="row-content"><div class="row-label">Phone Number</div><div class="row-sublabel">+265 991 234 567</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('twoFactorModal')">
+      <div class="row-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="row-content"><div class="row-label">Two-Factor Authentication</div><div class="row-sublabel">Add an extra layer of security</div></div>
+      <div class="row-right"><span class="row-value" id="twoFaStatus">Off</span><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('linkedAccountsModal')">
+      <div class="row-icon"><i class="fa-solid fa-link"></i></div>
+      <div class="row-content"><div class="row-label">Linked Accounts</div><div class="row-sublabel">Google, GitHub</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('studentVerifyModal')">
+      <div class="row-icon" style="background:#dcfce7;color:#16a34a;"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div class="row-content"><div class="row-label">Student Verification</div><div class="row-sublabel" style="color:#16a34a;">✓ Verified — CS/2022/0471</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- PRIVACY -->
+  <div class="settings-section" style="animation-delay:0.12s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-eye-slash"></i> Privacy</div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-globe"></i></div>
+      <div class="row-content"><div class="row-label">Profile Visibility</div><div class="row-sublabel">Who can see your profile</div></div>
+      <div class="row-right">
+        <select onchange="showToast('Visibility updated')" style="border:none;background:transparent;color:var(--primary);font-size:0.8rem;font-weight:600;outline:none;cursor:pointer;">
+          <option>Everyone</option><option>Followers Only</option><option>Only Me</option>
+        </select>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-user-plus"></i></div>
+      <div class="row-content"><div class="row-label">Who can follow me</div></div>
+      <div class="row-right">
+        <select onchange="showToast('Setting saved')" style="border:none;background:transparent;color:var(--primary);font-size:0.8rem;font-weight:600;outline:none;cursor:pointer;">
+          <option>Everyone</option><option>Approve Followers</option>
+        </select>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-comment-slash"></i></div>
+      <div class="row-content"><div class="row-label">Who can message me</div></div>
+      <div class="row-right">
+        <select onchange="showToast('Setting saved')" style="border:none;background:transparent;color:var(--primary);font-size:0.8rem;font-weight:600;outline:none;cursor:pointer;">
+          <option>Everyone</option><option>Followers Only</option><option>No One</option>
+        </select>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div class="row-content"><div class="row-label">Active Status</div><div class="row-sublabel">Show when you're online</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast(this.checked?'Active status on':'Active status off')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-check-double"></i></div>
+      <div class="row-content"><div class="row-label">Read Receipts</div><div class="row-sublabel">Let others see when you've read their messages</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast(this.checked?'Read receipts on':'Read receipts off')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-tag"></i></div>
+      <div class="row-content"><div class="row-label">Allow Tagging</div><div class="row-sublabel">Let others tag you in posts & photos</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast(this.checked?'Tagging allowed':'Tagging disabled')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row" onclick="openModal('blockedModal')">
+      <div class="row-icon"><i class="fa-solid fa-ban"></i></div>
+      <div class="row-content"><div class="row-label">Blocked Users</div><div class="row-sublabel">Manage who you've blocked</div></div>
+      <div class="row-right"><span class="row-value">2</span><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="settings-section" style="animation-delay:0.16s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-bell"></i> Notifications</div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-bell-slash"></i></div>
+      <div class="row-content"><div class="row-label">Push Notifications</div><div class="row-sublabel">Alerts on your device</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked id="pushToggle" onchange="showToast(this.checked?'Push notifications on':'Push notifications off')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+      <div class="row-content"><div class="row-label">Email Notifications</div><div class="row-sublabel">Weekly digests and updates</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" onchange="showToast(this.checked?'Email notifications on':'Email notifications off')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-heart"></i></div>
+      <div class="row-content"><div class="row-label">Likes & Reactions</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-comment"></i></div>
+      <div class="row-content"><div class="row-label">Comments on Your Posts</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-user-plus"></i></div>
+      <div class="row-content"><div class="row-label">New Followers</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="row-content"><div class="row-label">Group Activity</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-message"></i></div>
+      <div class="row-content"><div class="row-label">Direct Messages</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-volume-xmark"></i></div>
+      <div class="row-content"><div class="row-label">Do Not Disturb</div><div class="row-sublabel" id="dndSublabel">Mute all notifications</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" id="dndToggle" onchange="toggleDND(this)"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPEARANCE -->
+  <div class="settings-section" style="animation-delay:0.20s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-palette"></i> Appearance</div>
+    </div>
+    <div class="setting-row" onclick="openModal('themeModal')">
+      <div class="row-icon"><i class="fa-solid fa-moon"></i></div>
+      <div class="row-content"><div class="row-label">Theme</div><div class="row-sublabel" id="currentTheme">Light Mode</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('fontModal')">
+      <div class="row-icon"><i class="fa-solid fa-text-height"></i></div>
+      <div class="row-content"><div class="row-label">Font Size</div><div class="row-sublabel" id="currentFont">Medium</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-film"></i></div>
+      <div class="row-content"><div class="row-label">Reduce Motion</div><div class="row-sublabel">Fewer animations</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" onchange="showToast(this.checked?'Motion reduced':'Animations restored')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-image"></i></div>
+      <div class="row-content"><div class="row-label">Auto-Play Videos</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" checked onchange="showToast('Preference saved')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGUAGE & REGION -->
+  <div class="settings-section" style="animation-delay:0.24s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-language"></i> Language & Region</div>
+    </div>
+    <div class="setting-row" onclick="openModal('languageModal')">
+      <div class="row-icon"><i class="fa-solid fa-earth-africa"></i></div>
+      <div class="row-content"><div class="row-label">Language</div><div class="row-sublabel" id="currentLang">English (US)</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('timezoneModal')">
+      <div class="row-icon"><i class="fa-solid fa-clock"></i></div>
+      <div class="row-content"><div class="row-label">Time Zone</div><div class="row-sublabel" id="currentTz">Africa/Blantyre (CAT)</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- STORAGE & DATA -->
+  <div class="settings-section" style="animation-delay:0.28s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-database"></i> Storage & Data</div>
+    </div>
+    <div class="setting-row" onclick="openModal('storageModal')">
+      <div class="row-icon"><i class="fa-solid fa-hard-drive"></i></div>
+      <div class="row-content">
+        <div class="row-label">Storage Used</div>
+        <div class="row-sublabel">124 MB of 500 MB used</div>
+        <div style="margin-top:6px;height:4px;background:var(--border);border-radius:4px;overflow:hidden;">
+          <div style="width:25%;height:100%;background:var(--primary);border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row">
+      <div class="row-icon"><i class="fa-solid fa-wifi"></i></div>
+      <div class="row-content"><div class="row-label">Use Less Data</div><div class="row-sublabel">Compress images & videos on mobile</div></div>
+      <div class="row-right">
+        <label class="toggle"><input type="checkbox" onchange="showToast(this.checked?'Data saver on':'Data saver off')"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+    <div class="setting-row" onclick="clearCache()">
+      <div class="row-icon"><i class="fa-solid fa-broom"></i></div>
+      <div class="row-content"><div class="row-label">Clear Cache</div><div class="row-sublabel">Free up space — 38 MB</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('downloadDataModal')">
+      <div class="row-icon"><i class="fa-solid fa-download"></i></div>
+      <div class="row-content"><div class="row-label">Download My Data</div><div class="row-sublabel">Export a copy of your account data</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="settings-section" style="animation-delay:0.32s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-circle-question"></i> Support</div>
+    </div>
+    <div class="setting-row" onclick="showToast('Opening Help Center...')">
+      <div class="row-icon"><i class="fa-solid fa-book-open"></i></div>
+      <div class="row-content"><div class="row-label">Help Center</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="openModal('feedbackModal')">
+      <div class="row-icon"><i class="fa-solid fa-comment-dots"></i></div>
+      <div class="row-content"><div class="row-label">Send Feedback</div><div class="row-sublabel">Report bugs or suggest features</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="showToast('Opening Community Guidelines...')">
+      <div class="row-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="row-content"><div class="row-label">Community Guidelines</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="showToast('Opening Privacy Policy...')">
+      <div class="row-icon"><i class="fa-solid fa-file-shield"></i></div>
+      <div class="row-content"><div class="row-label">Privacy Policy</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row" onclick="showToast('Opening Terms of Service...')">
+      <div class="row-icon"><i class="fa-solid fa-file-lines"></i></div>
+      <div class="row-content"><div class="row-label">Terms of Service</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="settings-section" style="animation-delay:0.36s">
+    <div class="section-header-row">
+      <div class="section-header-label"><i class="fa-solid fa-triangle-exclamation"></i> Account Actions</div>
+    </div>
+    <div class="setting-row warning" onclick="openModal('logoutModal')">
+      <div class="row-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
+      <div class="row-content"><div class="row-label">Log Out</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row danger" onclick="openModal('deactivateModal')">
+      <div class="row-icon"><i class="fa-solid fa-user-slash"></i></div>
+      <div class="row-content"><div class="row-label">Deactivate Account</div><div class="row-sublabel">Temporarily hide your account</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+    <div class="setting-row danger" onclick="openModal('deleteModal')">
+      <div class="row-icon"><i class="fa-solid fa-trash-can"></i></div>
+      <div class="row-content"><div class="row-label">Delete Account</div><div class="row-sublabel">Permanently delete all your data</div></div>
+      <div class="row-right"><i class="fa-solid fa-chevron-right row-chevron"></i></div>
+    </div>
+  </div>
+
+  <!-- VERSION -->
+  <div class="version-row">
+    <div class="app-logo">School<span>Connect</span></div>
+    <div>Version 1.0.0 · Build 2024.12</div>
+    <div style="margin-top:4px;">Made with ❤️ for students</div>
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- CHANGE PASSWORD -->
+<div class="modal-overlay" id="changePasswordModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Change Password</div>
+    <div class="modal-subtitle">Your new password must be at least 8 characters.</div>
+    <div class="modal-field"><label>Current Password</label><input type="password" id="currentPw" placeholder="Enter current password"/></div>
+    <div class="modal-field">
+      <label>New Password</label>
+      <input type="password" id="newPw" placeholder="Enter new password" oninput="checkStrength(this.value)"/>
+      <div class="strength-bar"><div class="strength-seg" id="s1"></div><div class="strength-seg" id="s2"></div><div class="strength-seg" id="s3"></div><div class="strength-seg" id="s4"></div></div>
+      <div class="strength-label" id="strengthLabel" style="color:var(--text-muted);">Enter a password</div>
+    </div>
+    <div class="modal-field"><label>Confirm New Password</label><input type="password" id="confirmPw" placeholder="Confirm new password"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+      <button class="btn-primary" onclick="savePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE EMAIL -->
+<div class="modal-overlay" id="changeEmailModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Update Email Address</div>
+    <div class="modal-subtitle">A verification link will be sent to your new email.</div>
+    <div class="modal-field"><label>New Email Address</label><input type="email" placeholder="you@student.edu.mw"/></div>
+    <div class="modal-field"><label>Confirm Password</label><input type="password" placeholder="Enter your password"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('changeEmailModal')">Cancel</button>
+      <button class="btn-primary" onclick="closeModal('changeEmailModal');showToast('Verification email sent! ✉️')">Send Verification</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PHONE -->
+<div class="modal-overlay" id="changePhoneModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Update Phone Number</div>
+    <div class="modal-field"><label>New Phone Number</label><input type="tel" placeholder="+265 000 000 000"/></div>
+    <div class="modal-field"><label>Confirm Password</label><input type="password" placeholder="Enter your password"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('changePhoneModal')">Cancel</button>
+      <button class="btn-primary" onclick="closeModal('changePhoneModal');showToast('Phone number updated! 📱')">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2FA -->
+<div class="modal-overlay" id="twoFactorModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Two-Factor Authentication</div>
+    <div class="modal-subtitle">Choose how you'd like to verify your identity when logging in.</div>
+    <div class="option-list" style="margin-bottom:16px;">
+      <div class="option-item" onclick="select2FA(this,'SMS — Text message to your phone')"><span class="opt-label">📱 SMS — Text message to your phone</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="select2FA(this,'Authenticator App (Google/Authy)')"><span class="opt-label">🔐 Authenticator App (Google/Authy)</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="select2FA(this,'Email code')"><span class="opt-label">✉️ Email code</span><i class="fa-solid fa-check check-icon"></i></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('twoFactorModal')">Cancel</button>
+      <button class="btn-primary" onclick="enable2FA()">Enable 2FA</button>
+    </div>
+  </div>
+</div>
+
+<!-- LINKED ACCOUNTS -->
+<div class="modal-overlay" id="linkedAccountsModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Linked Accounts</div>
+    <div class="option-list" style="margin-bottom:16px;">
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">🌐 Google — alex.mwanza@gmail.com</span><span style="font-size:0.75rem;color:var(--success);">Connected</span></div>
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">🐙 GitHub — @alexmwanza</span><span style="font-size:0.75rem;color:var(--success);">Connected</span></div>
+      <div class="option-item" onclick="showToast('Connecting Facebook...')"><span class="opt-label">📘 Facebook</span><span style="font-size:0.75rem;color:var(--primary);font-weight:600;">Connect</span></div>
+      <div class="option-item" onclick="showToast('Connecting Twitter/X...')"><span class="opt-label">𝕏 Twitter / X</span><span style="font-size:0.75rem;color:var(--primary);font-weight:600;">Connect</span></div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" onclick="closeModal('linkedAccountsModal')">Done</button></div>
+  </div>
+</div>
+
+<!-- STUDENT VERIFY -->
+<div class="modal-overlay" id="studentVerifyModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:16px;"><div style="width:60px;height:60px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.5rem;">✅</div><div class="modal-title" style="margin-bottom:4px;">Verified Student</div><div class="modal-subtitle">Your student status is verified.</div></div>
+    <div class="option-list">
+      <div class="option-item" style="cursor:default;"><span class="opt-label">Student ID</span><span style="font-size:0.82rem;color:var(--text-muted);">CS/2022/0471</span></div>
+      <div class="option-item" style="cursor:default;"><span class="opt-label">Department</span><span style="font-size:0.82rem;color:var(--text-muted);">Computer Science</span></div>
+      <div class="option-item" style="cursor:default;"><span class="opt-label">Year</span><span style="font-size:0.82rem;color:var(--text-muted);">Year 3</span></div>
+      <div class="option-item" style="cursor:default;"><span class="opt-label">Verified On</span><span style="font-size:0.82rem;color:var(--text-muted);">September 2022</span></div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" onclick="closeModal('studentVerifyModal')">Close</button></div>
+  </div>
+</div>
+
+<!-- BLOCKED USERS -->
+<div class="modal-overlay" id="blockedModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Blocked Users</div>
+    <div class="option-list" id="blockedList" style="margin-bottom:16px;">
+      <div class="option-item" style="cursor:default;gap:10px;" id="block-user-1">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=random1" style="width:36px;height:36px;border-radius:50%;"/>
+        <span class="opt-label" style="flex:1;">Unknown User 1</span>
+        <button onclick="unblock('block-user-1','Unknown User 1')" style="background:var(--danger);color:white;border:none;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;">Unblock</button>
+      </div>
+      <div class="option-item" style="cursor:default;gap:10px;" id="block-user-2">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=random2" style="width:36px;height:36px;border-radius:50%;"/>
+        <span class="opt-label" style="flex:1;">Unknown User 2</span>
+        <button onclick="unblock('block-user-2','Unknown User 2')" style="background:var(--danger);color:white;border:none;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;">Unblock</button>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" onclick="closeModal('blockedModal')">Done</button></div>
+  </div>
+</div>
+
+<!-- THEME -->
+<div class="modal-overlay" id="themeModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Choose Theme</div>
+    <div class="theme-options" id="themeOptions">
+      <div class="theme-opt selected" onclick="applyTheme('light',this)">
+        <div class="theme-swatch" style="background:#f0f4fb;"><i class="fa-solid fa-sun" style="color:#f59e0b;"></i></div>
+        <span class="theme-name">Light</span>
+      </div>
+      <div class="theme-opt" onclick="applyTheme('dark',this)">
+        <div class="theme-swatch" style="background:#0d1117;"><i class="fa-solid fa-moon" style="color:#818cf8;"></i></div>
+        <span class="theme-name">Dark</span>
+      </div>
+      <div class="theme-opt" onclick="applyTheme('auto',this)">
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#f0f4fb 50%,#0d1117 50%);"><i class="fa-solid fa-circle-half-stroke" style="color:#888;"></i></div>
+        <span class="theme-name">Auto</span>
+      </div>
+      <div class="theme-opt" onclick="applyTheme('blue',this)">
+        <div class="theme-swatch" style="background:#1a6fd4;"><i class="fa-solid fa-droplet" style="color:white;"></i></div>
+        <span class="theme-name">Blue</span>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;"><button class="btn-primary" onclick="closeModal('themeModal')">Done</button></div>
+  </div>
+</div>
+
+<!-- FONT SIZE -->
+<div class="modal-overlay" id="fontModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Font Size</div>
+    <div class="option-list" style="margin-bottom:16px;" id="fontOptions">
+      <div class="option-item" onclick="selectFont(this,'Small')"><span class="opt-label" style="font-size:0.8rem;">Small</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item selected" onclick="selectFont(this,'Medium')"><span class="opt-label">Medium</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectFont(this,'Large')"><span class="opt-label" style="font-size:1.05rem;">Large</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectFont(this,'Extra Large')"><span class="opt-label" style="font-size:1.15rem;">Extra Large</span><i class="fa-solid fa-check check-icon"></i></div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" onclick="closeModal('fontModal')">Done</button></div>
+  </div>
+</div>
+
+<!-- LANGUAGE -->
+<div class="modal-overlay" id="languageModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Language</div>
+    <div class="option-list" style="margin-bottom:16px;" id="langOptions">
+      <div class="option-item selected" onclick="selectLang(this,'English (US)')"><span class="opt-label">🇺🇸 English (US)</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectLang(this,'English (UK)')"><span class="opt-label">🇬🇧 English (UK)</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectLang(this,'Chichewa')"><span class="opt-label">🇲🇼 Chichewa</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectLang(this,'Swahili')"><span class="opt-label">🌍 Swahili</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectLang(this,'French')"><span class="opt-label">🇫🇷 French</span><i class="fa-solid fa-check check-icon"></i></div>
+      <div class="option-item" onclick="selectLang(this,'Portuguese')"><span class="opt-label">🇵🇹 Portuguese</span><i class="fa-solid fa-check check-icon"></i></div>
+    </div>
+    <div class="modal-actions"><button class="btn-primary" onclick="closeModal('languageModal')">Apply</button></div>
+  </div>
+</div>
+
+<!-- TIMEZONE -->
+<div class="modal-overlay" id="timezoneModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Time Zone</div>
+    <div class="modal-field"><label>Select Time Zone</label>
+      <select onchange="document.getElementById('currentTz').textContent=this.value;showToast('Time zone updated');">
+        <option>Africa/Blantyre (CAT)</option>
+        <option>Africa/Nairobi (EAT)</option>
+        <option>Africa/Lagos (WAT)</option>
+        <option>Europe/London (GMT)</option>
+        <option>America/New_York (EST)</option>
+        <option>America/Los_Angeles (PST)</option>
+        <option>Asia/Dubai (GST)</option>
+      </select>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('timezoneModal')">Cancel</button><button class="btn-primary" onclick="closeModal('timezoneModal');showToast('Time zone saved')">Save</button></div>
+  </div>
+</div>
+
+<!-- STORAGE -->
+<div class="modal-overlay" id="storageModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Storage Details</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:0.88rem;font-weight:500;">Photos & Videos</span><span style="color:var(--primary);font-weight:600;font-size:0.85rem;">68 MB</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:0.88rem;font-weight:500;">Cached Files</span><span style="color:var(--primary);font-weight:600;font-size:0.85rem;">38 MB</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:0.88rem;font-weight:500;">Messages</span><span style="color:var(--primary);font-weight:600;font-size:0.85rem;">12 MB</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg);border-radius:10px;">
+        <span style="font-size:0.88rem;font-weight:500;">Other</span><span style="color:var(--primary);font-weight:600;font-size:0.85rem;">6 MB</span>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('storageModal')">Close</button><button class="btn-primary" onclick="clearCache();closeModal('storageModal')">Clear Cache</button></div>
+  </div>
+</div>
+
+<!-- DOWNLOAD DATA -->
+<div class="modal-overlay" id="downloadDataModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Download My Data</div>
+    <div class="modal-subtitle">We'll prepare a ZIP file with your posts, messages, profile info, and media.</div>
+    <div class="option-list" style="margin-bottom:16px;">
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">📋 Profile Information</span><i class="fa-solid fa-check check-icon" style="opacity:1;"></i></div>
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">📝 Posts & Comments</span><i class="fa-solid fa-check check-icon" style="opacity:1;"></i></div>
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">💬 Messages</span><i class="fa-solid fa-check check-icon" style="opacity:1;"></i></div>
+      <div class="option-item selected" style="cursor:default;"><span class="opt-label">📷 Photos & Media</span><i class="fa-solid fa-check check-icon" style="opacity:1;"></i></div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('downloadDataModal')">Cancel</button><button class="btn-primary" onclick="closeModal('downloadDataModal');showToast('Data export requested — we will email you a link 📦')">Request Export</button></div>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<div class="modal-overlay" id="feedbackModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Send Feedback</div>
+    <div class="modal-field"><label>Type</label>
+      <select>
+        <option>🐛 Bug Report</option>
+        <option>💡 Feature Request</option>
+        <option>😍 General Praise</option>
+        <option>😤 Complaint</option>
+        <option>🔒 Safety Concern</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Subject</label><input type="text" placeholder="Brief summary..."/></div>
+    <div class="modal-field"><label>Details</label><textarea placeholder="Describe the issue or idea in detail..."></textarea></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('feedbackModal')">Cancel</button><button class="btn-primary" onclick="closeModal('feedbackModal');showToast('Feedback submitted! Thank you 🙏')">Submit</button></div>
+  </div>
+</div>
+
+<!-- LOG OUT -->
+<div class="modal-overlay" id="logoutModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div class="confirm-icon warning">🚪</div>
+    <div class="modal-title">Log Out?</div>
+    <div class="modal-subtitle">You'll need to sign in again to access your account.</div>
+    <div class="modal-actions" style="margin-top:24px;">
+      <button class="btn-secondary" onclick="closeModal('logoutModal')">Cancel</button>
+        <button class="btn-primary" onclick="showToast('Logging out...')"> <a href="{% url "authuser:logout" %}" style = 'color:white; text-decoration:none;'>Log Out</a></button>
+    </div>
+  </div>
+</div>
+
+<!-- DEACTIVATE -->
+<div class="modal-overlay" id="deactivateModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div class="confirm-icon warning">😴</div>
+    <div class="modal-title">Deactivate Account?</div>
+    <div class="modal-subtitle">Your profile will be hidden and you won't receive any notifications. You can reactivate anytime by logging back in.</div>
+    <div class="modal-field" style="text-align:left;margin-top:16px;"><label>Confirm your password</label><input type="password" placeholder="Enter password to confirm"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('deactivateModal')">Cancel</button>
+      <button class="btn-danger" onclick="closeModal('deactivateModal');showToast('Account deactivated')">Deactivate</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT -->
+<div class="modal-overlay" id="deleteModal" onclick="closeOnOverlay(event,this)">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div class="confirm-icon danger">⚠️</div>
+    <div class="modal-title" style="color:var(--danger);">Delete Account?</div>
+    <div class="modal-subtitle">This action is <strong>permanent and irreversible</strong>. All your posts, messages, groups, and data will be permanently deleted.</div>
+    <div class="modal-field" style="text-align:left;margin-top:16px;">
+      <label>Type DELETE to confirm</label>
+      <input type="text" id="deleteConfirmInput" placeholder='Type "DELETE"'/>
+    </div>
+    <div class="modal-field" style="text-align:left;"><label>Confirm your password</label><input type="password" placeholder="Enter password"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger" onclick="confirmDelete()">Delete Forever</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // MODAL HELPERS
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  function closeOnOverlay(e, el) { if (e.target === el) el.classList.remove('open'); }
+
+  // PASSWORD STRENGTH
+  function checkStrength(val) {
+    const segs = [document.getElementById('s1'),document.getElementById('s2'),document.getElementById('s3'),document.getElementById('s4')];
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const colors = ['#ef4444','#f97316','#f59e0b','#22c55e'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    segs.forEach((s,i) => s.style.background = i < score ? colors[score-1] : 'var(--border)');
+    label.textContent = val.length === 0 ? 'Enter a password' : labels[score-1] || 'Weak';
+    label.style.color = val.length === 0 ? 'var(--text-muted)' : colors[score-1] || colors[0];
+  }
+
+  function savePassword() {
+    const cur = document.getElementById('currentPw').value;
+    const nw = document.getElementById('newPw').value;
+    const conf = document.getElementById('confirmPw').value;
+    if (!cur || !nw || !conf) { showToast('Please fill in all fields'); return; }
+    if (nw !== conf) { showToast('Passwords do not match'); return; }
+    if (nw.length < 8) { showToast('Password must be at least 8 characters'); return; }
+    closeModal('changePasswordModal');
+    showToast('Password updated successfully! 🔒');
+  }
+
+  // 2FA
+  function select2FA(el, label) {
+    document.querySelectorAll('#twoFactorModal .option-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function enable2FA() {
+    const sel = document.querySelector('#twoFactorModal .option-item.selected');
+    if (!sel) { showToast('Please select a method'); return; }
+    document.getElementById('twoFaStatus').textContent = 'On';
+    closeModal('twoFactorModal');
+    showToast('Two-factor authentication enabled! 🔐');
+  }
+
+  // UNBLOCK
+  function unblock(id, name) {
+    const el = document.getElementById(id);
+    el.style.transition = 'opacity 0.25s'; el.style.opacity = '0';
+    setTimeout(() => el.remove(), 250);
+    showToast(`${name} unblocked`);
+  }
+
+  // THEME
+  function applyTheme(theme, el) {
+    document.querySelectorAll('.theme-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const labels = {light:'Light Mode', dark:'Dark Mode', auto:'Auto (System)', blue:'Blue Mode'};
+    document.getElementById('currentTheme').textContent = labels[theme];
+    if (theme === 'dark' || theme === 'blue') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+    showToast(`Theme set to ${labels[theme]}`);
+  }
+
+  // FONT SIZE
+  function selectFont(el, size) {
+    document.querySelectorAll('#fontOptions .option-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('currentFont').textContent = size;
+    const sizes = {Small:'13px', Medium:'15px', Large:'17px', 'Extra Large':'19px'};
+    document.body.style.fontSize = sizes[size];
+    showToast(`Font size set to ${size}`);
+  }
+
+  // LANGUAGE
+  function selectLang(el, lang) {
+    document.querySelectorAll('#langOptions .option-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('currentLang').textContent = lang;
+  }
+
+  // DND
+  function toggleDND(cb) {
+    const sub = document.getElementById('dndSublabel');
+    if (cb.checked) {
+      const now = new Date();
+      now.setHours(now.getHours() + 8);
+      sub.textContent = `Until ${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+      showToast('Do Not Disturb enabled 🤫');
+    } else {
+      sub.textContent = 'Mute all notifications';
+      showToast('Do Not Disturb disabled');
+    }
+  }
+
+  // CLEAR CACHE
+  function clearCache() {
+    showToast('Cache cleared — 38 MB freed! 🧹');
+  }
+
+  // DELETE ACCOUNT
+  function confirmDelete() {
+    const input = document.getElementById('deleteConfirmInput').value;
+    if (input !== 'DELETE') { showToast('Please type DELETE to confirm'); return; }
+    closeModal('deleteModal');
+    showToast('Account deletion scheduled. Goodbye 👋');
+  }
+
+  // TOAST
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // NAV
+  function setActive(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+</script>
+
+{% endblock content %}

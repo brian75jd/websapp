@@ -1,0 +1,900 @@
+{% extends "base/base.html" %}
+
+{% block title %}post creation{% endblock title %}
+
+{% block content %}
+
+
+<style>
+    :root{
+      --primary:#1a6fd4;--primary-light:#3d8ef0;--primary-soft:#e8f1fd;
+      --primary-dark:#1255a8;--bg:#f0f4fb;--card:#fff;
+      --border:#dce8f8;--text:#0d1a2e;--text-muted:#6b82a0;--text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08);--shadow-md:0 4px 24px rgba(26,111,212,0.13);
+      --nav-height:64px;--radius:14px;--radius-sm:10px;
+      --danger:#ef4444;--success:#22c55e;--warning:#f59e0b;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100%;overflow-x:hidden;overflow-y:auto;padding-bottom:calc(var(--nav-height)+16px);}
+
+    /* HEADER */
+    .top-header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1.5px solid var(--border);padding:0 14px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+    .header-left{display:flex;align-items:center;gap:10px;}
+    .back-btn{width:36px;height:36px;border:none;background:var(--primary-soft);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:background 0.2s;flex-shrink:0;}
+    .back-btn:hover{background:var(--border);}
+    .header-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.05rem;color:var(--text);}
+    .post-btn{background:linear-gradient(135deg,var(--primary-dark),var(--primary-light));color:white;border:none;padding:8px 18px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 10px rgba(26,111,212,0.25);display:flex;align-items:center;gap:6px;}
+    .post-btn:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(26,111,212,0.35);}
+    .post-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;}
+
+    .page-body{padding:14px;}
+
+    /* AUDIENCE BAR */
+    .audience-bar{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;box-shadow:var(--shadow);}
+    .audience-bar:hover{border-color:var(--primary);background:var(--primary-soft);}
+    .aud-icon{width:32px;height:32px;background:var(--primary-soft);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.82rem;flex-shrink:0;}
+    .aud-label{flex:1;}
+    .aud-title{font-size:0.72rem;color:var(--text-muted);font-weight:500;}
+    .aud-value{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);}
+
+    /* COMPOSER */
+    .composer-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;}
+    .composer-top{display:flex;align-items:flex-start;gap:10px;padding:14px 14px 0;}
+    .comp-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2.5px solid var(--primary-soft);flex-shrink:0;}
+    .comp-meta{flex:1;}
+    .comp-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);}
+    .aud-chip{display:inline-flex;align-items:center;gap:4px;background:var(--primary-soft);color:var(--primary);border-radius:20px;padding:2px 9px;font-size:0.7rem;font-weight:600;margin-top:3px;cursor:pointer;border:none;}
+
+    /* TEXTAREA */
+    .post-textarea{width:100%;border:none;outline:none;resize:none;padding:12px 14px 0;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--text);line-height:1.65;min-height:100px;background:transparent;}
+    .post-textarea::placeholder{color:var(--text-light);}
+    .char-count{text-align:right;padding:4px 14px;font-size:0.72rem;color:var(--text-light);}
+    .char-count.warn{color:var(--warning);}
+    .char-count.over{color:var(--danger);}
+
+    /* FEELING BAR */
+    .feeling-bar{display:none;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid var(--border);}
+    .feeling-bar.show{display:flex;}
+    .feeling-chip{display:flex;align-items:center;gap:5px;background:var(--primary-soft);color:var(--primary);border-radius:20px;padding:4px 11px;font-size:0.77rem;font-weight:600;cursor:pointer;border:none;}
+    .feeling-chip .rm{font-size:0.68rem;margin-left:2px;}
+
+    /* LOCATION BAR */
+    .location-bar{display:none;align-items:center;gap:10px;padding:8px 14px;border-top:1px solid var(--border);}
+    .location-bar.show{display:flex;}
+    .location-input{flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:0.87rem;color:var(--text);outline:none;}
+    .location-input::placeholder{color:var(--text-light);}
+    .loc-close{border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;}
+
+    /* PHOTO PREVIEW */
+    .photos-preview{padding:8px 14px 12px;display:none;}
+    .photos-preview.has-photos{display:block;}
+    .photos-preview-label{font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+    .photos-preview-label i{color:var(--primary);}
+    .photos-grid-preview{display:grid;gap:6px;}
+    .photos-grid-preview.p1{grid-template-columns:1fr;}
+    .photos-grid-preview.p1 .photo-prev-wrap img{height:220px;}
+    .photos-grid-preview.p2{grid-template-columns:1fr 1fr;}
+    .photos-grid-preview.p2 .photo-prev-wrap img{height:160px;}
+    .photos-grid-preview.p3{grid-template-columns:1fr 1fr;}
+    .photos-grid-preview.p3 .photo-prev-wrap:first-child{grid-column:1/-1;}
+    .photos-grid-preview.p3 .photo-prev-wrap:first-child img{height:180px;}
+    .photos-grid-preview.p3 .photo-prev-wrap img{height:130px;}
+    .photos-grid-preview.p4{grid-template-columns:1fr 1fr;}
+    .photos-grid-preview.p4 .photo-prev-wrap img{height:130px;}
+    .photo-prev-wrap{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;}
+    .photo-prev-wrap img,.photo-prev-wrap video{width:100%;object-fit:cover;display:block;transition:transform 0.25s;}
+    .photo-prev-wrap:hover img,.photo-prev-wrap:hover video{transform:scale(1.03);}
+    .photo-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 0.2s;display:flex;align-items:flex-start;justify-content:flex-end;padding:7px;}
+    .photo-prev-wrap:hover .photo-overlay{background:rgba(0,0,0,0.25);}
+    .photo-action-row{display:flex;gap:5px;opacity:0;transition:opacity 0.2s;}
+    .photo-prev-wrap:hover .photo-action-row{opacity:1;}
+    @media(hover:none){.photo-action-row{opacity:1;}.photo-overlay{background:rgba(0,0,0,0.18);}}
+    .photo-action-btn{width:30px;height:30px;border-radius:50%;border:none;color:white;font-size:0.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;backdrop-filter:blur(4px);}
+    .btn-del-photo{background:rgba(239,68,68,0.85);}
+    .btn-del-photo:hover{background:var(--danger);}
+    .btn-preview-photo{background:rgba(26,111,212,0.8);}
+    .btn-preview-photo:hover{background:var(--primary);}
+    .more-photos-badge{position:absolute;inset:0;background:rgba(13,26,46,0.55);display:flex;align-items:center;justify-content:center;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.4rem;}
+    .add-more-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border:2px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:0.83rem;font-weight:600;cursor:pointer;background:none;transition:all 0.2s;margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;}
+    .add-more-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft);}
+
+    /* POLL SECTION */
+    .poll-section{padding:10px 14px 14px;border-top:1px solid var(--border);display:none;}
+    .poll-section.open{display:block;}
+    .poll-label{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.83rem;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+    .poll-label i{color:var(--primary);}
+    .poll-opt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+    .poll-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:0.87rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .poll-input:focus{border-color:var(--primary);background:var(--primary-soft);}
+    .poll-rm-btn{width:28px;height:28px;border:none;background:var(--bg);color:var(--text-muted);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.75rem;transition:all 0.15s;flex-shrink:0;}
+    .poll-rm-btn:hover{background:#fee2e2;color:var(--danger);}
+    .poll-add-btn{display:flex;align-items:center;gap:6px;background:none;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--primary);font-size:0.8rem;font-weight:600;cursor:pointer;width:100%;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .poll-add-btn:hover{background:var(--primary-soft);border-color:var(--primary);}
+    .poll-footer{display:flex;align-items:center;gap:8px;margin-top:10px;}
+    .poll-dur-label{font-size:0.77rem;color:var(--text-muted);}
+    .poll-dur-sel{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:0.81rem;color:var(--text);outline:none;cursor:pointer;}
+
+    /* TOOLBAR */
+    .post-toolbar{border-top:1.5px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:2px;flex-wrap:wrap;}
+    .toolbar-lbl{font-size:0.69rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-right:4px;}
+    .tool-btn{width:38px;height:38px;border:none;background:transparent;color:var(--text-muted);border-radius:10px;font-size:0.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative;}
+    .tool-btn:hover{background:var(--primary-soft);color:var(--primary);}
+    .tool-btn.active{background:var(--primary-soft);color:var(--primary);}
+    .tool-btn[title]:hover::after{content:attr(title);position:absolute;bottom:calc(100%+5px);left:50%;transform:translateX(-50%);background:var(--text);color:white;font-size:0.65rem;padding:3px 8px;border-radius:6px;white-space:nowrap;pointer-events:none;font-family:'DM Sans',sans-serif;z-index:10;}
+
+    /* OPTIONS CARD */
+    .options-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;}
+    .options-hdr{padding:12px 14px 8px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;}
+    .opt-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--border);cursor:default;transition:background 0.15s;}
+    .opt-row:hover{background:var(--primary-soft);}
+    .opt-icon{width:32px;height:32px;background:var(--primary-soft);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.82rem;flex-shrink:0;}
+    .opt-text{flex:1;}
+    .opt-title{font-size:0.87rem;font-weight:600;color:var(--text);}
+    .opt-sub{font-size:0.72rem;color:var(--text-muted);margin-top:1px;}
+    .toggle{position:relative;width:42px;height:23px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .tslider{position:absolute;inset:0;background:var(--border);border-radius:30px;cursor:pointer;transition:background 0.25s;}
+    .tslider:before{content:'';position:absolute;width:17px;height:17px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+    .toggle input:checked+.tslider{background:var(--primary);}
+    .toggle input:checked+.tslider:before{transform:translateX(19px);}
+
+    /* EMOJI PICKER */
+    .emoji-picker{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);padding:10px;margin-bottom:12px;display:none;}
+    .emoji-picker.open{display:block;}
+    .ep-grid{display:flex;flex-wrap:wrap;gap:4px;}
+    .ep-btn{font-size:1.35rem;cursor:pointer;padding:4px;border-radius:7px;transition:background 0.15s;border:none;background:transparent;}
+    .ep-btn:hover{background:var(--primary-soft);}
+
+    /* MODALS */
+    .modal-overlay{position:fixed;inset:0;background:rgba(13,26,46,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:22px 22px 0 0;width:100%;max-width:440px;padding:20px 18px 32px;animation:slideUp 0.28s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.98rem;color:var(--text);margin-bottom:14px;text-align:center;}
+    .feeling-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+    .feeling-opt{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.15s;font-size:1.3rem;}
+    .feeling-opt:hover,.feeling-opt.selected{background:var(--primary-soft);border-color:var(--primary);}
+    .feeling-opt span{font-size:0.68rem;color:var(--text-muted);font-weight:600;}
+    .aud-opt{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;cursor:pointer;transition:background 0.15s;margin-bottom:6px;}
+    .aud-opt:hover{background:var(--primary-soft);}
+    .aud-opt.selected{background:var(--primary-soft);border:1.5px solid var(--primary);}
+    .aud-opt-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .aud-opt-text{flex:1;}
+    .aud-opt-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);}
+    .aud-opt-sub{font-size:0.73rem;color:var(--text-muted);margin-top:1px;}
+    .aud-check{color:var(--primary);font-size:0.88rem;opacity:0;}
+    .aud-opt.selected .aud-check{opacity:1;}
+    .modal-btns{display:flex;gap:10px;margin-top:16px;}
+    .btn-prim{flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.86rem;cursor:pointer;transition:background 0.2s;}
+    .btn-prim:hover{background:var(--primary-dark);}
+    .btn-dng{flex:1;background:var(--danger);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.86rem;cursor:pointer;}
+    .btn-sec{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.86rem;cursor:pointer;}
+
+    /* ── MY POSTS SECTION ── */
+    .my-posts-section{margin-top:6px;}
+    .my-posts-header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px;}
+    .my-posts-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.95rem;color:var(--text);display:flex;align-items:center;gap:7px;}
+    .my-posts-title i{color:var(--primary);}
+    .my-posts-count{font-size:0.75rem;color:var(--text-muted);font-weight:500;}
+
+    /* MY POST CARD */
+    .my-post-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px;animation:fadeUp 0.35s ease both;position:relative;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .my-post-header{display:flex;align-items:flex-start;padding:12px 14px 8px;gap:10px;}
+    .my-post-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-soft);flex-shrink:0;}
+    .my-post-meta{flex:1;min-width:0;}
+    .my-post-author{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);}
+    .my-post-time{font-size:0.73rem;color:var(--text-muted);margin-top:1px;}
+    .my-post-menu-btn{width:32px;height:32px;border:none;background:transparent;color:var(--text-muted);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:background 0.2s;position:relative;flex-shrink:0;}
+    .my-post-menu-btn:hover{background:var(--bg);}
+
+    /* POST DROPDOWN */
+    .post-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:white;border-radius:var(--radius-sm);box-shadow:var(--shadow-md);border:1.5px solid var(--border);min-width:160px;z-index:300;overflow:hidden;display:none;animation:dropIn 0.16s ease;}
+    @keyframes dropIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+    .post-dropdown.open{display:block;}
+    .drop-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:0.84rem;color:var(--text);cursor:pointer;transition:background 0.15s;font-weight:500;}
+    .drop-item:hover{background:var(--bg);}
+    .drop-item i{width:14px;text-align:center;color:var(--primary);}
+    .drop-item.danger{color:var(--danger);}
+    .drop-item.danger i{color:var(--danger);}
+    .drop-divider{height:1px;background:var(--border);margin:3px 0;}
+
+    /* POST CONTENT */
+    .my-post-image{width:100%;max-height:280px;object-fit:cover;display:block;}
+    .my-post-photo-grid{display:grid;gap:3px;}
+    .my-post-photo-grid.g2{grid-template-columns:1fr 1fr;}
+    .my-post-photo-grid.g3{grid-template-columns:1fr 1fr;}
+    .my-post-photo-grid.g3 .gp-item:first-child{grid-column:1/-1;}
+    .my-post-photo-grid.g4{grid-template-columns:1fr 1fr;}
+    .gp-item{overflow:hidden;position:relative;}
+    .gp-item img{width:100%;height:150px;object-fit:cover;display:block;}
+    .my-post-photo-grid.g3 .gp-item:first-child img{height:180px;}
+    .my-post-text{padding:10px 14px;font-size:0.88rem;line-height:1.6;color:var(--text);}
+    .my-post-stats{display:flex;gap:14px;padding:6px 14px;font-size:0.77rem;color:var(--text-muted);}
+    .my-post-stats span{display:flex;align-items:center;gap:4px;}
+    .my-post-stats i{font-size:0.7rem;color:var(--primary-light);}
+    .my-post-actions{display:flex;border-top:1px solid var(--border);}
+    .mpa-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:none;background:none;color:var(--text-muted);font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+    .mpa-btn:hover{background:var(--primary-soft);color:var(--primary);}
+    .mpa-btn+.mpa-btn{border-left:1px solid var(--border);}
+    .mpa-btn.liked{color:var(--danger);}
+
+    /* EDIT POST MODAL */
+    .edit-modal .modal{max-height:80vh;overflow-y:auto;}
+    .edit-textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;resize:vertical;min-height:100px;background:var(--bg);transition:border-color 0.2s;}
+    .edit-textarea:focus{border-color:var(--primary);background:var(--primary-soft);}
+
+    /* DELETE CONFIRM MODAL */
+    .del-icon{width:54px;height:54px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.4rem;}
+
+    /* EMPTY POSTS */
+    .empty-posts{text-align:center;padding:44px 20px;background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);}
+    .empty-posts i{font-size:2.4rem;color:var(--border);margin-bottom:12px;display:block;}
+    .empty-posts p{font-size:0.86rem;color:var(--text-muted);}
+
+    /* LIGHTBOX */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:800;display:none;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+    .lightbox.open{display:flex;}
+    .lightbox img,.lightbox video{max-width:100%;max-height:80vh;border-radius:10px;object-fit:contain;}
+    .lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .lb-nav{display:flex;gap:12px;margin-top:16px;}
+    .lb-nav-btn{background:rgba(255,255,255,0.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .lb-nav-btn:hover{background:rgba(255,255,255,0.3);}
+    .lb-counter{color:rgba(255,255,255,0.7);font-size:0.82rem;align-self:center;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height)+12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:9px 20px;border-radius:30px;font-size:0.81rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+
+<!-- HEADER -->
+<header class="top-header">
+  <div class="header-left">
+    <button class="back-btn" onclick="window.history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+    <span class="header-title">Create Post</span>
+  </div>
+  <button class="post-btn" id="postBtn" onclick="publishPost()" disabled>
+    <i class="fa-solid fa-paper-plane"></i> Post
+  </button>
+</header>
+
+<div class="page-body">
+
+  <!-- AUDIENCE -->
+  <div class="audience-bar" onclick="openModal('audienceModal')">
+    <div class="aud-icon"><i class="fa-solid fa-globe" id="audIcon"></i></div>
+    <div class="aud-label">
+      <div class="aud-title">Sharing with</div>
+      <div class="aud-value" id="audValue">Everyone</div>
+    </div>
+    <i class="fa-solid fa-chevron-down" style="color:var(--text-light);font-size:0.8rem;"></i>
+  </div>
+
+  <!-- COMPOSER -->
+  <div class="composer-card">
+    <div class="composer-top">
+      {% if request.user.photo %}
+        <img class="comp-avatar" src="{{request.user.photo.url}}" alt=""/>
+      {% else %}
+        <div class="comp-avatar" style="background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:1.1rem;"><i class="fa-solid fa-user"></i></div>
+      {% endif %}
+      <div class="comp-meta">
+        <div class="comp-name">{{request.user.first_name}} {{request.user.last_name}}</div>
+        <button class="aud-chip" onclick="openModal('audienceModal')">
+          <i class="fa-solid fa-globe" id="chipIcon" style="font-size:0.65rem;"></i>
+          <span id="chipText">Everyone</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:0.55rem;"></i>
+        </button>
+      </div>
+    </div>
+
+    <textarea class="post-textarea" id="postText"
+      placeholder="What's on your mind? Share something with your school... 💭"
+      oninput="onTextInput()" maxlength="1000"></textarea>
+    <div class="char-count" id="charCount">0 / 1000</div>
+
+    <!-- FEELING -->
+    <div class="feeling-bar" id="feelingBar">
+      <span style="font-size:0.8rem;color:var(--text-muted);">Feeling</span>
+      <button class="feeling-chip">
+        <span id="feelingEmoji">😊</span>
+        <span id="feelingLabel">Happy</span>
+        <span class="rm" onclick="removeFeeling()">✕</span>
+      </button>
+    </div>
+
+    <!-- LOCATION -->
+    <div class="location-bar" id="locationBar">
+      <i class="fa-solid fa-location-dot" style="color:var(--primary);font-size:0.88rem;flex-shrink:0;"></i>
+      <input class="location-input" type="text" id="locationInput" placeholder="Add your location..."/>
+      <button class="loc-close" onclick="toggleLocation()">✕</button>
+    </div>
+
+    <!-- PHOTO PREVIEW -->
+    <div class="photos-preview" id="photosPreview">
+      <div class="photos-preview-label"><i class="fa-solid fa-images"></i>Photos & Videos — review before posting</div>
+      <div class="photos-grid-preview" id="photosGrid"></div>
+      <button class="add-more-btn" onclick="triggerMedia()"><i class="fa-solid fa-plus"></i> Add more photos</button>
+    </div>
+
+    <!-- POLL -->
+    <div class="poll-section" id="pollSection">
+      <div class="poll-label"><i class="fa-solid fa-chart-bar"></i> Poll Options</div>
+      <div id="pollOptions">
+        <div class="poll-opt-row"><input class="poll-input" type="text" placeholder="Option 1"/><button class="poll-rm-btn" onclick="rmPollOpt(this)"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="poll-opt-row"><input class="poll-input" type="text" placeholder="Option 2"/><button class="poll-rm-btn" onclick="rmPollOpt(this)"><i class="fa-solid fa-xmark"></i></button></div>
+      </div>
+      <button class="poll-add-btn" onclick="addPollOpt()"><i class="fa-solid fa-plus"></i> Add Option</button>
+      <div class="poll-footer">
+        <span class="poll-dur-label">Duration:</span>
+        <select class="poll-dur-sel"><option>1 day</option><option>2 days</option><option selected>1 week</option><option>2 weeks</option></select>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="post-toolbar">
+      <span class="toolbar-lbl">Add</span>
+      <button class="tool-btn" title="Photo / Video" onclick="triggerMedia()"><i class="fa-solid fa-image" style="color:#22c55e;"></i></button>
+      <input type="file" id="mediaInput" accept="image/*,video/*" multiple style="display:none" onchange="handleMedia(this)"/>
+      <button class="tool-btn" title="GIF" onclick="showToast('GIF picker coming soon!')"><i class="fa-solid fa-film" style="color:#f59e0b;"></i></button>
+      <button class="tool-btn" title="Poll" onclick="togglePoll()" id="pollBtn"><i class="fa-solid fa-chart-bar" style="color:var(--primary);"></i></button>
+      <button class="tool-btn" title="Feeling" onclick="openModal('feelingModal')"><i class="fa-solid fa-face-smile" style="color:#f97316;"></i></button>
+      <button class="tool-btn" title="Tag People" onclick="showToast('Tag people coming soon!')"><i class="fa-solid fa-user-tag" style="color:#8b5cf6;"></i></button>
+      <button class="tool-btn" title="Location" onclick="toggleLocation()" id="locBtn"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i></button>
+      <button class="tool-btn" title="Emoji" onclick="toggleEmoji()" id="emojiBtn"><i class="fa-regular fa-face-smile" style="color:#f59e0b;"></i></button>
+    </div>
+  </div>
+
+  <!-- EMOJI PICKER -->
+  <div class="emoji-picker" id="emojiPicker">
+    <div class="ep-grid" id="epGrid"></div>
+  </div>
+
+  <!-- POST SETTINGS -->
+  <div class="options-card">
+    <div class="options-hdr">Post Settings</div>
+    <div class="opt-row" onclick="showToast('Schedule coming soon!')">
+      <div class="opt-icon"><i class="fa-regular fa-calendar-plus"></i></div>
+      <div class="opt-text"><div class="opt-title">Schedule Post</div><div class="opt-sub">Choose when to publish</div></div>
+      <i class="fa-solid fa-chevron-right" style="color:var(--text-light);font-size:0.8rem;"></i>
+    </div>
+    <div class="opt-row">
+      <div class="opt-icon"><i class="fa-solid fa-comment-slash"></i></div>
+      <div class="opt-text"><div class="opt-title">Disable Comments</div><div class="opt-sub">No one can comment</div></div>
+      <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" id="noComments"/><span class="tslider"></span></label>
+    </div>
+    <div class="opt-row">
+      <div class="opt-icon"><i class="fa-solid fa-share-nodes"></i></div>
+      <div class="opt-text"><div class="opt-title">Allow Sharing</div><div class="opt-sub">Let others share your post</div></div>
+      <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" checked/><span class="tslider"></span></label>
+    </div>
+  </div>
+
+  
+  <div class="my-posts-section">
+    <div class="my-posts-header">
+      <div class="my-posts-title"><i class="fa-solid fa-newspaper"></i> My Posts</div>
+      <span class="my-posts-count">{{ posts|length }} post{{ posts|length|pluralize }}</span>
+    </div>
+
+    {% if posts %}
+      {% for post in posts %}
+      <div class="my-post-card" id="mypost-{{ post.id }}">
+
+        <!-- HEADER -->
+        <div class="my-post-header">
+          {% if request.user.photo %}
+            <img class="my-post-avatar" src="{{ request.user.photo.url }}" alt=""/>
+          {% else %}
+            <div class="my-post-avatar" style="background:var(--primary-soft);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:1rem;"><i class="fa-solid fa-user"></i></div>
+          {% endif %}
+          <div class="my-post-meta">
+            <div class="my-post-author">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+            <div class="my-post-time">{{ post.posted_at }}</div>
+          </div>
+          <!-- THREE-DOT MENU -->
+          <button class="my-post-menu-btn" onclick="togglePostMenu(this)">
+            <i class="fa-solid fa-ellipsis"></i>
+            <div class="post-dropdown">
+              <div class="drop-item" onclick="openEditPost('{{ post.id }}', `{{ post.content|escapejs }}`)">
+                <i class="fa-regular fa-pen-to-square"></i> Edit Post
+              </div>
+              <div class="drop-divider"></div>
+              <div class="drop-item danger" onclick="openDeletePost('{{ post.id }}')">
+                <i class="fa-regular fa-trash-can"></i> Delete Post
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- PHOTOS (if any) -->
+        {% with photos=post.photos.all %}
+        {% if photos %}
+          {% if photos|length == 1 %}
+            <img class="my-post-image" src="{{ photos.0.image.url }}" alt="post photo"/>
+          {% else %}
+            <div class="my-post-photo-grid g{{ photos|length|default:4 }}{% if photos|length > 4 %}{% endif %}
+              {% if photos|length == 2 %}g2{% elif photos|length == 3 %}g3{% else %}g4{% endif %}">
+              {% for photo in photos %}{% if forloop.counter <= 4 %}
+                <div class="gp-item" style="position:relative;">
+                  <img src="{{ photo.image.url }}" alt="photo {{ forloop.counter }}"/>
+                  {% if forloop.counter == 4 and photos|length > 4 %}
+                    <div style="position:absolute;inset:0;background:rgba(13,26,46,0.55);display:flex;align-items:center;justify-content:center;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.3rem;">+{{ photos|length|add:"-4" }}</div>
+                  {% endif %}
+                </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- TEXT CONTENT -->
+        <div class="my-post-text" id="post-text-{{ post.id }}">{{ post.content }}</div>
+
+        <!-- STATS -->
+        <div class="my-post-stats">
+          <span><i class="fa-solid fa-heart"></i> {{ post.total_likes }}</span>
+          <span><i class="fa-regular fa-comment"></i> {{ post.comments.count }}</span>
+          <span><i class="fa-regular fa-eye"></i> {{ post.views|default:"0" }}</span>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="my-post-actions">
+          <button class="mpa-btn {% if post.is_liked %}liked{% endif %}" data-post-id="{{ post.id }}" onclick="likeMyPost(this)">
+            <i class="fa-{% if post.is_liked %}solid{% else %}regular{% endif %} fa-heart"></i> Like
+          </button>
+          <button class="mpa-btn" onclick="showToast('Comments coming soon!')">
+            <i class="fa-regular fa-comment"></i> Comment
+          </button>
+          <button class="mpa-btn" onclick="showToast('Link copied!')">
+            <i class="fa-solid fa-share-nodes"></i> Share
+          </button>
+        </div>
+
+      </div>
+    {% endfor %}
+
+    {% else %}
+      <div class="empty-posts">
+        <i class="fa-regular fa-newspaper"></i>
+        <p>You haven't posted anything yet.<br/>Create your first post above!</p>
+      </div>
+      
+    {% endif %}
+
+  </div>
+
+</div><!-- /page-body -->
+
+<!-- AUDIENCE MODAL -->
+<div class="modal-overlay" id="audienceModal" onclick="if(event.target===this)closeModal('audienceModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Who can see this post?</div>
+    <div class="aud-opt selected" onclick="setAudience(this,'Everyone','fa-globe')">
+      <div class="aud-opt-icon" style="background:#e8f1fd;">🌐</div>
+      <div class="aud-opt-text"><div class="aud-opt-title">Everyone</div><div class="aud-opt-sub">Anyone on SchoolConnect</div></div>
+      <i class="fa-solid fa-check aud-check"></i>
+    </div>
+    <div class="aud-opt" onclick="setAudience(this,'Followers Only','fa-user-group')">
+      <div class="aud-opt-icon" style="background:#dcfce7;">👥</div>
+      <div class="aud-opt-text"><div class="aud-opt-title">Followers Only</div><div class="aud-opt-sub">People who follow you</div></div>
+      <i class="fa-solid fa-check aud-check"></i>
+    </div>
+    <div class="aud-opt" onclick="setAudience(this,'Only Me','fa-lock')">
+      <div class="aud-opt-icon" style="background:#f0f4fb;">🔒</div>
+      <div class="aud-opt-text"><div class="aud-opt-title">Only Me</div><div class="aud-opt-sub">Visible only to you</div></div>
+      <i class="fa-solid fa-check aud-check"></i>
+    </div>
+  </div>
+</div>
+
+<!-- FEELING MODAL -->
+<div class="modal-overlay" id="feelingModal" onclick="if(event.target===this)closeModal('feelingModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">How are you feeling?</div>
+    <div class="feeling-grid" id="feelingGrid"></div>
+  </div>
+</div>
+
+<!-- DISCARD MODAL -->
+<div class="modal-overlay" id="discardModal" onclick="if(event.target===this)closeModal('discardModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-icon-wrap" style="width:54px;height:54px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.4rem;">✏️</div>
+    <div class="modal-title">Discard Post?</div>
+    <p style="font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:4px;">You have unsaved content. Leave without posting?</p>
+    <div class="modal-btns">
+      <button class="btn-prim" onclick="closeModal('discardModal')">Keep Editing</button>
+      <button class="btn-dng" onclick="window.history.back()">Discard</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT POST MODAL -->
+<div class="modal-overlay edit-modal" id="editPostModal" onclick="if(event.target===this)closeModal('editPostModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Post</div>
+    <input type="hidden" id="editPostId"/>
+    <textarea class="edit-textarea" id="editPostText" placeholder="Edit your post..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal('editPostModal')">Cancel</button>
+      <button class="btn-prim" onclick="saveEditPost()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE POST MODAL -->
+<div class="modal-overlay" id="deletePostModal" onclick="if(event.target===this)closeModal('deletePostModal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="del-icon">🗑️</div>
+    <div class="modal-title">Delete Post?</div>
+    <p style="font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:4px;">This post will be permanently deleted. This cannot be undone.</p>
+    <input type="hidden" id="deletePostId"/>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal('deletePostModal')">Cancel</button>
+      <button class="btn-dng" onclick="confirmDeletePost()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+  <img id="lbImg" src="" alt="" style="display:none"/>
+  <video id="lbVideo" controls style="display:none;max-width:100%;max-height:80vh;border-radius:10px;"></video>
+  <div class="lb-nav">
+    <button class="lb-nav-btn" onclick="lbPrev()"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="lb-counter" id="lbCounter">1 / 1</span>
+    <button class="lb-nav-btn" onclick="lbNext()"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ── CSRF ── */
+  function getCSRFToken() {
+    let v = null;
+    document.cookie.split(';').forEach(c => {
+      const t = c.trim();
+      if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
+    });
+    return v;
+  }
+
+  /* ── EMOJI / FEELING SETUP ── */
+  const EMOJIS = ['😊','😂','❤️','🔥','👍','🎉','😍','🤔','😢','💪','🙏','✨','😎','🥳','💯','🤣','😅','🫡','🙌','😭','🎊','📚','👀','💬','⚡','🌟','🚀','🎓'];
+  const FEELINGS = [
+    {e:'😊',l:'Happy'},{e:'😍',l:'In Love'},{e:'🎉',l:'Excited'},{e:'😎',l:'Cool'},
+    {e:'😴',l:'Tired'},{e:'😤',l:'Annoyed'},{e:'😢',l:'Sad'},{e:'😰',l:'Anxious'},
+    {e:'🤔',l:'Curious'},{e:'💪',l:'Motivated'},{e:'🤒',l:'Sick'},{e:'🙏',l:'Grateful'},
+    {e:'😤',l:'Frustrated'},{e:'🥳',l:'Celebrating'},{e:'😌',l:'Relaxed'},{e:'🤩',l:'Amazed'},
+  ];
+  EMOJIS.forEach(em => {
+    const btn = document.createElement('button');
+    btn.className = 'ep-btn'; btn.textContent = em;
+    btn.onclick = () => { const ta = document.getElementById('postText'); ta.value += em; onTextInput(); ta.focus(); };
+    document.getElementById('epGrid').appendChild(btn);
+  });
+  FEELINGS.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'feeling-opt';
+    div.innerHTML = `${f.e}<span>${f.l}</span>`;
+    div.onclick = () => selectFeeling(f);
+    document.getElementById('feelingGrid').appendChild(div);
+  });
+
+  /* ── TEXT INPUT ── */
+  function onTextInput() {
+    const ta = document.getElementById('postText');
+    const len = ta.value.length;
+    const cc = document.getElementById('charCount');
+    cc.textContent = `${len} / 1000`;
+    cc.className = 'char-count' + (len >= 1000 ? ' over' : len > 900 ? ' warn' : '');
+    updatePostBtn();
+  }
+  function updatePostBtn() {
+    const hasText = document.getElementById('postText').value.trim().length > 0;
+    const hasMedia = mediaFiles.length > 0;
+    document.getElementById('postBtn').disabled = !hasText && !hasMedia;
+  }
+
+  /* ── MEDIA UPLOAD + PREVIEW ── */
+  // We track raw File objects so we can send them via FormData
+  let mediaFiles = [];     // { file: File, src: string, type: string }
+  let lbIndex = 0;
+  let pollOpen = false, locationOpen = false, emojiOpen = false;
+
+  function triggerMedia() { document.getElementById('mediaInput').click(); }
+
+  function handleMedia(input) {
+    const files = Array.from(input.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        mediaFiles.push({ file, src: e.target.result, type: file.type, name: file.name });
+        renderPhotosPreview();
+        updatePostBtn();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function renderPhotosPreview() {
+    const preview = document.getElementById('photosPreview');
+    const grid = document.getElementById('photosGrid');
+    if (!mediaFiles.length) { preview.classList.remove('has-photos'); grid.innerHTML = ''; return; }
+    preview.classList.add('has-photos');
+    const count = mediaFiles.length;
+    const cls = count === 1 ? 'p1' : count === 2 ? 'p2' : count === 3 ? 'p3' : 'p4';
+    grid.className = `photos-grid-preview ${cls}`;
+    const showCount = Math.min(count, 4);
+    let html = '';
+    for (let i = 0; i < showCount; i++) {
+      const f = mediaFiles[i];
+      const isVideo = f.type.startsWith('video');
+      const isLast = i === 3 && count > 4;
+      html += `<div class="photo-prev-wrap" onclick="openLightbox(${i})">
+        ${isVideo
+          ? `<video src="${f.src}" style="height:${count===1?'220px':'130px'};width:100%;object-fit:cover;" muted></video>`
+          : `<img src="${f.src}" alt="photo ${i+1}"/>`}
+        <div class="photo-overlay">
+          <div class="photo-action-row">
+            <button class="photo-action-btn btn-preview-photo" onclick="event.stopPropagation();openLightbox(${i})"><i class="fa-solid fa-expand"></i></button>
+            <button class="photo-action-btn btn-del-photo" onclick="event.stopPropagation();removePhoto(${i})"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+        ${isLast ? `<div class="more-photos-badge">+${count - 3}</div>` : ''}
+      </div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  function removePhoto(idx) {
+    mediaFiles.splice(idx, 1);
+    renderPhotosPreview();
+    updatePostBtn();
+    showToast('Photo removed');
+  }
+
+  /* ── LIGHTBOX (for preview) ── */
+  function openLightbox(idx) { lbIndex = idx; showLbItem(); document.getElementById('lightbox').classList.add('open'); }
+  function showLbItem() {
+    const f = mediaFiles[lbIndex];
+    const img = document.getElementById('lbImg'); const vid = document.getElementById('lbVideo');
+    document.getElementById('lbCounter').textContent = `${lbIndex + 1} / ${mediaFiles.length}`;
+    if (f.type.startsWith('video')) { img.style.display='none'; vid.style.display='block'; vid.src=f.src; }
+    else { vid.style.display='none'; img.style.display='block'; img.src=f.src; }
+  }
+  function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lbVideo').pause(); }
+  function lbPrev() { lbIndex = (lbIndex - 1 + mediaFiles.length) % mediaFiles.length; showLbItem(); }
+  function lbNext() { lbIndex = (lbIndex + 1) % mediaFiles.length; showLbItem(); }
+
+  /* ── POLL ── */
+  let pollCount = 2;
+  function togglePoll() { pollOpen=!pollOpen; document.getElementById('pollSection').classList.toggle('open',pollOpen); document.getElementById('pollBtn').classList.toggle('active',pollOpen); }
+  function addPollOpt() {
+    if (pollCount >= 4) { showToast('Max 4 options'); return; }
+    pollCount++;
+    const row = document.createElement('div'); row.className='poll-opt-row';
+    row.innerHTML=`<input class="poll-input" type="text" placeholder="Option ${pollCount}"/><button class="poll-rm-btn" onclick="rmPollOpt(this)"><i class="fa-solid fa-xmark"></i></button>`;
+    document.getElementById('pollOptions').appendChild(row);
+  }
+  function rmPollOpt(btn) { if (document.querySelectorAll('.poll-opt-row').length<=2){showToast('Min 2 options');return;} btn.closest('.poll-opt-row').remove(); pollCount--; }
+
+  /* ── LOCATION ── */
+  function toggleLocation() {
+    locationOpen=!locationOpen;
+    document.getElementById('locationBar').classList.toggle('show',locationOpen);
+    document.getElementById('locBtn').classList.toggle('active',locationOpen);
+    if (locationOpen) document.getElementById('locationInput').focus();
+  }
+
+  /* ── EMOJI ── */
+  function toggleEmoji() { emojiOpen=!emojiOpen; document.getElementById('emojiPicker').classList.toggle('open',emojiOpen); document.getElementById('emojiBtn').classList.toggle('active',emojiOpen); }
+
+  /* ── FEELING ── */
+  function selectFeeling(f) { document.getElementById('feelingEmoji').textContent=f.e; document.getElementById('feelingLabel').textContent=f.l; document.getElementById('feelingBar').classList.add('show'); closeModal('feelingModal'); showToast(`Feeling ${f.l} ${f.e}`); }
+  function removeFeeling() { document.getElementById('feelingBar').classList.remove('show'); }
+
+  /* ── AUDIENCE ── */
+  function setAudience(el, label, icon) {
+    document.querySelectorAll('.aud-opt').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('audValue').textContent=label;
+    document.getElementById('chipText').textContent=label;
+    document.getElementById('audIcon').className=`fa-solid ${icon}`;
+    document.getElementById('chipIcon').className=`fa-solid ${icon}`;
+    closeModal('audienceModal');
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PUBLISH POST
+     Uses FormData to send both text AND any attached
+     image/video files to your backend endpoint.
+     Your Django view must accept multipart/form-data.
+     Access files in the view with:
+       request.FILES.getlist('images')
+       request.POST.get('post')
+  ═══════════════════════════════════════════════════ */
+  function publishPost() {
+    const text = document.getElementById('postText').value.trim();
+    if (!text && !mediaFiles.length) { showToast('Add text or a photo first!'); return; }
+
+    const btn = document.getElementById('postBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;"></div> Posting...';
+
+  
+    const fd = new FormData();
+    fd.append('post', text);
+    fd.append('csrfmiddlewaretoken', getCSRFToken());
+    mediaFiles.forEach(f => fd.append('images', f.file));
+
+    fetch('{% url "posts:create_post" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCSRFToken() },
+
+      body: fd
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      console.log(data)
+      showToast( `${data.detail}!🎉`);
+      // Clear composer
+      document.getElementById('postText').value = '';
+      mediaFiles = [];
+      renderPhotosPreview();
+      document.getElementById('charCount').textContent = '0 / 1000';
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Post';
+      // Reload page after short delay so the new post appears in My Posts
+      setTimeout(() => window.location.reload(), 1200);
+    })
+    .catch(err => {
+      showToast('Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Post';
+    });
+  }
+
+  function tryDiscard() {
+    const hasContent = document.getElementById('postText').value.trim() || mediaFiles.length;
+    if (hasContent) openModal('discardModal');
+    else window.history.back();
+  }
+
+  /* ═══════════════════════════════════════════════════
+     MY POSTS — CRUD
+  ═══════════════════════════════════════════════════ */
+
+  /* THREE-DOT MENU TOGGLE */
+  function FetchUserPosts(){
+    fetch('{% url "posts:posts_by_user" %}',{
+      method:'GET',
+      headers:{
+        'X-CSRFToken':getCSRFToken()
+      }
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      console.log(data)
+    })
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    FetchUserPosts();
+  })
+  function togglePostMenu(btn) {
+    const menu = btn.querySelector('.post-dropdown');
+    document.querySelectorAll('.post-dropdown.open').forEach(m => { if (m !== menu) m.classList.remove('open'); });
+    menu.classList.toggle('open');
+    if (menu.classList.contains('open'))
+      setTimeout(() => document.addEventListener('click', closeAllMenus, { once: true }), 0);
+  }
+  function closeAllMenus() { document.querySelectorAll('.post-dropdown.open').forEach(m => m.classList.remove('open')); }
+
+  /* EDIT */
+  function openEditPost(postId, currentText) {
+    document.getElementById('editPostId').value = postId;
+    document.getElementById('editPostText').value = currentText;
+    closeAllMenus();
+    openModal('editPostModal');
+  }
+
+  function saveEditPost() {
+    const postId = document.getElementById('editPostId').value;
+    const newText = document.getElementById('editPostText').value.trim();
+    if (!newText) { showToast('Post cannot be empty'); return; }
+
+    fetch('{% url "posts:create_post" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCSRFToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ post_id: postId, content: newText })
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Update text in DOM immediately — no page reload needed
+      document.getElementById(`post-text-${postId}`).textContent = newText;
+      closeModal('editPostModal');
+      showToast('Post updated! ✅');
+    })
+    .catch(() => showToast('Could not update post.'));
+  }
+
+  /* DELETE */
+  function openDeletePost(postId) {
+    document.getElementById('deletePostId').value = postId;
+    closeAllMenus();
+    openModal('deletePostModal');
+  }
+
+  function confirmDeletePost() {
+    const postId = document.getElementById('deletePostId').value;
+
+    fetch('{% url "posts:create_post" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCSRFToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ post_id: postId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Animate card out, then remove it from the DOM
+      const card = document.getElementById(`mypost-${postId}`);
+      card.style.transition = 'opacity 0.3s, transform 0.3s';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.96)';
+      setTimeout(() => { card.remove(); }, 310);
+      closeModal('deletePostModal');
+      showToast('Post deleted');
+    })
+    .catch(() => showToast('Could not delete post.'));
+  }
+
+  /* LIKE (my posts section) */
+  function likeMyPost(btn) {
+    const postId = btn.dataset.postId;
+    fetch('{% url "posts:like_post" %}', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCSRFToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ post_id: postId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const liked = data.detail === 'Liked';
+      btn.classList.toggle('liked', liked);
+      btn.querySelector('i').className = liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    })
+    .catch(() => showToast('Could not like post.'));
+  }
+
+  /* ── MODAL HELPERS ── */
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  /* ── TOAST ── */
+  let tT;
+  function showToast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m; t.classList.add('show');
+    clearTimeout(tT);
+    tT = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  /* ── SPIN KEYFRAME ── */
+  const s = document.createElement('style');
+  s.textContent = '@keyframes spin{to{transform:rotate(360deg);}}';
+  document.head.appendChild(s);
+</script>
+
+{% endblock content %}

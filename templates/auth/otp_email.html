@@ -1,0 +1,39 @@
+<!-- templates/emails/otp_email.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verify your account</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+    <div style="max-width:500px; margin:40px auto; background:white; padding:20px; border-radius:10px;">
+        
+        <h2 style="color:#333;">Welcome to Webs 🚀</h2>
+        
+        <p>Hi {{ first_name }} {{last_name}}</p>
+        
+        <p>Use the verification code below to complete your registration:</p>
+        
+        <div style="text-align:center; margin:20px 0;">
+            <span style="font-size:30px; letter-spacing:8px; font-weight:bold;">
+                {{ otp }}
+            </span>
+        </div>
+        
+        <p style="color:#888;">⏳ This code expires in 2 minutes.</p>
+        
+        <hr>
+        
+        <p style="font-size:12px; color:#aaa;">
+            If you didn’t request this, you can safely ignore this email.
+        </p>
+
+        <p style="font-size:12px; color:#aaa;">
+            — The Webs Team
+        </p>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,384 @@
+{% extends "base/base.html" %}
+
+{% block title %}notifications{% endblock title %}
+
+{% block content %}
+ <style>
+    :root{
+      --primary:#1a6fd4;--primary-light:#3d8ef0;--primary-soft:#e8f1fd;
+      --primary-dark:#1255a8;--bg:#f0f4fb;--card:#fff;
+      --border:#dce8f8;--text:#0d1a2e;--text-muted:#6b82a0;--text-light:#9ab0c8;
+      --shadow:0 2px 12px rgba(26,111,212,0.08);
+      --nav-height:64px;--radius-sm:10px;
+      --danger:#ef4444;--success:#22c55e;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100%;overflow-x:hidden;overflow-y:auto;padding-bottom:calc(var(--nav-height)+16px);}
+
+    .top-header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1.5px solid var(--border);padding:0 14px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+    .header-left{display:flex;align-items:center;gap:8px;min-width:0;}
+    .back-btn{width:36px;height:36px;border:none;background:var(--primary-soft);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:background 0.2s;flex-shrink:0;}
+    .back-btn:hover{background:var(--border);}
+    .header-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.05rem;color:var(--text);white-space:nowrap;}
+    .unread-pill{background:var(--primary);color:white;font-size:0.64rem;font-weight:700;border-radius:20px;padding:2px 8px;flex-shrink:0;}
+    .header-actions{display:flex;gap:2px;flex-shrink:0;}
+    .hdr-btn{background:none;border:none;color:var(--text-muted);font-size:0.74rem;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:18px;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;}
+    .hdr-btn:hover{background:var(--primary-soft);color:var(--primary);}
+    .hdr-btn.danger:hover{background:#fee2e2;color:var(--danger);}
+
+    .filter-row{display:flex;gap:7px;padding:10px 12px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border);}
+    .filter-row::-webkit-scrollbar{display:none;}
+    .filter-pill{flex-shrink:0;padding:6px 12px;border-radius:30px;border:1.5px solid var(--border);background:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.73rem;color:var(--text-muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;}
+    .filter-pill:hover{border-color:var(--primary);color:var(--primary);}
+    .filter-pill.active{background:var(--primary);color:white;border-color:var(--primary);}
+    .pill-count{background:rgba(255,255,255,0.28);border-radius:8px;padding:0 5px;font-size:0.62rem;}
+    .filter-pill:not(.active) .pill-count{background:var(--primary-soft);color:var(--primary);}
+
+    .page-body{padding:10px 12px 0;}
+
+    .date-label{font-size:0.69rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;padding:10px 2px 6px;display:flex;align-items:center;gap:5px;}
+    .date-label i{color:var(--primary);font-size:0.64rem;}
+
+    .notif-item{background:var(--card);border-radius:var(--radius-sm);border:1.5px solid var(--border);display:flex;align-items:flex-start;gap:10px;padding:12px 10px;margin-bottom:7px;cursor:pointer;transition:all 0.22s;position:relative;overflow:hidden;animation:fadeUp 0.3s ease both;}
+    .notif-item:hover{box-shadow:var(--shadow);transform:translateX(2px);}
+    .notif-item.unread{background:var(--primary-soft);border-color:rgba(26,111,212,0.2);}
+    .notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--primary);border-radius:0 2px 2px 0;}
+    .notif-item.removing{opacity:0;transform:translateX(50px) scale(0.95);transition:all 0.32s ease;pointer-events:none;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(7px);}to{opacity:1;transform:translateY(0);}}
+
+    .notif-avatar-wrap{position:relative;flex-shrink:0;}
+    .notif-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border);display:block;}
+    .notif-badge{position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.48rem;border:2px solid white;color:white;}
+    .bl{background:#ef4444;}.bc{background:var(--primary);}.bf{background:#22c55e;}.bg2{background:#f59e0b;}.bm{background:#8b5cf6;}
+
+    .notif-content{flex:1;min-width:0;}
+    .notif-text{font-size:0.85rem;line-height:1.5;color:var(--text);}
+    .notif-text strong{font-weight:700;}
+    .nh{color:var(--primary);font-weight:600;}
+    .notif-time{font-size:0.7rem;color:var(--text-light);margin-top:3px;display:flex;align-items:center;gap:4px;}
+    .udot{width:6px;height:6px;background:var(--primary);border-radius:50%;flex-shrink:0;margin-left:auto;}
+
+    .notif-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid var(--border);}
+    .notif-follow-btn{background:var(--primary);color:white;border:none;padding:5px 11px;border-radius:20px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.72rem;cursor:pointer;transition:all 0.2s;flex-shrink:0;align-self:center;white-space:nowrap;}
+    .notif-follow-btn.following{background:var(--primary-soft);color:var(--primary);border:1.5px solid var(--primary);}
+
+    .notif-del-btn{position:absolute;top:9px;right:9px;width:26px;height:26px;border-radius:50%;border:none;background:#fee2e2;color:var(--danger);font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.18s,transform 0.18s;transform:scale(0.75);}
+    .notif-item:hover .notif-del-btn,.notif-del-btn:focus{opacity:1;transform:scale(1);}
+    @media(hover:none){.notif-del-btn{opacity:1;transform:scale(1);background:transparent;color:var(--text-light);}}
+
+    .empty-state{text-align:center;padding:60px 20px;}
+    .empty-state i{font-size:2.8rem;color:var(--border);margin-bottom:14px;display:block;}
+    .empty-state h3{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;color:var(--text);margin-bottom:6px;}
+    .empty-state p{font-size:0.82rem;color:var(--text-muted);}
+
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--card);border-top:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-around;z-index:500;box-shadow:0 -2px 14px rgba(26,111,212,0.08);}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--text-light);font-size:0.61rem;font-weight:500;padding:6px 0;transition:color 0.2s;position:relative;cursor:pointer;}
+    .nav-item i{font-size:1.22rem;transition:transform 0.2s;}
+    .nav-item:hover,.nav-item.active{color:var(--primary);}
+    .nav-item:hover i{transform:translateY(-2px);}
+    .nav-active-dot{width:5px;height:5px;background:var(--primary);border-radius:50%;position:absolute;bottom:2px;}
+    .nav-item:not(.active) .nav-active-dot{display:none;}
+    .nav-badge{position:absolute;top:2px;right:calc(50% - 16px);background:#e53935;color:white;font-size:0.58rem;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center;line-height:1.4;}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(13,26,46,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:22px 22px 0 0;width:100%;max-width:440px;padding:20px 20px 32px;animation:slideUp 0.28s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px;}
+    .modal-icon{width:52px;height:52px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:1.3rem;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.98rem;color:var(--text);text-align:center;margin-bottom:6px;}
+    .modal-sub{font-size:0.8rem;color:var(--text-muted);text-align:center;line-height:1.5;margin-bottom:18px;}
+    .modal-btns{display:flex;gap:10px;}
+    .btn-sec{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:11px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.85rem;cursor:pointer;}
+    .btn-dng{flex:1;background:var(--danger);color:white;border:none;padding:11px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;}
+
+    .toast{position:fixed;bottom:calc(var(--nav-height)+12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:9px 20px;border-radius:30px;font-size:0.81rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+</head>
+<body>
+<header class="top-header">
+  <div class="header-left">
+    <button class="back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+    <span class="header-title">Notifications</span>
+    <span class="unread-pill" id="unreadPill">8 new</span>
+  </div>
+  <div class="header-actions">
+    <button class="hdr-btn" onclick="markAllRead()">Mark read</button>
+    <button class="hdr-btn danger" onclick="openClearModal()">Clear all</button>
+  </div>
+</header>
+
+<div class="filter-row">
+  <button class="filter-pill active" onclick="setFilter('all',this)"><i class="fa-solid fa-border-all"></i>All<span class="pill-count" id="cnt-all">0</span></button>
+  <button class="filter-pill" onclick="setFilter('like',this)"><i class="fa-solid fa-heart"></i>Likes<span class="pill-count" id="cnt-like">0</span></button>
+  <button class="filter-pill" onclick="setFilter('comment',this)"><i class="fa-solid fa-comment"></i>Comments<span class="pill-count" id="cnt-comment">0</span></button>
+  <button class="filter-pill" onclick="setFilter('follow',this)"><i class="fa-solid fa-user-plus"></i>Follows<span class="pill-count" id="cnt-follow">0</span></button>
+  <button class="filter-pill" onclick="setFilter('group',this)"><i class="fa-solid fa-users"></i>Groups<span class="pill-count" id="cnt-group">0</span></button>
+  <button class="filter-pill" onclick="setFilter('mention',this)"><i class="fa-solid fa-at"></i>Mentions<span class="pill-count" id="cnt-mention">0</span></button>
+</div>
+
+<div class="page-body" id="pageBody"></div>
+<div class="modal-overlay" id="clearModal" onclick="if(event.target===this)closeClearModal()">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">Clear All Notifications?</div>
+    <div class="modal-sub">This will permanently remove all notifications in the current view.</div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeClearModal()">Cancel</button>
+      <button class="btn-dng" onclick="clearAll()">Clear All</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script id='initial-notifications' type='application/json'>
+  {{notify_data|safe}}
+</script>
+
+<script>
+  // -------------------- Load Initial Notifications From Django --------------------
+const initialDataElement = document.getElementById('initial-notifications');
+
+let serverNotifications = [];
+
+if (initialDataElement) {
+  try {
+    serverNotifications = JSON.parse(initialDataElement.textContent);
+    
+  } catch (err) {
+    console.error('Error parsing notifications JSON', err);
+  }
+}
+
+// -------------------- Convert Backend → Frontend Format --------------------
+const mappedServerNotifs = serverNotifications.map((n, index) => ({
+  id: n.id,
+  type: 'follow', // improve later dynamically
+  is_read: n.is_read,
+  group: 'Today',
+  seed: (n.first_name || 'user').toLowerCase(),
+  text: n.notification,
+  time: n.date,
+  profile: n.profile,
+  follow: false
+}));
+
+// -------------------- Static Demo Data --------------------
+const NOTIFS = [ /* keep your existing array exactly as it is */ ];
+
+const TB = {
+  like:{i:'fa-heart',c:'bl'},
+  comment:{i:'fa-comment',c:'bc'},
+  follow:{i:'fa-user-plus',c:'bf'},
+  group:{i:'fa-users',c:'bg2'},
+  mention:{i:'fa-at',c:'bm'}
+};
+
+// 🔥 Merge server + static data
+let data = [...mappedServerNotifs, ...NOTIFS];
+let cur = 'all';
+
+// -------------------- WebSocket --------------------
+const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+const notificationSocket = new WebSocket(protocol + window.location.host + `/ws/notifications/`);
+
+//notificationSocket.onopen = () => console.log('Notifications WS CONNECTED 🔥');
+
+notificationSocket.onmessage = function(e){
+  const newNotif = JSON.parse(e.data);
+  console.log('NEW NOTIFICATION:', newNotif);
+
+  const id = data.length ? data[data.length-1].id + 1 : 1;
+
+  const notif = {
+    id: id,
+    type: newNotif.type || 'follow',
+    is_read: newNotif.is_read,
+    group: 'Now',
+    seed: newNotif.sender?.toLowerCase() || 'anon',
+    text: newNotif.message || `<strong>${newNotif.sender}</strong> did something!`,
+    time: newNotif.time,
+    thumb: newNotif.thumb || null,
+    follow: newNotif.follow || false,
+    profile:newNotif.profile
+  };
+
+  data.unshift(notif);
+  render();
+};
+
+notificationSocket.onclose = () => console.log('Notifications WS DISCONNECTED ❌');
+notificationSocket.onerror = (e) => console.log('Notifications WS ERROR', e);
+
+// -------------------- Render --------------------
+function render(f = cur){
+  const body = document.getElementById('pageBody');
+  const list = f === 'all' ? data : data.filter(n => n.type === f);
+
+  if(!list.length){
+    body.innerHTML = `<div class="empty-state"><i class="fa-regular fa-bell-slash"></i><h3>No notifications</h3><p>Nothing here yet!</p></div>`;
+    return;
+  }
+
+  const groups = [...new Set(list.map(n => n.group))];
+  let h = '';
+
+  groups.forEach(g => {
+    const items = list.filter(n => n.group === g);
+    h += `<div class="date-label"><i class="fa-solid fa-calendar-day" ></i>${g}</div>`;
+
+    items.forEach((n,i) => {
+      const tb = TB[n.type] || TB.like;
+
+      h += `<div class="notif-item${!n.is_read?' unread':''}" id="n${n.id}" onclick="markRead(${n.id})" style="animation-delay:${i*0.04}s">
+        <div class="notif-avatar-wrap">
+          <img class="notif-avatar" src="${n.profile}?seed=${n.seed}" alt=""/>
+          <div class="notif-badge ${tb.c}"><i class="fa-solid ${tb.i}"></i></div>
+        </div>
+        <div class="notif-content">
+          <div class="notif-text">${n.text}</div>
+          <div class="notif-time"><i class="fa-regular fa-clock"></i>${n.time}${n.unread?'<span class="udot"></span>':''}</div>
+        </div>
+        ${n.follow?`<button class="notif-follow-btn" id="fb${n.id}" onclick="event.stopPropagation();toggleFollow(${n.id})">Follow</button>`:''}
+        <button class="notif-del-btn" onclick="del(${n.id})" title="Delete"><i class="fa-solid fa-xmark"></i></button>
+      </div>`;
+    });
+  });
+
+  body.innerHTML = h;
+  updateCounts();
+}
+
+  /* ── CSRF ── */
+    function getCSRFToken() {
+    let cookieValue = null;
+    document.cookie.split(';').forEach(cookie => {
+      const trimmed = cookie.trim();
+      if (trimmed.startsWith('csrftoken=')) {
+        cookieValue = trimmed.substring('csrftoken='.length);
+      }
+    });
+    return cookieValue;
+  }
+
+
+
+// -------------------- Actions --------------------
+function markRead(id){
+
+  fetch(`{% url "notifications:mark_read" %}`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken(),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({ notificationId:id,type:'unread' })
+  })
+  .then(res => res.json())
+  .then(data=>{
+    if(data.success){
+      updateCounts();
+    }
+    else{
+      console.log(data)
+    }
+  })
+}
+
+function markAllRead(){
+  data.forEach(n => n.unread = false);
+  render();
+  showToast('All marked as read ✓');
+}
+
+function del(id){
+    fetch(`{% url "notifications:mark_read" %}`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken(),
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({ notificationId:id , type:'delete'})
+  })
+  .then(res => res.json())
+  .then(data=>{
+    console.log(data)
+  })
+
+  const el = document.getElementById(`n${id}`);
+  if(el){
+    el.classList.add('removing');
+    setTimeout(()=>{
+      data = data.filter(n => n.id !== id);
+      render();
+    },330);
+  }
+  showToast('Removed');
+}
+    
+
+function toggleFollow(id){
+  const el = document.getElementById(`fb${id}`);
+  const f = el.classList.toggle('following');
+  el.textContent = f ? '✓ Following' : 'Follow';
+  showToast(f ? 'Following!' : 'Unfollowed');
+}
+
+function setFilter(type,btn){
+  cur = type;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  render(type);
+}
+
+function updateCounts(){
+  const u = data.filter(n => n.unread).length;
+  const p = document.getElementById('unreadPill');
+
+  p.textContent = u > 0 ? `${u} new` : 'All read';
+  p.style.background = u > 0 ? 'var(--primary)' : 'var(--success)';
+
+  ['like','comment','follow','group','mention'].forEach(t => {
+    const el = document.getElementById(`cnt-${t}`);
+    if(el) el.textContent = data.filter(n => n.type === t).length;
+  });
+
+  document.getElementById('cnt-all').textContent = data.length;
+}
+
+// -------------------- UI Helpers --------------------
+function openClearModal(){document.getElementById('clearModal').classList.add('open');}
+function closeClearModal(){document.getElementById('clearModal').classList.remove('open');}
+function clearAll(){
+  if(cur==='all') data=[];
+  else data = data.filter(n=>n.type!==cur);
+  closeClearModal();
+  render();
+  showToast('Cleared 🗑️');
+}
+
+let tT;
+function showToast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;
+  t.classList.add('show');
+  clearTimeout(tT);
+  tT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function go(url,el){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  setTimeout(()=>window.location.href=url,120);
+}
+
+// -------------------- Init --------------------
+render();
+</script>
+
+{% endblock content %}

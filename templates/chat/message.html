@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {{request.user.username}}
+    <h2 id = 'count'>{{message}}</h2>
+    <form action="" id='form'>
+        <input type="text" id='input-text'> <br>
+        <button type="submit">send</button>
+    </form>
+        <div id="message">
+        {% for msg in messages %}
+         <div style="text-align: {% if msg.sender == request.user %}right{%else%}left{% endif %}">
+            <strong>{{msg.sender.username}}</strong>
+            <p>{{msg.content}}</p>
+         </div>
+        {% endfor %}
+    </div>
+</body>
+<script>
+    // 🔥 Get room name from Django
+    const roomName = "{{ room_name }}";
+
+    // 🔌 Connect WebSocket
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    // 📩 Receive messages
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        const messageBox = document.getElementById("message");
+
+        const newMessage = document.createElement("div");
+
+        // 👇 Align left/right like your template
+        if (data.sender === "{{ request.user.username }}") {
+            newMessage.style.textAlign = "right";
+        } else {
+            newMessage.style.textAlign = "left";
+        }
+
+        newMessage.innerHTML = `
+            <strong>${data.sender}</strong>
+            <p>${data.message}</p>
+        `;
+
+        messageBox.appendChild(newMessage);
+
+        // 🔥 Auto scroll
+        messageBox.scrollTop = messageBox.scrollHeight;
+    };
+
+    // 🚨 Handle errors (optional but helpful)
+    chatSocket.onerror = function(e){
+        console.log("WebSocket error:", e);
+    };
+
+    // 🧠 Send message (HOOK into your form)
+    const form = document.getElementById("form");
+
+    form.addEventListener("submit", function(e){
+        e.preventDefault(); // ❌ stop page reload
+
+        const input = document.getElementById("input-text");
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        chatSocket.send(JSON.stringify({
+            message: message
+        }));
+
+        input.value = "";
+    });
+   
+
+
+
+
+
+
+    /*
+    const otherUserId = {{other_user.id}};
+    const myUserId = {{request.user.id}};
+
+    const socket = new WebSocket(
+        `ws://localhost:8000/ws/private-chat/${otherUserId}/`
+    );
+
+    const form = document.getElementById('form');
+    const inputText = document.getElementById('input-text');
+    const messages = document.getElementById('message');
+
+    socket.onopen = () => {
+        console.log("Connected ✅");
+    };
+
+    socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        const isMe = data.user_id === myUserId;
+
+        messages.insertAdjacentHTML('beforeend', `
+            <div style="text-align: ${isMe ? 'right' : 'left'}">
+                <h6>@${data.username}</h6>
+                <p>${data.message}</p>
+            </div>
+        `);
+    };
+
+    socket.onerror = (e) => {
+        console.log("WebSocket error ❌", e);
+    };
+
+    socket.onclose = (e) => {
+        console.log("WebSocket closed ❌", e);
+    };
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const message = inputText.value.trim();
+
+        if (message && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ message }));
+        } else {
+            console.log("Socket not ready or empty message ❌");
+        }
+
+        inputText.value = '';
+    });
+    */
+</script>
+</html>

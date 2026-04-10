@@ -1,0 +1,464 @@
+{% extends "base/base.html" %}
+
+{% block title %}Profile{% endblock title %}
+
+{% block content %}
+  <style>
+    
+    /* ── COVER ── */
+    .cover-section{position:relative;height:200px;background:linear-gradient(135deg,#1255a8 0%,#1a6fd4 50%,#3d8ef0 100%);overflow:hidden;}
+    .cover-section img#coverPhoto{width:100%;height:100%;object-fit:cover;display:block;}
+    .cover-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(13,26,46,0.55) 100%);}
+    .cover-edit-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.22);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,0.4);color:white;padding:7px 14px;border-radius:30px;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;transition:background 0.2s;}
+    .cover-edit-btn:hover{background:rgba(255,255,255,0.35);}
+    .cover-back-btn{position:absolute;top:14px;left:14px;width:36px;height:36px;background:rgba(255,255,255,0.22);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,0.4);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.95rem;transition:background 0.2s;}
+    .cover-back-btn:hover{background:rgba(255,255,255,0.35);}
+
+    /* ── PROFILE CARD ── */
+    .profile-card{background:var(--card);margin:0 14px;border-radius:0 0 var(--radius) var(--radius);border:1.5px solid var(--border);border-top:none;box-shadow:var(--shadow);padding:0 18px 18px;position:relative;animation:fadeUp 0.4s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+    .avatar-wrapper{position:relative;display:inline-block;margin-top:-52px;}
+    .profile-avatar{width:100px;height:100px;border-radius:50%;object-fit:cover;border:4px solid white;box-shadow:0 4px 16px rgba(26,111,212,0.18);display:block;}
+    .avatar-edit-btn{position:absolute;bottom:4px;right:4px;width:28px;height:28px;background:var(--primary);color:white;border:2.5px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;cursor:pointer;transition:background 0.2s;}
+    .avatar-edit-btn:hover{background:var(--primary-dark);}
+
+    .profile-top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+    .profile-name-block{flex:1;}
+    .profile-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.25rem;color:var(--text);margin-top:6px;}
+    .profile-username{color:var(--primary);font-size:0.85rem;font-weight:500;margin-top:1px;}
+    .profile-dept{color:var(--text-muted);font-size:0.8rem;margin-top:3px;display:flex;align-items:center;gap:5px;}
+
+    .edit-profile-btn{background:var(--primary);color:white;border:none;padding:8px 18px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.2s;margin-top:14px;flex-shrink:0;}
+    .edit-profile-btn:hover{background:var(--primary-dark);}
+
+    /* STATS ROW */
+    .stats-row{display:flex;gap:0;margin:14px 0 0;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+    .stat-box{flex:1;text-align:center;padding:12px 8px;cursor:pointer;transition:background 0.2s;}
+    .stat-box:hover{background:var(--primary-soft);}
+    .stat-box+.stat-box{border-left:1px solid var(--border);}
+    .stat-num{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.15rem;color:var(--primary);}
+    .stat-lbl{font-size:0.72rem;color:var(--text-muted);font-weight:500;margin-top:1px;}
+
+    /* BIO */
+    .bio-text{font-size:0.88rem;color:var(--text-muted);line-height:1.6;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+
+    /* TAGS */
+    .interest-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+    .tag{background:var(--primary-soft);color:var(--primary);border-radius:20px;padding:4px 12px;font-size:0.76rem;font-weight:600;}
+
+    /* ── SECTION CARD ── */
+    .section-card{background:var(--card);margin:12px 14px 0;border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;animation:fadeUp 0.4s ease both;}
+    .section-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;}
+    .section-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;color:var(--text);display:flex;align-items:center;gap:8px;}
+    .section-title i{color:var(--primary);font-size:0.9rem;}
+    .section-edit-btn{background:none;border:none;color:var(--primary);font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;transition:background 0.2s;}
+    .section-edit-btn:hover{background:var(--primary-soft);}
+
+    /* INFO ROWS */
+    .info-row{display:flex;align-items:center;gap:14px;padding:11px 16px;border-top:1px solid var(--border);}
+    .info-icon{width:34px;height:34px;background:var(--primary-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.85rem;flex-shrink:0;}
+    .info-content{flex:1;}
+    .info-label{font-size:0.72rem;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:0.3px;}
+    .info-value{font-size:0.9rem;color:var(--text);font-weight:500;margin-top:1px;}
+    .info-edit-btn{width:30px;height:30px;border:none;background:transparent;color:var(--text-light);font-size:0.8rem;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .info-edit-btn:hover{background:var(--primary-soft);color:var(--primary);}
+
+    /* PHOTO GRID */
+    .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 0 4px;}
+    .photo-thumb{aspect-ratio:1;overflow:hidden;cursor:pointer;}
+    .photo-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s;display:block;}
+    .photo-thumb:hover img{transform:scale(1.06);}
+    .photos-see-all{display:flex;align-items:center;justify-content:center;padding:12px;border-top:1px solid var(--border);color:var(--primary);font-weight:600;font-size:0.85rem;cursor:pointer;gap:6px;}
+    .photos-see-all:hover{background:var(--primary-soft);}
+
+    /* FRIENDS SCROLL */
+    .friends-scroll{display:flex;gap:12px;overflow-x:auto;padding:0 16px 14px;scrollbar-width:none;}
+    .friends-scroll::-webkit-scrollbar{display:none;}
+    .friend-chip{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+    .friend-chip img{width:58px;height:58px;border-radius:50%;object-fit:cover;border:2.5px solid var(--primary-soft);}
+    .friend-chip span{font-size:0.72rem;color:var(--text-muted);font-weight:500;max-width:62px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+    /* ACHIEVEMENTS */
+    .achievement-list{padding:0 16px 14px;display:flex;flex-direction:column;gap:10px;}
+    .achievement-item{display:flex;align-items:center;gap:12px;background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;}
+    .ach-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .ach-icon.gold{background:#fef9c3;} .ach-icon.blue{background:var(--primary-soft);} .ach-icon.green{background:#dcfce7;} .ach-icon.red{background:#fee2e2;}
+    .ach-text strong{font-size:0.86rem;color:var(--text);display:block;font-weight:700;}
+    .ach-text span{font-size:0.77rem;color:var(--text-muted);}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:calc(var(--nav-height)+14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:600;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px 20px 32px;animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);}
+    @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+    .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 18px;}
+    .modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);margin-bottom:20px;text-align:center;}
+    .modal-field{margin-bottom:16px;}
+    .modal-field label{display:block;font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-bottom:6px;}
+    .modal-field input,.modal-field textarea,.modal-field select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .modal-field input:focus,.modal-field textarea:focus,.modal-field select:focus{border-color:var(--primary);background:var(--primary-soft);}
+    .modal-field textarea{resize:vertical;min-height:80px;}
+    .modal-actions{display:flex;gap:10px;margin-top:20px;}
+    .btn-primary{flex:1;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:background 0.2s;}
+    .btn-primary:hover{background:var(--primary-dark);}
+    .btn-secondary{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.9rem;cursor:pointer;}
+
+    /* LIGHTBOX */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:700;display:none;align-items:center;justify-content:center;}
+    .lightbox.open{display:flex;}
+    .lightbox img{max-width:92vw;max-height:88vh;border-radius:8px;object-fit:contain;}
+    .lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover-section" id="coverSection">
+  {% if user.cover_photo %}
+  <img id="coverPhoto" src="{{user.cover_photo.url}}" alt=""/>
+  {% else %}
+  <img id="coverPhoto" src="" alt="" style="display:none"/>
+  {% endif %}
+  <div class="cover-overlay"></div>
+  <!--
+  <button class="cover-edit-btn" onclick="triggerCoverUpload()"><i class="fa-solid fa-camera"></i> Edit Cover</button>
+  <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="changeCover(this)"/>
+    -->
+  </div>
+
+<!-- PROFILE CARD -->
+<div style="padding:0 14px;">
+  <div class="profile-card" id="profileCard">
+    <div class="profile-top-row">
+      <div style="display:flex;align-items:flex-end;gap:12px;flex:1;">
+        <div class="avatar-wrapper">
+          <img class="profile-avatar" id="profileAvatar" src="{{user.photo.url}}" alt="Me"/>
+          
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="changeAvatar(this)"/>
+        </div>
+        <div class="profile-name-block">
+          <div class="profile-name" id="displayName"><p>{{user.first_name|title}} {{user.last_name|title}}</p></div> 
+          <div class="profile-username" id="displayUsername">{{user.email}} {{user.username}}</div>
+          <div class="profile-dept"><i class="fa-solid fa-graduation-cap"></i> <span id="displayDept">{{user.department}}</span></div>
+        </div>
+      </div>
+      <!--
+      <button class="edit-profile-btn" onclick="openEditModal()"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
+       -->
+      </div>
+
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-box" onclick="showToast('Viewing posts...')">
+        <div class="stat-num">{{user.posts.count}}</div><div class="stat-lbl">Posts</div>
+      </div>
+      <div class="stat-box" onclick="showToast('Viewing followers...')">
+        <div class="stat-num" id="followersCount">{{user.following.count }}</div><div class="stat-lbl">Following</div>
+      </div>
+      <div class="stat-box" onclick="showToast('Viewing following...')">
+        <div class="stat-num" id="followingCount">{{user.followers.count}}</div><div class="stat-lbl">Followers</div>
+      </div>
+      <div class="stat-box" onclick="showToast('Viewing groups...')">
+        <div class="stat-num">0</div><div class="stat-lbl">Groups</div>
+      </div>
+          <div class="stat-box" onclick="fetchChat({{user.id}})">
+        <div class="stat-num"> <i class = "fa-solid fa-address-card"></i> </div><div class="stat-lbl">Chat</div>
+            </div>
+    </div>
+
+    <!-- BIO -->
+    <div class="bio-text" id="displayBio">
+      Passionate about AI, open-source, and building things that matter 🚀 | CS Student at Malawi University | Coffee lover ☕ | Always learning.
+    </div>
+
+    <!-- INTEREST TAGS -->
+    <div class="interest-tags" id="displayTags">
+      <span class="tag">Machine Learning</span>
+      <span class="tag">Web Dev</span>
+      <span class="tag">Open Source</span>
+      <span class="tag">Photography</span>
+      <span class="tag">Music</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT INFO -->
+<div class="section-card" style="animation-delay:0.1s">
+  <div class="section-header">
+    <div class="section-title"><i class="fa-solid fa-address-card"></i> Contact & Info</div>
+  <!--  <button class="section-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i> Edit</button> -->
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+    <div class="info-content"><div class="info-label">Email</div><div class="info-value" id="displayEmail">{{user.email}}</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
+    <div class="info-content"><div class="info-label">Phone</div><div class="info-value" id="displayPhone">{{user.phone_number}}</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-cake-candles"></i></div>
+    <div class="info-content"><div class="info-label">Date of Birth</div><div class="info-value" id="displayDob">{{user.date_of_birth|date:'F j Y'}}</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+    <div class="info-content"><div class="info-label">Location</div><div class="info-value" id="displayLocation">Lilongwe, Malawi</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-link"></i></div>
+    <div class="info-content"><div class="info-label">Website / Portfolio</div><div class="info-value" id="displayWebsite" style="color:var(--primary)">github.com/alexmwanza</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-id-badge"></i></div>
+    <div class="info-content"><div class="info-label">Student ID</div><div class="info-value" id="displayStudentId">CS/2022/0471</div></div>
+    
+  </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-venus-mars"></i></div>
+    <div class="info-content"><div class="info-label">Gender</div><div class="info-value" id="displayGender">{{request.user.gender}}</div></div>
+     </div>
+  <div class="info-row">
+    <div class="info-icon"><i class="fa-solid fa-calendar-check"></i></div>
+    <div class="info-content"><div class="info-label">Joined</div><div class="info-value">{{user.date_joined|date:'F j Y'}}</div></div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS -->
+<div class="section-card" style="animation-delay:0.15s">
+  <div class="section-header">
+    <div class="section-title"><i class="fa-solid fa-trophy"></i> Achievements</div>
+  </div>
+  <div class="achievement-list">
+    <div class="achievement-item">
+      <div class="ach-icon gold">🏆</div>
+      <div class="ach-text"><strong>Dean's List 2023</strong><span>Top 5% of Computer Science Department</span></div>
+    </div>
+    <div class="achievement-item">
+      <div class="ach-icon blue">💻</div>
+      <div class="ach-text"><strong>Hackathon Winner</strong><span>1st Place — TechFest 2023</span></div>
+    </div>
+    <div class="achievement-item">
+      <div class="ach-icon green">🌍</div>
+      <div class="ach-text"><strong>Community Leader</strong><span>Led 3 student volunteer initiatives</span></div>
+    </div>
+    <div class="achievement-item">
+      <div class="ach-icon red">🎤</div>
+      <div class="ach-text"><strong>Speaker</strong><span>Presented at Youth STEM Conference 2024</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTOS -->
+<div class="section-card" style="animation-delay:0.2s">
+  <div class="section-header">
+    <div class="section-title"><i class="fa-solid fa-images"></i> Photos</div>
+    
+  </div>
+  <div class="photos-grid">
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200&q=80" onclick="openLightbox(this)"/></div>
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1532094349884-543559c7671e?w=200&q=80" onclick="openLightbox(this)"/></div>
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=200&q=80" onclick="openLightbox(this)"/></div>
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=200&q=80" onclick="openLightbox(this)"/></div>
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=200&q=80" onclick="openLightbox(this)"/></div>
+    <div class="photo-thumb"><img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&q=80" onclick="openLightbox(this)"/></div>
+  </div>
+  <div class="photos-see-all" onclick="showToast('Opening all photos...')">
+    <i class="fa-solid fa-grid-2"></i> See All Photos
+  </div>
+</div>
+
+<!-- FRIENDS -->
+<div class="section-card" style="animation-delay:0.25s;margin-bottom:0;">
+  <div class="section-header">
+    <div class="section-title"><i class="fa-solid fa-user-group"></i> Friends</div>
+    <button class="section-edit-btn" onclick="showToast('Viewing all friends...')">See All</button>
+  </div>
+  <div class="friends-scroll">
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sarah"/><span>Sarah B.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=brian"/><span>Brian K.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=clara"/><span>Clara D.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=david"/><span>David O.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=emily"/><span>Emily R.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=priya"/><span>Priya N.</span></div>
+    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=tom"/><span>Tom Z.</span></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-overlay" id="editModal" onclick="closeEditModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Profile</div>
+
+    <div class="modal-field">
+      <label>Full Name</label>
+      <input type="text" id="editName" value="{{request.user.first_name}} {{request.user.last_name}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Username</label>
+      <input type="text" id="editUsername" value="{{request.user.username}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Bio</label>
+      <textarea id="editBio">Passionate about AI, open-source, and building things that matter 🚀 | CS Student at Malawi University | Coffee lover ☕ | Always learning.</textarea>
+    </div>
+    <div class="modal-field">
+      <label>Department & Year</label>
+      <input type="text" id="editDept" value="{{request.user.department}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Email</label>
+      <input type="email" id="editEmail" value="{{request.user.email}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Phone Number</label>
+      <input type="tel" id="editPhone" value="{{request.user.phone_number}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Date of Birth</label>
+      <input type="date" id="editDob" value="{{request.user.date_of_birth}}"/>
+    </div>
+    <div class="modal-field">
+      <label>Gender</label>
+      <select id="editGender">
+        <option value="Male" selected>Male</option>
+        <option value="Female">Female</option>
+        <option value="Non-binary">Non-binary</option>
+        <option value="Prefer not to say">Prefer not to say</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>Location</label>
+      <input type="text" id="editLocation" value="Lilongwe, Malawi"/>
+    </div>
+    <div class="modal-field">
+      <label>Website / Portfolio</label>
+      <input type="url" id="editWebsite" value="github.com/alexmwanza"/>
+    </div>
+    <div class="modal-field">
+      <label>Student ID</label>
+      <input type="text" id="editStudentId" value="CS/2022/0471"/>
+    </div>
+    <div class="modal-field">
+      <label>Interests (comma separated)</label>
+      <input type="text" id="editInterests" value="Machine Learning, Web Dev, Open Source, Photography, Music"/>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeEditModalBtn()">Cancel</button>
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close"><i class="fa-solid fa-xmark"></i></button>
+  <img id="lightboxImg" src="" alt=""/>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+
+  function fetchChat(userId){
+    fetch(`/chat/start-chat/${userId}`)
+    .then(response=>response.json())
+    .then(data=>{
+      const roomName = data.room_name;
+
+      window.location.href = `/chat/chat/${roomName}/${userId}`
+    });
+  }
+  // COVER
+  function triggerCoverUpload() { document.getElementById('coverInput').click(); }
+  function changeCover(input) {
+    if (!input.files[0]) return;
+    const r = new FileReader();
+    r.onload = e => {
+      const img = document.getElementById('coverPhoto');
+      img.src = e.target.result; img.style.display = 'block';
+      document.getElementById('coverSection').style.background = 'none';
+      showToast('Cover photo updated!');
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+
+  // AVATAR
+  function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
+  function changeAvatar(input) {
+    if (!input.files[0]) return;
+    const r = new FileReader();
+    r.onload = e => { document.getElementById('profileAvatar').src = e.target.result; showToast('Profile photo updated!'); };
+    r.readAsDataURL(input.files[0]);
+  }
+
+  // MODAL
+  function openEditModal() { document.getElementById('editModal').classList.add('open'); }
+  function closeEditModal(e) { if (e.target === document.getElementById('editModal')) closeEditModalBtn(); }
+  function closeEditModalBtn() { document.getElementById('editModal').classList.remove('open'); }
+
+  function saveProfile() {
+    const get = id => document.getElementById(id).value.trim();
+
+    document.getElementById('displayName').textContent = get('editName');
+    document.getElementById('displayUsername').textContent = '@' + get('editUsername').replace('@','');
+    document.getElementById('displayBio').textContent = get('editBio');
+    document.getElementById('displayDept').textContent = get('editDept');
+    document.getElementById('displayEmail').textContent = get('editEmail');
+    document.getElementById('displayPhone').textContent = get('editPhone');
+    document.getElementById('displayLocation').textContent = get('editLocation');
+    document.getElementById('displayWebsite').textContent = get('editWebsite');
+    document.getElementById('displayStudentId').textContent = get('editStudentId');
+    document.getElementById('displayGender').textContent = get('editGender');
+
+    // DOB
+    const dob = new Date(get('editDob'));
+    if (!isNaN(dob)) {
+      document.getElementById('displayDob').textContent = dob.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    }
+
+    // Tags
+    const tags = get('editInterests').split(',').map(t => t.trim()).filter(Boolean);
+    const tagsEl = document.getElementById('displayTags');
+    tagsEl.innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+    closeEditModalBtn();
+    showToast('Profile saved successfully! ✅');
+  }
+
+  // LIGHTBOX
+  function openLightbox(img) { document.getElementById('lightboxImg').src = img.src; document.getElementById('lightbox').classList.add('open'); }
+  function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+  // TOAST
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // NAV
+  function setActive(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+</script>
+
+{% endblock content %}
