@@ -19,9 +19,10 @@ DEBUG = os.getenv("DEBUG") == "True"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = ['*']  
+ALLOWED_HOSTS = ['localhost','127.0.0.1:8000','https://websapp.up.railway.app/']  
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://websapp.up.railway.app",
     'https://kaylin-plumbic-luana.ngrok-free.dev'
 ]
 
