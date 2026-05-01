@@ -24,6 +24,23 @@ def send_Email(otp, email,first_name,last_name):
         to= [email]
     )
     email.attach_alternative(html_content, 'text/html')
+    email.send()
+
+
+def send_Email_Response(email,response,question,event):
+    html_content = render_to_string('pages/event_response_email.html',{
+        'question':question,
+        'event':event,
+        'answer': response,
+        'response':response
+    })
+    email = EmailMultiAlternatives(
+        subject= 'Question Response update',
+        body=f'{response}',
+        from_email= "Webs <jaydeemalawi@gmail.com>",
+        to= [email]
+    )
+    email.attach_alternative(html_content, 'text/html')
     email.send()             
     
 

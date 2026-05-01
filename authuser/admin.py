@@ -15,6 +15,6 @@ class CustomuserAdmin(UserAdmin):
             "fields":('phone_number','department','gender','cover_photo')
         }),
     )
-    list_display = ('username','email','phone_number','first_name','last_name')
+    list_display = ('username','email','phone_number','first_name','last_name','is_organizer','is_approved')
 
 admin.site.register(User, CustomuserAdmin)

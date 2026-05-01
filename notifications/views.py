@@ -15,11 +15,11 @@ def NotificationView(request):
         {
             'id':note.id,
             'is_read':note.is_read,
-            'first_name':note.sender.first_name,
-            'last_name':note.sender.last_name,
+            'first_name':note.sender.first_name if note.sender else '',
+            'last_name':note.sender.last_name if note.sender else '',
             'date':note.created_at.strftime('%H:%M'),
             'notification':note.get_content(),
-            'profile': note.sender.photo.url if note.sender.photo else None
+            'profile': note.sender.photo.url if note.sender and note.sender.photo else None
 
         }
         for note in notifications

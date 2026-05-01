@@ -1,7 +1,5 @@
 from authuser import views
 from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
 
 
 app_name = 'authuser'
@@ -16,5 +14,5 @@ urlpatterns = [
     path('resend_token/',views.Resend_Token, name='resend_token'),
     path('logout/',views.Logout,name='logout')
     
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+] 
 

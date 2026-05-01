@@ -334,12 +334,15 @@ function generateCommentHTML(comment, postId) {
         </button>` : ''}
     </div>`;
 }
+function OpenUserProfile(Id){
+  window.location.href = `/profile/poster_detail/${Id}/`;
+}
 
 function GenerateHTML(post) {
   return `
   <div class="post-card" id="post-${post.id}">
     <div class="post-header">
-      <img class="post-avatar" src="${post.poster.photo}" alt="${post.poster.first_name}" loading="lazy"/>
+      <img class="post-avatar" src="${post.poster.photo}" alt="${post.poster.first_name}" loading="lazy" onclick = "OpenUserProfile(${post.poster.id})"/>
       <div class="post-meta">
         <div class="post-author">${post.poster.first_name} ${post.poster.last_name}</div>
         <div class="post-sub">${post.posted_at}</div>

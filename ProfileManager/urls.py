@@ -7,5 +7,6 @@ urlpatterns = [
     path('',views.ProfileManager,name='profile'),
     path('poster_detail/<int:user_id>/',views.PostProfileManager,name='poster_detail'),
     path('update_cover/',views.Update_Cover,name='update_cover'),
-    path('followers/',views.Followers_Display,name='followers')
+    path('followers/',views.Followers_Display,name='followers'),
+    path('edit_profile/',views.Edit_Profile,name='edit_profile')
 ]

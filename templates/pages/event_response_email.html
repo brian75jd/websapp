@@ -1,0 +1,36 @@
+<!-- templates/emails/otp_email.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verify your account</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, sans-serif;">
+
+    <div style="max-width:500px; margin:40px auto; background:white; padding:20px; border-radius:10px;">
+        
+        <h2 style="color:#333;">Response update</h2>
+    
+        
+        <p>Response to your question " {{question}} " on event " {{event}} "has been given:</p>
+        
+        <div style="text-align:center; margin:20px 0;">
+            <span style="font-size:17px;">
+                <p>{{response}}</p>
+            </span>
+        </div>
+        
+        <hr>
+        
+        <p style="font-size:12px; color:#aaa;">
+            If you didn’t request this, you can safely ignore this email.
+        </p>
+
+        <p style="font-size:12px; color:#aaa;">
+            — The Webs Team
+        </p>
+    </div>
+
+</body>
+</html>

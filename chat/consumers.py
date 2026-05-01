@@ -27,6 +27,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if ChatConsumer.active_connections[user.username] == 1:
                 await self.update_last_active(user)
                 await self.broadcast_presence(user, online=True)
+                print(self.active_connections)
 
     async def disconnect(self, close_code):
         user = self.scope["user"]

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=DM+Sans:wght@400;500&family=DM+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{
+      --bg:#0a1628;
+      --surface:#111e35;
+      --surface2:#162240;
+      --border:rgba(255,255,255,0.07);
+      --border2:rgba(255,255,255,0.12);
+      --text:#f0f6ff;
+      --muted:#6b82a0;
+      --primary:#1a6fd4;
+      --primary-glow:rgba(26,111,212,0.35);
+      --gold:#f5c518;
+      --green:#22c55e;
+      --green-glow:rgba(34,197,94,0.3);
+      --red:#ef4444;
+      --red-glow:rgba(239,68,68,0.3);
+      --amber:#f59e0b;
+      --radius:16px;
+      --radius-sm:10px;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    body{
+      font-family:'DM Sans',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100dvh;
+      overflow-x:hidden;
+    }
+
+    /* ── ANIMATED BG MESH ── */
+    body::before{
+      content:'';
+      position:fixed;inset:0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(26,111,212,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 100%, rgba(245,197,24,0.08) 0%, transparent 70%);
+      pointer-events:none;z-index:0;
+    }
+
+    /* ── HEADER ── */
+    .scanner-header{
+      position:relative;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--border);
+      background:rgba(10,22,40,0.8);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+    .scanner-header-brand{
+      display:flex;align-items:center;gap:10px;
+    }
+    .sc-logo-mark{
+      width:36px;height:36px;
+      background:var(--primary);border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.9rem;color:white;flex-shrink:0;
+      box-shadow:0 0 16px var(--primary-glow);
+    }
+    .sc-logo-text{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-weight:800;font-size:0.95rem;color:var(--text);
+    }
+    .sc-logo-text span{color:var(--primary);}
+    .scanner-header-badge{
+      background:rgba(34,197,94,0.12);
+      border:1px solid rgba(34,197,94,0.25);
+      color:var(--green);
+      border-radius:20px;padding:5px 12px;
+      font-size:0.71rem;font-weight:700;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      display:flex;align-items:center;gap:5px;
+      letter-spacing:0.3px;
+    }
+    .live-dot{
+      width:6px;height:6px;border-radius:50%;
+      background:var(--green);
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+
+    /* ── PAGE SCROLL AREA ── */
+    .page-body{
+      position:relative;z-index:1;
+      padding:20px 16px 40px;
+      max-width:440px;margin:0 auto;
+      display:flex;flex-direction:column;gap:16px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-weight:800;font-size:1.12rem;color:var(--text);
+      display:flex;align-items:center;gap:8px;
+    }
+    .section-title i{color:var(--primary);font-size:0.9rem;}
+
+    /* ════════════════════════════════════
+       RESULT CARD — the big status display
+    ════════════════════════════════════ */
+    .result-card{
+      background:var(--surface);
+      border-radius:var(--radius);
+      border:1.5px solid var(--border2);
+      overflow:hidden;
+      transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    /* state variants */
+    .result-card.state-idle   { border-color:var(--border2); }
+    .result-card.state-valid  { border-color:rgba(34,197,94,0.5); box-shadow:0 0 30px rgba(34,197,94,0.12); }
+    .result-card.state-used   { border-color:rgba(239,68,68,0.5);  box-shadow:0 0 30px rgba(239,68,68,0.12); }
+    .result-card.state-invalid{ border-color:rgba(239,68,68,0.5);  box-shadow:0 0 30px rgba(239,68,68,0.12); }
+    .result-card.state-error  { border-color:rgba(245,158,11,0.5); box-shadow:0 0 30px rgba(245,158,11,0.1); }
+
+    /* accent bar */
+    .result-accent{
+      height:4px;width:100%;
+      background:var(--surface2);
+      transition:background 0.4s;
+    }
+    .state-idle   .result-accent{ background:var(--primary); }
+    .state-valid  .result-accent{ background:var(--green);   }
+    .state-used   .result-accent{ background:var(--red);     }
+    .state-invalid.result-accent{ background:var(--red);     }
+    .state-error  .result-accent{ background:var(--amber);   }
+
+    .result-inner{
+      padding:22px 20px 20px;
+      display:flex;align-items:flex-start;gap:16px;
+    }
+
+    /* big status icon */
+    .result-icon-wrap{
+      width:56px;height:56px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.5rem;flex-shrink:0;
+      transition:all 0.4s;
+    }
+    .state-idle    .result-icon-wrap{ background:rgba(26,111,212,0.14);  color:var(--primary); }
+    .state-valid   .result-icon-wrap{ background:rgba(34,197,94,0.15);   color:var(--green);   }
+    .state-used    .result-icon-wrap{ background:rgba(239,68,68,0.14);   color:var(--red);     }
+    .state-invalid .result-icon-wrap{ background:rgba(239,68,68,0.14);   color:var(--red);     }
+    .state-error   .result-icon-wrap{ background:rgba(245,158,11,0.14);  color:var(--amber);   }
+
+    .result-text-block{flex:1;}
+    .result-status-label{
+      font-size:0.68rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:0.5px;
+      margin-bottom:3px;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      transition:color 0.3s;
+    }
+    .state-idle    .result-status-label{ color:var(--muted); }
+    .state-valid   .result-status-label{ color:var(--green); }
+    .state-used    .result-status-label{ color:var(--red);   }
+    .state-invalid .result-status-label{ color:var(--red);   }
+    .state-error   .result-status-label{ color:var(--amber); }
+
+    .result-event-name{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-weight:800;font-size:1rem;color:var(--text);
+      line-height:1.3;margin-bottom:4px;
+    }
+    .result-ticket-type{
+      font-size:0.82rem;color:var(--muted);
+      font-weight:500;
+    }
+    .result-ticket-type strong{color:var(--text);font-weight:600;}
+
+    /* detail chips below */
+    .result-details{
+      display:flex;flex-wrap:wrap;gap:6px;
+      padding:0 20px 18px;
+    }
+    .detail-chip{
+      display:flex;align-items:center;gap:5px;
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:20px;padding:4px 11px;
+      font-size:0.74rem;color:var(--muted);
+    }
+    .detail-chip i{font-size:0.66rem;}
+    .detail-chip.highlight{
+      background:rgba(34,197,94,0.1);
+      border-color:rgba(34,197,94,0.2);
+      color:var(--green);
+    }
+    .detail-chip.warn{
+      background:rgba(239,68,68,0.1);
+      border-color:rgba(239,68,68,0.2);
+      color:var(--red);
+    }
+
+    /* ── LOADING SPINNER inside card ── */
+    .result-loading{
+      display:none;
+      flex-direction:column;align-items:center;
+      padding:32px 20px;gap:12px;
+    }
+    .spin-ring{
+      width:44px;height:44px;border-radius:50%;
+      border:3px solid rgba(26,111,212,0.2);
+      border-top-color:var(--primary);
+      animation:spin 0.75s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-text{font-size:0.84rem;color:var(--muted);}
+
+    /* ════════════════════════════════════
+       RECENT SCANS
+    ════════════════════════════════════ */
+    .scans-card{
+      background:var(--surface);
+      border-radius:var(--radius);
+      border:1.5px solid var(--border2);
+      overflow:hidden;
+    }
+    .scans-card-head{
+      padding:14px 18px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .scans-card-title{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-weight:700;font-size:0.88rem;color:var(--text);
+      display:flex;align-items:center;gap:7px;
+    }
+    .scans-card-title i{color:var(--muted);font-size:0.8rem;}
+    .scans-count{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:20px;padding:2px 9px;
+      font-size:0.7rem;font-weight:700;color:var(--muted);
+      font-family:'Plus Jakarta Sans',sans-serif;
+    }
+
+    .scans-list{padding:8px 0;}
+    .scan-item{
+      display:flex;align-items:center;gap:12px;
+      padding:10px 18px;transition:background 0.15s;
+    }
+    .scan-item:hover{background:rgba(255,255,255,0.02);}
+
+    .scan-item-icon{
+      width:34px;height:34px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.82rem;flex-shrink:0;
+    }
+    .scan-item-icon.valid  { background:rgba(34,197,94,0.14); color:var(--green); }
+    .scan-item-icon.used   { background:rgba(239,68,68,0.12); color:var(--red);   }
+    .scan-item-icon.invalid{ background:rgba(239,68,68,0.12); color:var(--red);   }
+
+    .scan-item-info{flex:1;min-width:0;}
+    .scan-item-code{
+      font-family:'DM Mono',monospace;font-size:0.78rem;
+      color:var(--text);font-weight:500;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .scan-item-meta{
+      font-size:0.71rem;color:var(--muted);margin-top:1px;
+      display:flex;align-items:center;gap:5px;
+    }
+    .scan-item-status{
+      font-size:0.69rem;font-weight:700;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      border-radius:10px;padding:2px 8px;white-space:nowrap;flex-shrink:0;
+    }
+    .scan-item-status.valid  { background:rgba(34,197,94,0.12);  color:var(--green); }
+    .scan-item-status.used   { background:rgba(239,68,68,0.12);  color:var(--red);   }
+    .scan-item-status.invalid{ background:rgba(239,68,68,0.12);  color:var(--red);   }
+
+    .scans-empty{
+      padding:28px 18px;text-align:center;
+      font-size:0.82rem;color:var(--muted);
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+    }
+    .scans-empty i{font-size:1.6rem;color:rgba(255,255,255,0.08);}
+
+    /* ── TOAST ── */
+    .toast-bar{
+      position:fixed;bottom:24px;left:50%;
+      transform:translateX(-50%) translateY(10px);
+      background:#0d1a2e;color:white;
+      border:1px solid rgba(255,255,255,0.1);
+      padding:10px 20px;border-radius:30px;
+      font-size:0.83rem;font-weight:500;
+      opacity:0;transition:all 0.3s;pointer-events:none;
+      z-index:999;white-space:nowrap;
+      font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    .toast-bar.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* ── RESULT ENTRY ANIMATION ── */
+    @keyframes resultIn{
+      0% {opacity:0;transform:scale(0.96) translateY(6px);}
+      100%{opacity:1;transform:scale(1) translateY(0);}
+    }
+    .result-animate{ animation:resultIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+    @keyframes scanItemIn{
+      from{opacity:0;transform:translateX(-8px);}
+      to{opacity:1;transform:translateX(0);}
+    }
+    .scan-item{ animation:scanItemIn 0.25s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="scanner-header">
+  <div class="scanner-header-brand">
+    
+    <div class="sc-logo-text">Scanner</span></div>
+  </div>
+  <div class="scanner-header-badge">
+    <span class="live-dot"></span>
+    Ticket Scanner
+  </div>
+</header>
+
+<!-- BODY -->
+<div class="page-body">
+
+  <!-- STATUS / RESULT CARD -->
+  <div class="result-card state-idle" id="resultCard">
+    <div class="result-accent"></div>
+
+    <!-- idle / result view -->
+    <div id="resultMain">
+      <div class="result-inner">
+        <div class="result-icon-wrap" id="resultIcon">
+          <i class="fa-solid fa-qrcode" id="resultIconI"></i>
+        </div>
+        <div class="result-text-block">
+          <div class="result-status-label" id="resultLabel">Awaiting scan</div>
+          <div class="result-event-name" id="resultEventName">Verifying ticket…</div>
+          <div class="result-ticket-type" id="resultTypeLine"></div>
+        </div>
+      </div>
+      <div class="result-details" id="resultDetails"></div>
+    </div>
+
+    <!-- loading spinner -->
+    <div class="result-loading" id="resultLoading">
+      <div class="spin-ring"></div>
+      <div class="loading-text">Verifying ticket…</div>
+    </div>
+  </div>
+
+  <!-- RECENT SCANS -->
+  <div class="scans-card">
+    <div class="scans-card-head">
+      <div class="scans-card-title">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        Recent Scans
+      </div>
+      <span class="scans-count" id="scansCount">0</span>
+    </div>
+    <div class="scans-list" id="scansList">
+      <div class="scans-empty" id="scansEmpty">
+        <i class="fa-regular fa-ticket"></i>
+        No scans yet
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast-bar" id="toastBar"></div>
+
+<script>
+/* ── CSRF ── */
+function getCSRFToken(){
+  let v=null;
+  document.cookie.split(';').forEach(c=>{
+    const t=c.trim();
+    if(t.startsWith('csrftoken='))v=t.substring('csrftoken='.length);
+  });
+  return v;
+}
+
+
+/* ── STATE ── */
+const scanHistory = [];
+const ticketCode  = "{{code}}";
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded', () => {
+    verifyTicket(ticketCode);
+
+});
+
+/* ════════════════════════════════════
+   SET RESULT STATES
+════════════════════════════════════ */
+function setIdleState(){
+  const card = document.getElementById('resultCard');
+  card.className = 'result-card state-idle';
+  showResultMain();
+  document.getElementById('resultLabel').textContent     = 'Ready to scan';
+  document.getElementById('resultEventName').textContent = 'Point camera at ticket QR code';
+  document.getElementById('resultTypeLine').textContent  = '';
+  document.getElementById('resultIconI').className       = 'fa-solid fa-qrcode';
+  document.getElementById('resultDetails').innerHTML     = '';
+}
+
+function setLoadingState(){
+  document.getElementById('resultCard').className = 'result-card state-idle';
+  document.getElementById('resultMain').style.display   = 'none';
+  document.getElementById('resultLoading').style.display= 'flex';
+}
+
+function showResultMain(){
+  document.getElementById('resultMain').style.display   = 'block';
+  document.getElementById('resultLoading').style.display= 'none';
+}
+
+/* ════════════════════════════════════
+   VERIFY TICKET
+════════════════════════════════════ */
+function verifyTicket(code){
+  setLoadingState();
+
+  fetch('{% url "events:verify-api" %}', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded',
+      'X-CSRFToken':getCSRFToken()
+    },
+    body:new URLSearchParams({ qr_code: code })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log(data)
+    showResult(data, code)
+  })
+  .catch(() => showResult({ status:'error' }, code));
+}
+
+/* ════════════════════════════════════
+   SHOW RESULT
+════════════════════════════════════ */
+function showResult(data, code){
+  showResultMain();
+
+  const card      = document.getElementById('resultCard');
+  const label     = document.getElementById('resultLabel');
+  const evName    = document.getElementById('resultEventName');
+  const typeLine  = document.getElementById('resultTypeLine');
+  const iconI     = document.getElementById('resultIconI');
+  const details   = document.getElementById('resultDetails');
+
+  /* ── determine state ── */
+  let state, labelTxt, iconCls, nameTxt, typeHtml, chipsHtml = '';
+
+  if(data.status === 'valid'){
+    state    = 'valid';
+    labelTxt = '✓ Valid Ticket';
+    iconCls  = 'fa-solid fa-circle-check';
+    nameTxt  = data.event || 'Event';
+    typeHtml = `<strong>${data.type || 'General'}</strong>`;
+    chipsHtml = `
+      <div class="detail-chip highlight"><i class="fa-solid fa-circle-check"></i> Admitted</div>
+      ${data.ticket_code ? `<div class="detail-chip"><i class="fa-solid fa-hashtag"></i>${data.ticket_code}</div>` : ''}
+      ${data.type        ? `<div class="detail-chip"><i class="fa-solid fa-ticket"></i>${data.type}</div>` : ''}
+      ${data.holder      ? `<div class="detail-chip"><i class="fa-solid fa-user"></i>${data.holder}</div>` : ''}
+    `;
+    if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+  } else if(data.status === 'used'){
+    state    = 'used';
+    labelTxt = 'Already Used';
+    iconCls  = 'fa-solid fa-ban';
+    nameTxt  = data.event || 'Ticket already scanned';
+    typeHtml = `<strong>${data.type || ''}</strong>`;
+    chipsHtml = `
+      <div class="detail-chip warn"><i class="fa-solid fa-ban"></i> Already admitted</div>
+      ${data.ticket_code ? `<div class="detail-chip"><i class="fa-solid fa-hashtag"></i>${data.ticket_code}</div>` : ''}
+    `;
+    if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+  } else if(data.status === 'error'){
+    state    = 'error';
+    labelTxt = 'Connection Error';
+    iconCls  = 'fa-solid fa-wifi-slash';
+    nameTxt  = 'Could not reach server';
+    typeHtml = 'Please check your connection and try again.';
+    chipsHtml= `<div class="detail-chip warn"><i class="fa-solid fa-triangle-exclamation"></i> Network error</div>`;
+    if(navigator.vibrate) navigator.vibrate(400);
+
+  } else {
+    /* invalid */
+    state    = 'invalid';
+    labelTxt = 'Invalid Ticket';
+    iconCls  = 'fa-solid fa-circle-xmark';
+    nameTxt  = data.message || 'This ticket is not recognised';
+    typeHtml = 'Ticket not found in the system.';
+    chipsHtml= `<div class="detail-chip warn"><i class="fa-solid fa-circle-xmark"></i> Not valid</div>`;
+    if(navigator.vibrate) navigator.vibrate(400);
+  }
+
+  /* ── apply ── */
+  card.className = `result-card state-${state} result-animate`;
+  setTimeout(()=>card.classList.remove('result-animate'), 400);
+
+  label.textContent           = labelTxt;
+  evName.textContent          = nameTxt;
+  typeLine.innerHTML          = typeHtml;
+  iconI.className             = iconCls;
+  details.innerHTML           = chipsHtml;
+
+  /* ── add to history ── */
+  pushHistory(code || data.ticket_code || '—', data.status, data.type);
+
+  /* ── auto-reset after 8 s ── */
+  setTimeout(setIdleState, 10000);
+}
+
+/* ════════════════════════════════════
+   SCAN HISTORY
+════════════════════════════════════ */
+function pushHistory(code, status, type){
+  const now = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  scanHistory.unshift({ code, status: status||'invalid', type: type||'—', time: now });
+  if(scanHistory.length > 8) scanHistory.pop();
+  renderHistory();
+}
+
+function renderHistory(){
+  const list  = document.getElementById('scansList');
+  const empty = document.getElementById('scansEmpty');
+  const count = document.getElementById('scansCount');
+
+  count.textContent = scanHistory.length;
+
+  if(!scanHistory.length){
+    empty.style.display = 'flex';
+    list.innerHTML      = '';
+    list.appendChild(empty);
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  list.innerHTML = scanHistory.map((item, i) => {
+    const iconMap = {valid:'fa-circle-check', used:'fa-ban', invalid:'fa-circle-xmark', error:'fa-wifi-slash'};
+    const labelMap= {valid:'Valid', used:'Used', invalid:'Invalid', error:'Error'};
+    const cls     = ['valid','used'].includes(item.status) ? item.status : 'invalid';
+
+    return `<div class="scan-item" style="animation-delay:${i*0.04}s">
+      <div class="scan-item-icon ${cls}">
+        <i class="fa-solid ${iconMap[item.status]||'fa-circle-xmark'}"></i>
+      </div>
+      <div class="scan-item-info">
+        <div class="scan-item-code">${item.code}</div>
+        <div class="scan-item-meta">
+          <i class="fa-regular fa-clock" style="font-size:0.62rem;"></i>
+          ${item.time}
+          ${item.type && item.type!=='—' ? `· ${item.type}` : ''}
+        </div>
+      </div>
+      <div class="scan-item-status ${cls}">${labelMap[item.status]||'Invalid'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── TOAST ── */
+let tTimer;
+function showToast(msg){
+  const t = document.getElementById('toastBar');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* ── initial render ── */
+renderHistory();
+</script>
+</body>
+</html>

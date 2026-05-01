@@ -253,32 +253,27 @@
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
     <div class="info-content"><div class="info-label">Phone</div><div class="info-value" id="displayPhone">{{request.user.phone_number}}</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+    
   </div>
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-cake-candles"></i></div>
     <div class="info-content"><div class="info-label">Date of Birth</div><div class="info-value" id="displayDob">{{request.user.date_of_birth|date:'F j Y'}}</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+   
   </div>
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
     <div class="info-content"><div class="info-label">Location</div><div class="info-value" id="displayLocation">Lilongwe, Malawi</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+    
   </div>
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-link"></i></div>
     <div class="info-content"><div class="info-label">Website / Portfolio</div><div class="info-value" id="displayWebsite" style="color:var(--primary)">github.com/alexmwanza</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
-  </div>
-  <div class="info-row">
-    <div class="info-icon"><i class="fa-solid fa-id-badge"></i></div>
-    <div class="info-content"><div class="info-label">Student ID</div><div class="info-value" id="displayStudentId">CS/2022/0471</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+    
   </div>
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-venus-mars"></i></div>
     <div class="info-content"><div class="info-label">Gender</div><div class="info-value" id="displayGender">{{request.user.gender}}</div></div>
-    <button class="info-edit-btn" onclick="openEditModal()"><i class="fa-solid fa-pen"></i></button>
+    
   </div>
   <div class="info-row">
     <div class="info-icon"><i class="fa-solid fa-calendar-check"></i></div>
@@ -324,14 +319,8 @@
     <div class="section-title"><i class="fa-solid fa-user-group"></i> Friends</div>
     <button class="section-edit-btn" onclick="showToast('Viewing all friends...')">See All</button>
   </div>
-  <div class="friends-scroll">
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sarah"/><span>Sarah B.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=brian"/><span>Brian K.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=clara"/><span>Clara D.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=david"/><span>David O.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=emily"/><span>Emily R.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=priya"/><span>Priya N.</span></div>
-    <div class="friend-chip"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=tom"/><span>Tom Z.</span></div>
+  <div class="friends-scroll" id='FriendScroll'>
+    
   </div>
 </div>
 
@@ -342,7 +331,7 @@
     <div class="modal-title">Edit Profile</div>
     <div class="modal-field"><label>Full Name</label><input type="text" id="editName" value="{{request.user.first_name}} {{request.user.last_name}}"/></div>
     <div class="modal-field"><label>Username</label><input type="text" id="editUsername" value="{{request.user.username}}"/></div>
-    <div class="modal-field"><label>Bio</label><textarea id="editBio">Passionate about AI, open-source, and building things that matter 🚀 | CS Student at Malawi University | Coffee lover ☕ | Always learning.</textarea></div>
+  <!--  <div class="modal-field"><label>Bio</label><textarea id="editBio">Passionate about AI, open-source, and building things that matter 🚀 | CS Student at Malawi University | Coffee lover ☕ | Always learning.</textarea></div> -->
     <div class="modal-field"><label>Department & Year</label><input type="text" id="editDept" value="{{request.user.department}}"/></div>
     <div class="modal-field"><label>Email</label><input type="email" id="editEmail" value="{{request.user.email}}"/></div>
     <div class="modal-field"><label>Phone Number</label><input type="tel" id="editPhone" value="{{request.user.phone_number}}"/></div>
@@ -431,16 +420,41 @@
     return v;
   }
 
-  /* ══════════════════════════════════════════════
-     PHOTO PREVIEW BEFORE UPLOAD
-     When user picks a file (avatar or cover),
-     we read it with FileReader and show the
-     preview modal. They can then:
-       - "Change"       → re-trigger the file picker
-       - "Use this photo" → actually upload via FormData
-  ══════════════════════════════════════════════ */
-  let pendingUploadType = null;  // 'avatar' or 'cover'
-  let pendingFile       = null;  // the raw File object
+window.addEventListener('DOMContentLoaded',()=>{
+  Fetch_Followers();
+})
+function Fetch_Followers(){
+  fetch('{% url "profile:followers" %}')
+  .then(response => response.json())
+  .then(data => {
+    const followers = data.followers;
+
+    if (!followers || followers.length === 0) {
+      return;
+    }
+
+    const main_div = document.getElementById('FriendScroll');
+    main_div.innerHTML = "";
+
+    followers.forEach(follower => {
+      const div = document.createElement('div');
+      div.className = 'friend-chip';
+
+      div.innerHTML = `
+        <img src="${follower.photo}" onclick = "OpenUserProfile(${follower.id})" loading = lazy/>
+        <span>${follower.first_name} ${follower.last_name}.</span>
+      `;
+
+      main_div.appendChild(div);
+    });
+  })
+  .catch(err => console.log(err));
+}
+function OpenUserProfile(Id){
+  window.location.href = `/profile/poster_detail/${Id}/`;
+}
+  let pendingUploadType = null; 
+  let pendingFile       = null;  
 
   function triggerCoverUpload()  { document.getElementById('coverInput').click(); }
   function triggerAvatarUpload() { document.getElementById('avatarInput').click(); }
@@ -545,23 +559,32 @@
   function closeEditModalBtn() { document.getElementById('editModal').classList.remove('open'); }
 
   function saveProfile() {
-    const get = id => document.getElementById(id).value.trim();
-    document.getElementById('displayName').textContent = get('editName');
-    document.getElementById('displayUsername').textContent = '@' + get('editUsername').replace('@','');
-    document.getElementById('displayBio').textContent = get('editBio');
-    document.getElementById('displayDept').textContent = get('editDept');
-    document.getElementById('displayEmail').textContent = get('editEmail');
-    document.getElementById('displayPhone').textContent = get('editPhone');
-    document.getElementById('displayLocation').textContent = get('editLocation');
-    document.getElementById('displayWebsite').textContent = get('editWebsite');
-    document.getElementById('displayStudentId').textContent = get('editStudentId');
-    document.getElementById('displayGender').textContent = get('editGender');
-    const dob = new Date(get('editDob'));
-    if (!isNaN(dob)) document.getElementById('displayDob').textContent = dob.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-    const tags = get('editInterests').split(',').map(t=>t.trim()).filter(Boolean);
-    document.getElementById('displayTags').innerHTML = tags.map(t=>`<span class="tag">${t}</span>`).join('');
-    closeEditModalBtn();
-    showToast('Profile saved successfully! ✅');
+    name = document.getElementById('editName').value;
+    username = document.getElementById('editUsername').value;
+    email = document.getElementById('editEmail').value;
+    phone = document.getElementById('editPhone').value;
+    
+    fetch(`{% url "profile:edit_profile" %}`,{
+      method:"POST",
+      headers:{
+        'X-CSRFToken':getCSRFToken(),
+        'Content-Type':'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        name:name,
+        username:username,
+        email:email,
+        phone:phone
+      })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      showToast(`${data.detail}`)
+      console.log(data.detail);
+    })
+  
+/*
+    showToast('Profile saved successfully! ✅');*/
   }
 
   /* ── LIGHTBOX — gallery with download ── */

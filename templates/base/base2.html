@@ -29,34 +29,9 @@
     
 </style>
 <!--  <a class="nav-item" onclick="setActive(this)" href={% url "appsettings:settings" %}><i class="fa-solid fa-gear"></i><span></span><span class="nav-active-dot"></span></a>-->
-</head>
 <body>
-    {% block content %}
-    {% endblock content %}
-      {% block navbar %}
-<nav class="bottom-nav">
-  <a class="nav-item "  onclick='FeedNav()'><i class="fa-solid fa-house"></i><span>Home</span><span class="nav-active-dot"></span></a>
-  <a class="nav-item" onclick="ChatListNav()"><i class="fa-regular fa-comment-dots"></i><span>Chat</span><span class="nav-badge">3</span><span class="nav-active-dot"></span></a>
-  <a class="nav-item" onclick="setActive(this)" href={% url "groups:group" %}><i class="fa-solid fa-users" ></i><span>Groups</span><span class="nav-active-dot"></span></a>
-  <a class="nav-item" onclick="EventsNav();"><i class="fa-solid fa-calendar" ></i><span>Events</span><span class="nav-active-dot"></span></a>
-  <a class="nav-item" onclick="setActive(this)" href = {% url "profile:profile" %}><i class="fa-regular fa-user" ></i><span>Profile</span><span class="nav-active-dot"></span></a>
-  <a class="nav-item" onclick="setActive(this)" href={% url "appsettings:settings" %}><i class="fa-solid fa-gear"></i><span>Settings</span><span class="nav-active-dot"></span></a>
-      {% endblock navbar %}
-    
+    {% block content %}{% endblock content %}
 
-<script>
-    function FeedNav(){
-        window.location.href = '/feed/';
-
-    }
-    function ChatListNav(){
-        window.location.href = '/chat/';
-
-    }
-    function EventsNav(){
-        window.location.href = '/events/';
-    }
-
-</script>
 </body>
+
 </html>

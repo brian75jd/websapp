@@ -2,8 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 class NotificationConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        print("NOTIFICATION CONSUMER CONNECTING", self.scope['user'])        
+    async def connect(self):       
         self.user = self.scope['user']
         self.group_name = f'user_{self.user.id}'
 

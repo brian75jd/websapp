@@ -1,6 +1,6 @@
-{% extends "base/base.html" %}
+{% extends "base/base2.html" %}
 
-{% block title %}Events{% endblock title %}
+<title>Events</title>
 
 {% block content %}
 <style>
@@ -24,7 +24,14 @@
   .hdr-sub{font-size:0.71rem;color:var(--text-muted);margin-top:1px;}
   .hamburger-btn{width:40px;height:40px;background:var(--ev-blk);color:var(--ev-gold);border:none;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all 0.2s;position:relative;flex-shrink:0;}
   .hamburger-btn:hover{background:var(--ev-blk-soft);}
-  .hbadge{position:absolute;top:-5px;right:-5px;background:var(--ev-red);color:white;font-size:0.58rem;font-weight:700;border-radius:10px;padding:2px 6px;min-width:17px;text-align:center;line-height:1.3;display:none;border:2px solid var(--card);}
+
+  /* SEARCH BAR */
+  .search-bar-row{padding:9px 14px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;}
+  .search-wrap{flex:1;position:relative;display:flex;align-items:center;}
+  .search-wrap i{position:absolute;left:11px;color:var(--text-light);font-size:0.8rem;pointer-events:none;}
+  .search-wrap input{width:100%;padding:8px 12px 8px 32px;border-radius:30px;border:1.5px solid var(--border);background:var(--bg);font-size:0.83rem;color:var(--text);outline:none;transition:border-color 0.18s;font-family:'DM Sans',sans-serif;}
+  .search-wrap input:focus{border-color:var(--primary);background:white;}
+  .search-wrap input::placeholder{color:var(--text-light);}
 
   /* FILTER STRIP */
   .filter-strip{display:flex;gap:7px;padding:11px 14px;overflow-x:auto;scrollbar-width:none;background:var(--card);border-bottom:1px solid var(--border);}
@@ -60,19 +67,16 @@
   .tb-cultural{background:#8b5cf6;color:white;}
   .tb-workshop{background:var(--success);color:white;}
 
-  /* download icon on poster */
   .poster-dl{position:absolute;top:9px;right:9px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:white;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;text-decoration:none;}
   .poster-wrap:hover .poster-dl{opacity:1;}
   @media(hover:none){.poster-dl{opacity:1;}}
 
-  /* title area bottom of poster */
   .poster-bottom{position:absolute;bottom:0;left:0;right:0;padding:12px 14px 14px;pointer-events:none;}
   .poster-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.02rem;color:white;line-height:1.3;margin-bottom:2px;}
   .poster-org{font-size:0.73rem;color:rgba(255,255,255,0.72);}
 
   /* EVENT BODY */
   .event-body{padding:13px 15px 14px;}
-
   .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
   .info-cell{display:flex;align-items:flex-start;gap:9px;}
   .info-cell.full{grid-column:1/-1;}
@@ -85,11 +89,9 @@
   .info-lbl{font-size:0.66rem;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
   .info-val{font-size:0.84rem;color:var(--text);font-weight:500;margin-top:1px;line-height:1.4;}
 
-  /* description */
   .ev-desc{font-size:0.83rem;color:var(--text-muted);line-height:1.65;border-top:1px solid var(--border);padding-top:10px;margin-bottom:12px;}
   .rm-btn{background:none;border:none;color:var(--primary);font-size:0.81rem;font-weight:600;cursor:pointer;padding:0;margin-left:3px;}
 
-  /* footer */
   .ev-footer{display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:11px;}
   .av-stack{display:flex;}
   .av-stack img{width:25px;height:25px;border-radius:50%;object-fit:cover;border:2px solid white;margin-left:-7px;}
@@ -107,7 +109,7 @@
   @keyframes bfade{from{opacity:0;}to{opacity:1;}}
 
   /* DRAWER */
-  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(340px,93vw);background:var(--ev-blk);z-index:501;display:flex;flex-direction:column;transform:translateX(110%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(300px,88vw);background:var(--ev-blk);z-index:501;display:flex;flex-direction:column;transform:translateX(110%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);}
   .drawer.open{transform:translateX(0);}
 
   .dr-head{background:var(--ev-blk-soft);padding:18px 15px 14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;}
@@ -117,30 +119,19 @@
   .dr-close:hover{background:rgba(255,255,255,0.14);}
   .dr-sub{font-size:0.73rem;color:rgba(255,255,255,0.4);}
 
-  .dr-body{flex:1;overflow-y:auto;padding:10px 11px;}
+  .dr-body{flex:1;overflow-y:auto;padding:12px 11px 0;}
   .dr-body::-webkit-scrollbar{width:3px;}
   .dr-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
 
-  .dr-empty{text-align:center;padding:48px 18px;}
-  .dr-empty i{font-size:2.3rem;color:rgba(255,255,255,0.13);display:block;margin-bottom:13px;}
-  .dr-empty p{font-size:0.83rem;color:rgba(255,255,255,0.37);line-height:1.65;}
-  .dr-empty strong{color:var(--ev-gold);}
+  /* NAV ITEMS */
+  .dr-nav-lbl{font-size:0.65rem;font-weight:700;color:rgba(255,255,255,0.28);text-transform:uppercase;letter-spacing:0.6px;padding:0 6px 8px;margin-top:4px;display:block;}
+  .nav-item{display:block;align-items:center;gap:11px;padding:11px 13px;border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;color:rgba(255,255,255,0.82);font-family:'DM Sans',sans-serif;font-size:0.86rem;font-weight:600;transition:background 0.18s;border:none;background:none;width:100%;text-align:left;}
+  .nav-item:hover{background:rgba(255,255,255,0.07);}
+  .nav-item i{width:18px;text-align:center;font-size:0.85rem;color:var(--ev-gold);}
+  .nav-divider{height:1px;background:rgba(255,255,255,0.07);margin:8px 0;}
 
-  /* planned item */
-  .pi{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:8px;animation:fadeUp 0.22s ease both;}
-  .pi:hover{background:rgba(255,255,255,0.07);}
-  .pi-thumb{width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);}
-  .pi-info{flex:1;min-width:0;}
-  .pi-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.83rem;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pi-date{font-size:0.71rem;color:var(--ev-gold);margin-top:3px;display:flex;align-items:center;gap:4px;}
-  .pi-date i{font-size:0.63rem;}
-  .pi-venue{font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .pi-del{width:30px;height:30px;border:none;background:rgba(204,31,31,0.18);color:#f87171;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.73rem;transition:all 0.18s;flex-shrink:0;}
-  .pi-del:hover{background:var(--ev-red);color:white;}
-
-  .dr-foot{padding:11px 13px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
-  .clear-btn{width:100%;padding:10px;border-radius:30px;border:1px solid rgba(204,31,31,0.45);background:transparent;color:#f87171;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;}
-  .clear-btn:hover{background:var(--ev-red);color:white;border-color:var(--ev-red);}
+  /* planned badge inside drawer */
+  .nav-badge{margin-left:auto;background:var(--ev-red);color:white;font-size:0.58rem;font-weight:700;border-radius:10px;padding:2px 6px;min-width:17px;text-align:center;line-height:1.3;display:none;}
 
   /* LIGHTBOX */
   .lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:700;display:none;flex-direction:column;align-items:center;justify-content:center;}
@@ -158,19 +149,52 @@
 
   ::-webkit-scrollbar{width:3px;}
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  /* ── DESKTOP GRID ── */
+@media (min-width: 768px) {
+  .page-body { max-width: 900px; margin: 0 auto; padding: 18px 20px 0; }
+  #eventList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  #eventList > .event-card { margin-bottom: 0; }
+}
+
+@media (min-width: 1200px) {
+  .page-body { max-width: 1200px; }
+  #eventList { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 768px) {
+  .top-header,
+  .search-bar-row,
+  .filter-strip {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .top-header,
+  .search-bar-row,
+  .filter-strip { max-width: 1200px; }
+}
 </style>
 
 <!-- HEADER -->
 <header class="top-header">
   <div class="hdr-text">
-    <div class="hdr-title">Campus Events</div>
-    <div class="hdr-sub">Discover what's happening at your school</div>
+    <div class="hdr-title"> Events</div>
   </div>
-  <button class="hamburger-btn" onclick="openDrawer()" title="My planned events">
+  <button class="hamburger-btn" onclick="openDrawer()" title="Menu">
     <i class="fa-solid fa-bars"></i>
-    <span class="hbadge" id="hbadge">0</span>
   </button>
 </header>
+
+<!-- SEARCH BAR -->
+<div class="search-bar-row">
+  <div class="search-wrap">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search events, venues, organisers…"
+           oninput="handleSearch(this.value)" />
+  </div>
+</div>
 
 <!-- FILTER STRIP -->
 <div class="filter-strip">
@@ -200,23 +224,68 @@
     <div class="dr-head-row">
       <div class="dr-title">
         <i class="fa-solid fa-star" style="font-size:0.82rem;color:var(--ev-gold);"></i>
-        My Planned Events
+        Menu
       </div>
       <button class="dr-close" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="dr-sub">Welcome back</div>
+  </div>
+
+  <div class="dr-body">
+
+    <span class="dr-nav-lbl">Account</span>
+    <a  class="nav-item" onclick = 'Loggin();'>
+      <i class="fa-solid fa-right-to-bracket"></i> Login
+    </a>
+
+    <a  class="nav-item" onclick = 'CreateOrg();'>
+      <i class="fa-solid fa-building"></i> Create Organiser account
+    </a>
+        <a  class="nav-item" onclick = 'CreateUser();'>
+      <i class="fa-solid fa-right-to-bracket"></i> Create user account
+    </a>
+
+    <div class="nav-divider"></div>
+    <span class="dr-nav-lbl">My Events</span>
+    <a class="nav-item" onclick="closeDrawer(); openPlanned();">
+      <i class="fa-solid fa-calendar-check"></i> My Planned Events
+      
+    </a>
+    <a href="" class="nav-item">
+      <i class="fa-solid fa-ticket"></i> My Tickets
+    </a>
+
+  </div>
+</div>
+
+<!-- PLANNED EVENTS BACKDROP -->
+<div class="backdrop" id="plannedBackdrop" onclick="closePlanned()"></div>
+
+<!-- PLANNED EVENTS DRAWER -->
+<div class="drawer" id="plannedDrawer">
+  <div class="dr-head">
+    <div class="dr-head-row">
+      <div class="dr-title">
+        <i class="fa-solid fa-star" style="font-size:0.82rem;"></i>
+        My Planned Events
+      </div>
+      <button class="dr-close" onclick="closePlanned()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="dr-sub" id="drSub">No events planned yet</div>
   </div>
 
   <div class="dr-body" id="drBody">
-    <div class="dr-empty" id="drEmpty">
-      <i class="fa-regular fa-calendar-xmark"></i>
-      <p>You haven't planned any events yet.<br/>Tap <strong>Plan to Attend</strong> on any event to save it here.</p>
+    <div class="dr-empty" id="drEmpty" style="text-align:center;padding:48px 18px;">
+      <i class="fa-regular fa-calendar-xmark" style="font-size:2.3rem;color:rgba(255,255,255,0.13);display:block;margin-bottom:13px;"></i>
+      <p style="font-size:0.83rem;color:rgba(255,255,255,0.37);line-height:1.65;">You haven't planned any events yet.<br/>Tap <strong style="color:var(--ev-gold);">Plan to Attend</strong> on any event to save it here.</p>
     </div>
   </div>
 
   <div id="drFoot" style="display:none;">
-    <div class="dr-foot">
-      <button class="clear-btn" onclick="clearAll()">
+    <div style="padding:11px 13px;border-top:1px solid rgba(255,255,255,0.07);">
+      <button style="width:100%;padding:10px;border-radius:30px;border:1px solid rgba(204,31,31,0.45);background:transparent;color:#f87171;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;" onclick="clearAll()"
+        onmouseover="this.style.background='var(--ev-red)';this.style.color='white';"
+        onmouseout="this.style.background='transparent';this.style.color='#f87171';">
         <i class="fa-solid fa-trash-can"></i> Clear All Planned Events
       </button>
     </div>
@@ -246,92 +315,21 @@
 /* ──────────────────────────────
    DATA
 ────────────────────────────── */
-const EVENTS = [
-  {
-    id:1,type:'academic',
-    name:'Annual Science & Technology Expo 2025',
-    organizer:'Faculty of Science',
-    date:'Friday, 18 Apr 2025',
-    start:'09:00 AM',end:'05:00 PM',
-    venue:'Main Exhibition Hall, Block C',
-    capacity:'500 seats available',
-    desc:'Showcasing groundbreaking student research projects, live demonstrations, and keynote addresses from industry leaders in AI, biotech, and renewable energy. Open to all students and faculty members. Registration at the door.',
-    poster:'https://images.unsplash.com/photo-1532094349884-543559c7671e?w=600&q=80',
-    seeds:['alice','brian','clara'],count:214,
-  },
-  {
-    id:2,type:'social',
-    name:'Annual Cultural Day 2025',
-    organizer:'Student Council',
-    date:'Saturday, 26 Apr 2025',
-    start:'12:00 PM',end:'09:00 PM',
-    venue:'University Grounds — Central Lawn',
-    capacity:'Open event — free entry',
-    desc:'Traditional dances, art exhibitions, food stalls from 20+ cultures, and a live music night headlined by local artists. Wear your cultural attire and bring the whole family. Biggest social event of the academic year!',
-    poster:'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&q=80',
-    seeds:['priya','david','emily','tom'],count:628,
-  },
-  {
-    id:3,type:'sports',
-    name:'Inter-Faculty Football Tournament',
-    organizer:'Sports & Recreation Department',
-    date:'Sunday, 27 Apr 2025',
-    start:'08:00 AM',end:'06:00 PM',
-    venue:'University Sports Complex, Field A',
-    capacity:'300 spectator seats',
-    desc:'Eight faculty teams compete for the championship trophy. Quarter-finals and semi-finals in the morning, grand final at 4pm. Free entry for all students with a valid student ID card. Snacks available at the stadium canteen.',
-    poster:'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=600&q=80',
-    seeds:['james','brian','tom'],count:312,
-  },
-  {
-    id:4,type:'workshop',
-    name:'Machine Learning Bootcamp',
-    organizer:'CS Department & AI Society',
-    date:'Monday, 28 Apr 2025',
-    start:'10:00 AM',end:'04:00 PM',
-    venue:'Computer Lab 3, Engineering Block',
-    capacity:'40 seats — registration required',
-    desc:'Hands-on one-day bootcamp covering Python data pipelines, scikit-learn model training, evaluation metrics, and deploying your first ML app. Suitable for Year 2 and above. Bring a charged laptop with Python 3.10+ installed.',
-    poster:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80',
-    seeds:['alice','clara'],count:38,
-  },
-  {
-    id:5,type:'cultural',
-    name:'Photography & Visual Arts Exhibition',
-    organizer:'Photography Club',
-    date:'Wednesday, 30 Apr 2025',
-    start:'02:00 PM',end:'07:00 PM',
-    venue:'Gallery Space, Humanities Block',
-    capacity:'Free entry — no registration',
-    desc:'A curated exhibition of 60+ works by student photographers and visual artists from across all departments. Opening night includes a panel discussion with two visiting professional photographers. Light refreshments will be served.',
-    poster:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
-    seeds:['emily','priya'],count:97,
-  },
-  {
-    id:6,type:'academic',
-    name:'Guest Lecture: Ethics in Artificial Intelligence',
-    organizer:'Faculty of Computing',
-    date:'Thursday, 1 May 2025',
-    start:'03:00 PM',end:'05:00 PM',
-    venue:'Lecture Theatre 1, Block A',
-    capacity:'200 seats available',
-    desc:"Dr. Amara Diallo from the Oxford Internet Institute explores the societal implications of AI, algorithmic bias, surveillance capitalism, and what responsible technology development looks like. Q&A session follows the lecture.",
-    poster:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80',
-    seeds:['alice','brian','priya','clara'],count:156,
-  },
-  {
-    id:7,type:'social',
-    name:'End of Semester Pool Party',
-    organizer:'Student Union',
-    date:'Friday, 9 May 2025',
-    start:'04:00 PM',end:'10:00 PM',
-    venue:'University Swimming Pool & Deck',
-    capacity:'Ticketed — limited to 150 students',
-    desc:"Celebrate the end of semester with live DJs, food trucks, and a great atmosphere by the pool. Tickets available from the Student Union office — MK3,500 per person. Must be 18+. Wristbands distributed at the gate.",
-    poster:'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=600&q=80',
-    seeds:['tom','james','emily'],count:143,
-  },
-];
+function getCSRFToken() {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    const t = c.trim();
+    if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
+  });
+  return v;
+}
+function CreateOrg(){
+  window.location.href = `/organizer/`
+}
+function Loggin(){window.location.href = `/login/`}
+function CreateUser(){window.location.href = `/createuser/`}
+
+const EVENTS = [];
 
 const TYPE_CLS   = {academic:'t-academic',social:'t-social',sports:'t-sports',cultural:'t-cultural',workshop:'t-workshop'};
 const BADGE_CLS  = {academic:'tb-academic',social:'tb-social',sports:'tb-sports',cultural:'tb-cultural',workshop:'tb-workshop'};
@@ -339,42 +337,49 @@ const BADGE_LBL  = {academic:'Academic',social:'Social',sports:'Sports',cultural
 
 let planned = new Set();
 let activeFilter = 'all';
+let searchQuery  = '';
+
+/* ──────────────────────────────
+   SEARCH
+────────────────────────────── */
+function handleSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  renderEvents();
+}
 
 /* ──────────────────────────────
    RENDER EVENTS
 ────────────────────────────── */
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', () => {
   FetchEvent();
-})
-function FetchEvent(){
-  fetch('{% url "events:get_events" %}',{
-    method:'GET'
-  })
-  .then(res=>res.json())
-  .then(data=>{
-    if(data.events.length===0) return;
-    const event = data.events.map((n,index)=>({
-      'id':n.id,
-      'type':n.type,
-      'name':n.title,
-      'organizer':"None",
-      'date':n.date,
-      'poster':n.poster
-    }));
+});
 
-    let NewEvent = [...EVENTS,...event]
-    renderEvents();
-    console.log('data added',NewEvent)
-  })
+function FetchEvent() {
+  fetch('{% url "events:get_events" %}', { method: 'GET' })
+    .then(res => res.json())
+    .then(data => {
+
+      EVENTS.splice(0, 0, ...data.events);
+      renderEvents();
+    });
 }
+
 function renderEvents() {
-  const list   = document.getElementById('eventList');
-  const events = activeFilter === 'all' ? EVENTS : EVENTS.filter(e => e.type === activeFilter);
+  const list = document.getElementById('eventList');
+  let events = activeFilter === 'all' ? EVENTS : EVENTS.filter(e => e.type === activeFilter);
+
+  if (searchQuery) {
+    events = events.filter(e =>
+      e.name.toLowerCase().includes(searchQuery) ||
+      e.venue.toLowerCase().includes(searchQuery) ||
+      e.organizers.toLowerCase().includes(searchQuery)
+    );
+  }
 
   if (!events.length) {
     list.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
       <i class="fa-regular fa-calendar-xmark" style="font-size:2.4rem;color:var(--border);display:block;margin-bottom:12px;"></i>
-      <p style="font-size:0.86rem;">No events in this category yet.</p>
+      <p style="font-size:0.86rem;">${searchQuery ? 'No events match your search.' : 'No events in this category yet.'}</p>
     </div>`;
     return;
   }
@@ -396,8 +401,8 @@ function cardHTML(ev, i) {
   return `
   <div class="event-card ${TYPE_CLS[ev.type]}" style="animation-delay:${i*0.055}s" id="ecard-${ev.id}">
 
-    <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.name.replace(/'/g,"\\'")}')">
-      <img src="${ev.poster}" alt="${ev.name}" loading="lazy"/>
+    <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.title}')">
+      <img src="${ev.poster}" alt="${ev.title}" loading="lazy"/>
       <div class="poster-gradient"></div>
       <span class="type-badge ${BADGE_CLS[ev.type]}">${BADGE_LBL[ev.type]}</span>
       <a class="poster-dl" href="${ev.poster}" download="event-poster.jpg"
@@ -405,8 +410,7 @@ function cardHTML(ev, i) {
         <i class="fa-solid fa-download"></i>
       </a>
       <div class="poster-bottom">
-        <div class="poster-name">${ev.name}</div>
-        <div class="poster-org">${ev.organizer}</div>
+        <div class="poster-org">${ev.organizers}</div>
       </div>
     </div>
 
@@ -424,7 +428,7 @@ function cardHTML(ev, i) {
           <div class="iico ic-clk"><i class="fa-regular fa-clock"></i></div>
           <div class="info-content">
             <div class="info-lbl">Time</div>
-            <div class="info-val">${ev.start} &ndash; ${ev.end}</div>
+            <div class="info-val">${ev.start_at} &ndash; ${ev.finish_at}</div>
           </div>
         </div>
         <div class="info-cell full">
@@ -437,8 +441,11 @@ function cardHTML(ev, i) {
         <div class="info-cell full">
           <div class="iico ic-tkt"><i class="fa-solid fa-ticket"></i></div>
           <div class="info-content">
+          ${ev.is_paid ? `<div class="info-lbl">Tickets</div>
+            <div class="info-val">${ev.tickets_left}</div>` : `
             <div class="info-lbl">Capacity</div>
-            <div class="info-val">${ev.capacity}</div>
+            <div class="info-val">10</div>
+            `}
           </div>
         </div>
       </div>
@@ -450,61 +457,64 @@ function cardHTML(ev, i) {
       </div>
 
       <div class="ev-footer">
+      ${ev.is_paid ? `` : `
         <div class="av-stack">${stack}</div>
-        <span class="av-label">${ev.count.toLocaleString()} interested</span>
-        <button class="plan-btn ${on ? 'on' : 'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})">
-          <i class="fa-${on ? 'solid fa-check' : 'regular fa-calendar-plus'}"></i>
-          ${on ? 'Planned' : 'Plan to Attend'}
-        </button>
+        <span class="av-label">6 interested</span>
+        `}
+        ${ev.is_paid ?
+          `<button class="plan-btn off" id="pb-${ev.id}" onclick="BuyTicket(${ev.id})">
+            <i class="fa fa-wallet"></i> Buy Ticket
+          </button>` :
+          `<button class="plan-btn ${ev.is_planned ? 'on' : 'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})">
+            <i class="fa-${ev.is_planned ? 'solid fa-check' : 'regular fa-calendar-plus'}"></i>
+            ${ev.is_planned ? 'Planned' : 'Plan to Attend'}
+          </button>`}
       </div>
 
     </div>
   </div>`;
 }
 
+function BuyTicket(Id) {
+  window.location.href = `/buy_ticket/${Id}/`;
+}
+
 /* ──────────────────────────────
    PLAN TOGGLE
 ────────────────────────────── */
 function togglePlan(id) {
-  const ev  = EVENTS.find(e => e.id === id);
-  const btn = document.getElementById(`pb-${id}`);
-  if (!ev || !btn) return;
-
-  if (planned.has(id)) {
-    planned.delete(id);
-    btn.className   = 'plan-btn off';
-    btn.innerHTML   = '<i class="fa-regular fa-calendar-plus"></i> Plan to Attend';
-    showToast('Removed from your plans');
-  } else {
-    planned.add(id);
-    btn.className   = 'plan-btn on';
-    btn.innerHTML   = '<i class="fa-solid fa-check"></i> Planned';
-    showToast('Added to your planned events!');
-  }
-  updateBadge();
-  if (document.getElementById('drawer').classList.contains('open')) rebuildDrawer();
-}
-
-function updateBadge() {
-  const badge = document.getElementById('hbadge');
-  badge.textContent   = planned.size;
-  badge.style.display = planned.size > 0 ? 'flex' : 'none';
+ 
 }
 
 /* ──────────────────────────────
-   DRAWER
+   MAIN MENU DRAWER
 ────────────────────────────── */
 function openDrawer() {
-  rebuildDrawer();
   document.getElementById('drawer').classList.add('open');
   document.getElementById('backdrop').classList.add('open');
-  history.pushState({ drawer:true }, '');
+  history.pushState({ drawer: true }, '');
 }
 
 function closeDrawer() {
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('backdrop').classList.remove('open');
   if (history.state && history.state.drawer) history.back();
+}
+
+/* ──────────────────────────────
+   PLANNED EVENTS DRAWER
+────────────────────────────── */
+function openPlanned() {
+  rebuildDrawer();
+  document.getElementById('plannedDrawer').classList.add('open');
+  document.getElementById('plannedBackdrop').classList.add('open');
+  history.pushState({ planned: true }, '');
+}
+
+function closePlanned() {
+  document.getElementById('plannedDrawer').classList.remove('open');
+  document.getElementById('plannedBackdrop').classList.remove('open');
+  if (history.state && history.state.planned) history.back();
 }
 
 function rebuildDrawer() {
@@ -516,7 +526,6 @@ function rebuildDrawer() {
 
   sub.textContent = n > 0 ? `${n} event${n > 1 ? 's' : ''} planned` : 'No events planned yet';
 
-  /* remove old .pi items */
   body.querySelectorAll('.pi').forEach(el => el.remove());
 
   if (n === 0) {
@@ -535,15 +544,15 @@ function rebuildDrawer() {
     const d = document.createElement('div');
     d.className = 'pi';
     d.id = `pi-${ev.id}`;
-    d.style.animationDelay = `${idx * 0.05}s`;
+    d.style.cssText = `display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:8px;animation:fadeUp 0.22s ease both;animation-delay:${idx*0.05}s;`;
     d.innerHTML = `
-      <img class="pi-thumb" src="${ev.poster}" alt="${ev.name}" loading="lazy"/>
-      <div class="pi-info">
-        <div class="pi-name">${ev.name}</div>
-        <div class="pi-date"><i class="fa-solid fa-calendar-day"></i>${ev.date}</div>
-        <div class="pi-venue">${ev.venue}</div>
+      <img style="width:46px;height:46px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,0.1);" src="${ev.poster}" alt="${ev.name}" loading="lazy"/>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.83rem;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.name}</div>
+        <div style="font-size:0.71rem;color:var(--ev-gold);margin-top:3px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-calendar-day" style="font-size:0.63rem;"></i>${ev.date}</div>
+        <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ev.venue}</div>
       </div>
-      <button class="pi-del" onclick="removePlanned(${ev.id})" title="Remove">
+      <button style="width:30px;height:30px;border:none;background:rgba(204,31,31,0.18);color:#f87171;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.73rem;flex-shrink:0;" onclick="removePlanned(${ev.id})" title="Remove">
         <i class="fa-solid fa-trash-can"></i>
       </button>`;
     frag.appendChild(d);
@@ -612,11 +621,11 @@ function togDesc(btn) {
 ────────────────────────────── */
 function openLb(src, name) {
   event.stopPropagation();
-  document.getElementById('lbImg').src   = src;
-  document.getElementById('lbDl').href   = src;
-  document.getElementById('lbName').textContent = name;
+  document.getElementById('lbImg').src              = src;
+  document.getElementById('lbDl').href              = src;
+  document.getElementById('lbName').textContent     = name;
   document.getElementById('lightbox').classList.add('open');
-  history.pushState({ lb:true }, '');
+  history.pushState({ lb: true }, '');
 }
 function closeLb() {
   document.getElementById('lightbox').classList.remove('open');
@@ -635,6 +644,11 @@ window.addEventListener('popstate', () => {
     document.getElementById('lightbox').classList.remove('open');
     return;
   }
+  if (document.getElementById('plannedDrawer').classList.contains('open')) {
+    document.getElementById('plannedDrawer').classList.remove('open');
+    document.getElementById('plannedBackdrop').classList.remove('open');
+    return;
+  }
   if (document.getElementById('drawer').classList.contains('open')) {
     document.getElementById('drawer').classList.remove('open');
     document.getElementById('backdrop').classList.remove('open');
@@ -647,7 +661,8 @@ window.addEventListener('popstate', () => {
 let tT;
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.textContent = msg;
+  t.classList.add('show');
   clearTimeout(tT);
   tT = setTimeout(() => t.classList.remove('show'), 2600);
 }

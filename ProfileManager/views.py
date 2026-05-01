@@ -4,15 +4,13 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods, require_POST
 from usermanager.models import UserFollowingModel
+from ProfileManager.forms import Edit_ProfileForm
 
 User = get_user_model()
 
 @login_required
 def ProfileManager(request):
-    followers = User.objects.filter(
-        following__followed=request.user
-    ).only('id', 'username', 'photo', 'gender').distinct()
-    return render(request,'pages/profile.html',{'followers':followers})
+    return render(request, template_name='pages/profile.html')
 
 @login_required
 def PostProfileManager(request, user_id):
@@ -52,6 +50,40 @@ def Update_Cover(request):
 
 @login_required
 def Followers_Display(request):
-    user = request.user
-    followers = user.following.all()
-    return render(request,'pages/profile.html',{'followers':followers})
+    data = []
+    followers = User.objects.filter(
+        following__followed=request.user
+    )
+    for follower in followers:
+        data.append({
+            'id':follower.id,
+            'photo':follower.photo.url if follower.photo else "",
+            'first_name':follower.first_name,
+            'last_name':follower.last_name[:1]
+        })
+    return JsonResponse({'followers': data})
+
+@login_required
+@require_http_methods(['POST'])
+def Edit_Profile(request):
+    form = Edit_ProfileForm(request.POST, current_user = request.user)
+    try:
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            first_name = name[0] if len(name) > 0 else ''
+            last_name = name[1] if len(name) > 1 else ''
+
+            user = User.objects.get(id=request.user.id)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.username = form.cleaned_data['username']
+            user.email = form.cleaned_data['email']
+            user.phone_number = form.cleaned_data['phone']
+            user.save()
+            return JsonResponse({'detail':'changes applied. Refresh to see changes'})
+        
+        return JsonResponse({'detail':str(error for error in form.errors)})
+    
+    except Exception as exp:
+        return JsonResponse({'detail':str(exp)})
+    

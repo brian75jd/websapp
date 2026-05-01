@@ -19,10 +19,10 @@ def send_notification(sender, receiver,notification_type,message):
         {
             'type':"send_notification",
             'data':{
-            'sender':sender.username,
+            'sender':sender.username if sender else None,
             'message': message,
             'notification_type':notification_type,
-            'profile':sender.photo.url if sender.photo else None,
+            'profile':sender.photo.url if sender and sender.photo else None,
             'time':notification.created_at.strftime('%H:%M'),
             'unread_count':unread_count
             }

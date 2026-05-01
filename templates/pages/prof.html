@@ -1,1 +1,1249 @@
 {% extends "base/base.html" %}
+
+{% block title %}Buy Tickets{% endblock title %}
+
+{% block content %}
+<style>
+  /* ── PAGE CHROME ── */
+  .tk-header{
+    position:sticky;top:0;z-index:100;
+    background:var(--white);border-bottom:1.5px solid var(--border);
+    padding:0 16px;height:56px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 10px rgba(26,111,212,0.07);
+  }
+  .tk-header-left{display:flex;align-items:center;gap:10px;}
+  .tk-back-btn{
+    width:36px;height:36px;border:none;
+    background:var(--primary-soft);color:var(--primary);
+    border-radius:50%;display:flex;align-items:center;
+    justify-content:center;cursor:pointer;font-size:0.9rem;
+    transition:background 0.2s;flex-shrink:0;
+  }
+  .tk-back-btn:hover{background:var(--border);}
+  .tk-page-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1.1rem;color:var(--text);
+  }
+  .tk-wallet-chip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--primary-soft);border-radius:20px;
+    padding:6px 12px;font-size:0.78rem;font-weight:700;
+    color:var(--primary);font-family:'Plus Jakarta Sans',sans-serif;
+    cursor:default;
+  }
+  .tk-wallet-chip i{font-size:0.8rem;}
+
+  /* ── SEARCH ── */
+  .tk-search-wrap{padding:12px 14px;background:var(--white);border-bottom:1px solid var(--border);}
+  .tk-search-box{
+    display:flex;align-items:center;gap:10px;
+    background:var(--bg);border-radius:30px;
+    padding:9px 16px;border:1.5px solid var(--border);
+    transition:all 0.2s;
+  }
+  .tk-search-box:focus-within{border-color:var(--primary);background:var(--primary-soft);}
+  .tk-search-box i{color:var(--text-muted);font-size:0.9rem;}
+  .tk-search-box input{
+    flex:1;border:none;background:transparent;
+    font-family:'DM Sans',sans-serif;font-size:0.9rem;
+    color:var(--text);outline:none;
+  }
+
+  /* ── FILTER TABS ── */
+  .tk-tabs{
+    display:flex;gap:0;background:var(--white);
+    border-bottom:1.5px solid var(--border);
+    overflow-x:auto;scrollbar-width:none;padding:0 14px;
+  }
+  .tk-tabs::-webkit-scrollbar{display:none;}
+  .tk-tab{
+    flex-shrink:0;padding:11px 15px;border:none;background:transparent;
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.79rem;
+    color:var(--text-muted);cursor:pointer;
+    border-bottom:2.5px solid transparent;transition:all 0.2s;white-space:nowrap;
+  }
+  .tk-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+
+  /* ── BODY ── */
+  .tk-body{padding:16px 14px;display:flex;flex-direction:column;gap:16px;}
+
+  /* ── EVENT CARD ── */
+  .tk-card{
+    background:var(--card);border-radius:var(--radius);
+    border:1.5px solid var(--border);box-shadow:var(--shadow);
+    overflow:hidden;animation:tkUp 0.38s ease both;position:relative;
+  }
+  @keyframes tkUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .tk-card:nth-child(1){animation-delay:.04s}
+  .tk-card:nth-child(2){animation-delay:.09s}
+  .tk-card:nth-child(3){animation-delay:.14s}
+  .tk-card:nth-child(4){animation-delay:.19s}
+
+  /* sold-out overlay */
+  .tk-card.sold-out .tk-poster-wrap::after{
+    content:'SOLD OUT';position:absolute;inset:0;
+    background:rgba(13,26,46,0.65);
+    display:flex;align-items:center;justify-content:center;
+    color:white;font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1.1rem;letter-spacing:2px;
+    pointer-events:none;
+  }
+
+  .tk-accent{height:4px;width:100%;}
+
+  /* poster */
+  .tk-poster-wrap{
+    position:relative;overflow:hidden;height:185px;
+    cursor:pointer;background:var(--bg);
+  }
+  .tk-poster-wrap img{
+    width:100%;height:100%;object-fit:cover;
+    display:block;transition:transform 0.3s;
+  }
+  .tk-poster-wrap:hover img{transform:scale(1.04);}
+  .tk-dl-btn{
+    position:absolute;top:10px;right:10px;
+    width:34px;height:34px;border-radius:50%;border:none;
+    background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);
+    color:white;font-size:0.8rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;opacity:0;transition:opacity 0.2s;
+  }
+  .tk-poster-wrap:hover .tk-dl-btn{opacity:1;}
+  @media(hover:none){.tk-dl-btn{opacity:1;}}
+  .tk-cat-pill{
+    position:absolute;bottom:10px;left:10px;
+    border-radius:20px;padding:4px 11px;
+    font-size:0.7rem;font-weight:700;
+    font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:0.3px;
+  }
+  /* price tag on poster */
+  .tk-price-tag{
+    position:absolute;top:10px;left:10px;
+    background:#0d1a2e;color:white;
+    border-radius:20px;padding:5px 12px;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-size:0.78rem;font-weight:800;
+    display:flex;align-items:center;gap:4px;
+  }
+  .tk-price-tag.free{background:#22c55e;}
+
+  /* card body */
+  .tk-card-body{padding:14px 16px 16px;}
+  .tk-card-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1rem;color:var(--text);
+    margin-bottom:8px;line-height:1.35;
+  }
+  .tk-info-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .tk-info-row{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);}
+  .tk-info-icon{
+    width:26px;height:26px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.72rem;flex-shrink:0;
+  }
+
+  /* availability bar */
+  .tk-avail-wrap{margin-bottom:14px;}
+  .tk-avail-label{
+    display:flex;justify-content:space-between;
+    font-size:0.74rem;margin-bottom:5px;
+  }
+  .tk-avail-label span:first-child{color:var(--text-muted);}
+  .tk-avail-label span:last-child{font-weight:700;color:var(--text);}
+  .tk-avail-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .tk-avail-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+
+  /* ticket type chips */
+  .tk-types-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+  .tk-type-chip{
+    padding:5px 12px;border-radius:20px;
+    border:1.5px solid var(--border);background:var(--bg);
+    font-size:0.74rem;font-weight:600;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    color:var(--text-muted);cursor:pointer;transition:all 0.18s;
+    display:flex;align-items:center;gap:5px;
+  }
+  .tk-type-chip:hover{border-color:var(--primary);color:var(--primary);}
+  .tk-type-chip.selected{
+    background:var(--primary);color:white;border-color:var(--primary);
+  }
+
+  /* footer row */
+  .tk-card-footer{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding-top:12px;border-top:1px solid var(--border);
+  }
+  .tk-footer-meta{font-size:0.77rem;color:var(--text-muted);}
+  .tk-footer-meta strong{color:var(--text);}
+
+  /* buy button */
+  .tk-buy-btn{
+    display:flex;align-items:center;gap:6px;
+    padding:9px 18px;border-radius:30px;
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+    font-size:0.82rem;border:none;cursor:pointer;
+    background:var(--primary);color:white;
+    box-shadow:0 3px 10px rgba(26,111,212,0.25);
+    transition:all 0.22s;white-space:nowrap;
+  }
+  .tk-buy-btn:hover{background:var(--primary-dark);transform:translateY(-1px);}
+  .tk-buy-btn:disabled{
+    opacity:0.45;cursor:not-allowed;transform:none;
+    box-shadow:none;background:var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════════════
+     MODAL SYSTEM
+     All three steps live in the same overlay.
+     Step 1: ticket form
+     Step 2: processing animation
+     Step 3: QR ticket
+  ═══════════════════════════════════════════ */
+  .tk-modal-overlay{
+    position:fixed;inset:0;background:rgba(13,26,46,0.55);
+    z-index:600;display:none;
+    align-items:flex-end;justify-content:center;
+  }
+  .tk-modal-overlay.open{display:flex;animation:fadeIn 0.2s ease;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+  .tk-modal{
+    background:white;border-radius:24px 24px 0 0;
+    width:100%;max-width:460px;
+    max-height:92vh;overflow-y:auto;
+    animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+    padding:0 0 32px;
+  }
+  @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+  .tk-modal-handle{
+    width:40px;height:4px;background:var(--border);
+    border-radius:4px;margin:14px auto 0;
+  }
+
+  /* modal step header */
+  .tk-modal-head{
+    padding:16px 20px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .tk-modal-head-info{}
+  .tk-modal-step-label{
+    font-size:0.7rem;font-weight:600;color:var(--primary);
+    text-transform:uppercase;letter-spacing:0.4px;margin-bottom:2px;
+  }
+  .tk-modal-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1rem;color:var(--text);
+  }
+  .tk-modal-close{
+    width:32px;height:32px;border:none;
+    background:var(--bg);color:var(--text-muted);
+    border-radius:50%;display:flex;align-items:center;
+    justify-content:center;cursor:pointer;font-size:0.85rem;
+    transition:all 0.18s;flex-shrink:0;
+  }
+  .tk-modal-close:hover{background:var(--border);color:var(--text);}
+
+  /* event summary strip inside modal */
+  .tk-modal-event-strip{
+    display:flex;align-items:center;gap:10px;
+    margin:14px 20px;padding:12px 14px;
+    background:var(--bg);border-radius:var(--radius-sm);
+    border:1.5px solid var(--border);
+  }
+  .tk-modal-event-img{
+    width:48px;height:48px;border-radius:10px;
+    object-fit:cover;flex-shrink:0;
+  }
+  .tk-modal-event-name{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:700;font-size:0.88rem;color:var(--text);
+  }
+  .tk-modal-event-date{font-size:0.75rem;color:var(--text-muted);margin-top:2px;}
+
+  /* form */
+  .tk-form-body{padding:0 20px;}
+  .tk-form-row{margin-bottom:16px;}
+  .tk-form-label{
+    display:block;font-size:0.76rem;font-weight:700;
+    color:var(--text-muted);text-transform:uppercase;
+    letter-spacing:0.3px;margin-bottom:6px;
+    font-family:'Plus Jakarta Sans',sans-serif;
+  }
+  .tk-form-input{
+    width:100%;background:var(--bg);
+    border:1.5px solid var(--border);border-radius:var(--radius-sm);
+    padding:11px 14px;font-family:'DM Sans',sans-serif;
+    font-size:0.95rem;color:var(--text);outline:none;
+    transition:border-color 0.2s;
+  }
+  .tk-form-input:focus{border-color:var(--primary);background:var(--primary-soft);}
+  .tk-form-input.error{border-color:var(--danger);}
+  .tk-form-error{
+    font-size:0.74rem;color:var(--danger);margin-top:4px;display:none;
+  }
+  .tk-form-error.show{display:block;}
+
+  /* ticket type selector inside modal */
+  .tk-modal-types{display:flex;gap:8px;flex-wrap:wrap;}
+  .tk-modal-type-btn{
+    padding:7px 14px;border-radius:20px;
+    border:1.5px solid var(--border);background:var(--bg);
+    font-size:0.8rem;font-weight:600;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    color:var(--text-muted);cursor:pointer;transition:all 0.18s;
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+  }
+  .tk-modal-type-btn .type-price{font-size:0.68rem;font-weight:500;}
+  .tk-modal-type-btn:hover{border-color:var(--primary);color:var(--primary);}
+  .tk-modal-type-btn.active{background:var(--primary);color:white;border-color:var(--primary);}
+  .tk-modal-type-btn.active .type-price{color:rgba(255,255,255,0.8);}
+
+  /* qty selector */
+  .tk-qty-row{
+    display:flex;align-items:center;gap:0;
+    background:var(--bg);border:1.5px solid var(--border);
+    border-radius:var(--radius-sm);overflow:hidden;width:fit-content;
+  }
+  .tk-qty-btn{
+    width:40px;height:42px;border:none;background:transparent;
+    color:var(--primary);font-size:1.1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .tk-qty-btn:hover{background:var(--primary-soft);}
+  .tk-qty-val{
+    width:50px;text-align:center;
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+    font-size:0.95rem;color:var(--text);border:none;
+    border-left:1px solid var(--border);border-right:1px solid var(--border);
+    background:white;height:42px;outline:none;
+  }
+
+  /* order summary */
+  .tk-order-summary{
+    background:var(--bg);border-radius:var(--radius-sm);
+    border:1.5px solid var(--border);padding:12px 14px;
+    margin:0 0 16px;
+  }
+  .tk-order-row{
+    display:flex;justify-content:space-between;
+    font-size:0.84rem;padding:4px 0;color:var(--text-muted);
+  }
+  .tk-order-row.total{
+    border-top:1px solid var(--border);margin-top:6px;
+    padding-top:8px;font-weight:700;
+    color:var(--text);font-size:0.92rem;
+  }
+  .tk-order-row.total span:last-child{color:var(--primary);}
+
+  /* PIN input — 4 boxes */
+  .tk-pin-row{display:flex;gap:10px;justify-content:flex-start;}
+  .tk-pin-box{
+    width:52px;height:56px;border-radius:var(--radius-sm);
+    border:1.5px solid var(--border);background:var(--bg);
+    text-align:center;font-size:1.4rem;font-weight:700;
+    color:var(--text);outline:none;transition:border-color 0.2s;
+    font-family:'Plus Jakarta Sans',sans-serif;
+  }
+  .tk-pin-box:focus{border-color:var(--primary);background:var(--primary-soft);}
+  .tk-pin-box.filled{border-color:var(--primary);}
+
+  /* hint text */
+  .tk-hint{
+    font-size:0.77rem;color:var(--text-muted);
+    margin-top:6px;display:flex;align-items:center;gap:5px;
+  }
+
+  /* modal action buttons */
+  .tk-modal-actions{
+    display:flex;gap:10px;padding:16px 20px 0;
+  }
+  .tk-btn-cancel{
+    flex:1;background:var(--bg);color:var(--text-muted);
+    border:1.5px solid var(--border);padding:12px;
+    border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.2s;
+  }
+  .tk-btn-cancel:hover{border-color:var(--primary);color:var(--primary);}
+  .tk-btn-proceed{
+    flex:2;background:var(--primary);color:white;border:none;
+    padding:12px;border-radius:30px;
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+    font-size:0.88rem;cursor:pointer;transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 3px 10px rgba(26,111,212,0.25);
+  }
+  .tk-btn-proceed:hover{background:var(--primary-dark);}
+  .tk-btn-proceed:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  /* ── STEP 2: PROCESSING ── */
+  .tk-processing{
+    padding:40px 20px 20px;
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    text-align:center;
+  }
+  .tk-spinner-ring{
+    width:64px;height:64px;border-radius:50%;
+    border:4px solid var(--primary-soft);
+    border-top-color:var(--primary);
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .tk-processing-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1rem;color:var(--text);
+  }
+  .tk-processing-sub{font-size:0.82rem;color:var(--text-muted);line-height:1.5;}
+  .tk-processing-steps{display:flex;flex-direction:column;gap:8px;margin-top:8px;width:100%;}
+  .tk-proc-step{
+    display:flex;align-items:center;gap:10px;
+    background:var(--bg);border-radius:10px;padding:9px 14px;
+    font-size:0.82rem;color:var(--text-muted);
+    border:1px solid var(--border);
+  }
+  .tk-proc-step.done{color:var(--text);}
+  .tk-proc-step .step-icon{
+    width:22px;height:22px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+  }
+  .tk-proc-step.done .step-icon{background:#dcfce7;color:#15803d;}
+  .tk-proc-step:not(.done) .step-icon{background:var(--primary-soft);color:var(--primary);}
+
+  /* ── STEP 3: QR TICKET ── */
+  .tk-ticket-wrap{padding:16px 20px 0;}
+
+  /* ticket card — perforated look */
+  .tk-ticket{
+    border:2px solid var(--border);border-radius:16px;
+    overflow:hidden;position:relative;
+    background:white;
+  }
+
+  /* coloured top band */
+  .tk-ticket-band{
+    padding:18px 20px 16px;color:white;
+  }
+  .tk-ticket-band-title{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:1rem;margin-bottom:4px;
+    line-height:1.3;
+  }
+  .tk-ticket-band-sub{font-size:0.78rem;opacity:0.85;}
+
+  /* perforation line */
+  .tk-perf{
+    display:flex;align-items:center;
+    border-top:2px dashed var(--border);
+    margin:0;padding:0 20px;
+    position:relative;background:white;
+  }
+  .tk-perf-circle{
+    width:20px;height:20px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--border);
+    flex-shrink:0;
+  }
+  .tk-perf-circle.left{margin-left:-30px;}
+  .tk-perf-circle.right{margin-right:-30px;margin-left:auto;}
+
+  /* ticket body */
+  .tk-ticket-body{padding:16px 20px;}
+
+  .tk-ticket-detail-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:12px;margin-bottom:16px;
+  }
+  .tk-ticket-detail{}
+  .tk-ticket-detail-label{
+    font-size:0.68rem;color:var(--text-muted);
+    text-transform:uppercase;letter-spacing:0.4px;font-weight:600;
+    margin-bottom:2px;font-family:'Plus Jakarta Sans',sans-serif;
+  }
+  .tk-ticket-detail-value{
+    font-size:0.84rem;font-weight:600;color:var(--text);
+  }
+
+  /* QR */
+  .tk-qr-wrap{
+    display:flex;flex-direction:column;align-items:center;
+    padding:16px;background:var(--bg);border-radius:12px;
+    border:1px solid var(--border);margin-bottom:14px;
+    gap:10px;
+  }
+  .tk-qr-canvas{border-radius:8px;}
+  .tk-qr-label{
+    font-size:0.72rem;color:var(--text-muted);text-align:center;
+    font-weight:500;
+  }
+  .tk-ticket-id{
+    font-family:'Plus Jakarta Sans',sans-serif;
+    font-weight:800;font-size:0.78rem;
+    color:var(--text);letter-spacing:1px;
+    background:var(--primary-soft);color:var(--primary);
+    border-radius:6px;padding:3px 10px;
+  }
+
+  /* ticket action buttons */
+  .tk-ticket-actions{display:flex;gap:10px;padding:0 20px 6px;}
+  .tk-dl-ticket-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:12px;border-radius:30px;
+    background:var(--primary);color:white;border:none;
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;
+    font-size:0.86rem;cursor:pointer;transition:all 0.2s;
+    box-shadow:0 3px 10px rgba(26,111,212,0.22);
+  }
+  .tk-dl-ticket-btn:hover{background:var(--primary-dark);}
+  .tk-share-btn{
+    width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border);
+    background:var(--bg);color:var(--primary);
+    font-size:0.9rem;cursor:pointer;transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .tk-share-btn:hover{background:var(--primary-soft);}
+  .tk-close-done-btn{
+    width:100%;margin:10px 20px 0;width:calc(100% - 40px);
+    padding:12px;border-radius:30px;
+    background:var(--bg);color:var(--text-muted);
+    border:1.5px solid var(--border);
+    font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;
+    font-size:0.86rem;cursor:pointer;transition:all 0.2s;
+  }
+  .tk-close-done-btn:hover{border-color:var(--primary);color:var(--primary);}
+
+  /* ── LIGHTBOX ── */
+  .ev-lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,0.95);
+    z-index:700;display:none;flex-direction:column;
+    align-items:center;justify-content:center;
+  }
+  .ev-lightbox.open{display:flex;animation:lbFade 0.2s ease;}
+  @keyframes lbFade{from{opacity:0;}to{opacity:1;}}
+  .ev-lb-bar{
+    position:absolute;top:0;left:0;right:0;height:56px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;
+    background:linear-gradient(to bottom,rgba(0,0,0,0.55),transparent);z-index:10;
+  }
+  .ev-lb-btn{
+    width:40px;height:40px;border-radius:50%;border:none;
+    background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);
+    color:white;font-size:1rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    text-decoration:none;transition:background 0.2s;
+  }
+  .ev-lb-btn:hover{background:rgba(255,255,255,0.3);}
+  .ev-lb-name{
+    color:rgba(255,255,255,0.85);font-size:0.82rem;font-weight:600;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    max-width:50%;text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .ev-lb-img-wrap{
+    flex:1;display:flex;align-items:center;
+    justify-content:center;padding:56px 14px 14px;
+  }
+  .ev-lightbox img{
+    max-width:100%;max-height:calc(100vh - 70px);
+    border-radius:10px;object-fit:contain;display:block;
+  }
+
+  /* ── TOAST ── */
+  .toast{
+    position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;
+    transform:translateX(-50%) translateY(10px);
+    background:var(--text);color:white;padding:10px 22px;border-radius:30px;
+    font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;
+    pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+
+<!-- HEADER -->
+<header class="tk-header">
+  <div class="tk-header-left">
+    <button class="tk-back-btn" onclick="history.back()">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <span class="tk-page-title">Buy Tickets</span>
+  </div>
+  <div class="tk-wallet-chip">
+    <i class="fa-solid fa-wallet"></i>
+    MK <span id="walletBal">12,500</span>
+  </div>
+</header>
+
+
+<!-- CARDS -->
+<div class="tk-body" id="tkBody"></div>
+
+<!-- ════════════════ PURCHASE MODAL ════════════════ -->
+<div class="tk-modal-overlay" id="tkOverlay" onclick="handleOverlayClick(event)">
+  <div class="tk-modal" id="tkModal" onclick="event.stopPropagation()">
+    <div class="tk-modal-handle"></div>
+
+    <!-- ══ STEP 1: FORM ══ -->
+    <div id="step1">
+      <div class="tk-modal-head">
+        <div class="tk-modal-head-info">
+          
+          <div class="tk-modal-title">Purchase Ticket</div>
+        </div>
+        <button class="tk-modal-close" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- event summary -->
+      <div class="tk-modal-event-strip">
+        <img class="tk-modal-event-img" id="modalEvImg" src="" alt=""/>
+        <div>
+          <div class="tk-modal-event-name" id="modalEvName"></div>
+          <div class="tk-modal-event-date" id="modalEvDate"></div>
+        </div>
+      </div>
+
+      <div class="tk-form-body">
+        <!-- ticket type -->
+        <div class="tk-form-row">
+          <label class="tk-form-label">Ticket type</label>
+          <div class="tk-modal-types" id="modalTypes"></div>
+        </div>
+
+        <!-- quantity -->
+        <div class="tk-form-row">
+          <label class="tk-form-label">Quantity</label>
+          <div class="tk-qty-row">
+            <button class="tk-qty-btn" onclick="changeQty(-1)">−</button>
+            <input class="tk-qty-val" type="number" id="qtyVal" value="1" min="1" max="10" readonly/>
+            <button class="tk-qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+        </div>
+
+        <!-- order summary -->
+        <div class="tk-form-row">
+          <label class="tk-form-label">Order summary</label>
+          <div class="tk-order-summary">
+            <div class="tk-order-row">
+              <span id="summaryType">General · x1</span>
+              <span id="summarySubtotal">MK 0</span>
+            </div>
+            <div class="tk-order-row">
+              <span>Service fee (5%)</span>
+              <span id="summaryFee">MK 0</span>
+            </div>
+            <div class="tk-order-row total">
+              <span>Total</span>
+              <span id="summaryTotal">MK 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIN -->
+        <div class="tk-form-row">
+          <label class="tk-form-label">Payment PIN</label>
+          <div class="tk-pin-row" id="pinRow">
+            <input class="tk-pin-box" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"/>
+            <input class="tk-pin-box" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"/>
+            <input class="tk-pin-box" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"/>
+            <input class="tk-pin-box" type="password" inputmode="numeric" maxlength="1" pattern="[0-9]"/>
+          </div>
+          <div class="tk-form-error" id="pinError">Incorrect PIN. Please try again.</div>
+          <div class="tk-hint">
+            <i class="fa-solid fa-shield-halved" style="color:var(--primary);font-size:0.7rem;"></i>
+            Your PIN is encrypted and never stored.
+          </div>
+        </div>
+
+      </div><!-- /form-body -->
+
+      <div class="tk-modal-actions">
+        <button class="tk-btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="tk-btn-proceed" id="proceedBtn" onclick="proceedToPayment()">
+          <i class="fa-solid fa-lock"></i>
+          Proceed to Pay
+        </button>
+      </div>
+    </div><!-- /step1 -->
+
+    <!-- ══ STEP 2: PROCESSING ══ -->
+    <div id="step2" style="display:none">
+      <div class="tk-processing">
+        <div class="tk-spinner-ring"></div>
+        <div class="tk-processing-title">Processing your payment...</div>
+        <div class="tk-processing-sub">Please wait while we<br/>secure your tickets.</div>
+        <div class="tk-processing-steps" id="procSteps">
+          <div class="tk-proc-step" id="ps1">
+            <div class="step-icon"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            Verifying PIN
+          </div>
+          <div class="tk-proc-step" id="ps2">
+            <div class="step-icon"><i class="fa-solid fa-ellipsis"></i></div>
+            Processing payment
+          </div>
+          <div class="tk-proc-step" id="ps3">
+            <div class="step-icon"><i class="fa-solid fa-ellipsis"></i></div>
+            Generating ticket
+          </div>
+        </div>
+      </div>
+    </div><!-- /step2 -->
+
+    <!-- ══ STEP 3: QR TICKET ══ -->
+    <div id="step3" style="display:none">
+      <div class="tk-modal-head">
+        <div class="tk-modal-head-info">
+          <div class="tk-modal-step-label" style="color:#22c55e;">
+            <i class="fa-solid fa-circle-check"></i> Payment confirmed
+          </div>
+          <div class="tk-modal-title">Your Ticket is Ready!</div>
+        </div>
+        <button class="tk-modal-close" onclick="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="tk-ticket-wrap">
+        <div class="tk-ticket" id="ticketCard">
+
+          <!-- coloured band -->
+          <div class="tk-ticket-band" id="ticketBand">
+            <div class="tk-ticket-band-title" id="ticketEventName"></div>
+            <div class="tk-ticket-band-sub" id="ticketEventDate"></div>
+          </div>
+
+          <!-- perforation -->
+          <div class="tk-perf">
+            <div class="tk-perf-circle left"></div>
+            <div class="tk-perf-circle right"></div>
+          </div>
+
+          <!-- details -->
+          <div class="tk-ticket-body">
+            <div class="tk-ticket-detail-grid">
+              <div class="tk-ticket-detail">
+                <div class="tk-ticket-detail-label">Venue</div>
+                <div class="tk-ticket-detail-value" id="ticketVenue"></div>
+              </div>
+              <div class="tk-ticket-detail">
+                <div class="tk-ticket-detail-label">Date & Time</div>
+                <div class="tk-ticket-detail-value" id="ticketTime"></div>
+              </div>
+              <div class="tk-ticket-detail">
+                <div class="tk-ticket-detail-label">Ticket type</div>
+                <div class="tk-ticket-detail-value" id="ticketType"></div>
+              </div>
+              <div class="tk-ticket-detail">
+                <div class="tk-ticket-detail-label">Qty · Amount paid</div>
+                <div class="tk-ticket-detail-value" id="ticketAmt"></div>
+              </div>
+            </div>
+
+            <!-- QR code -->
+            <div class="tk-qr-wrap">
+              <canvas id="qrCanvas" class="tk-qr-canvas" width="160" height="160"></canvas>
+              <div class="tk-qr-label">
+                Scan at the entrance · valid once only
+              </div>
+              <div class="tk-ticket-id" id="ticketId"></div>
+            </div>
+
+          </div><!-- /ticket-body -->
+        </div><!-- /ticket -->
+      </div><!-- /ticket-wrap -->
+
+      <!-- action buttons -->
+      <div class="tk-ticket-actions" style="margin-top:14px;">
+        <button class="tk-dl-ticket-btn" onclick="downloadTicket()">
+          <i class="fa-solid fa-download"></i> Download Ticket
+        </button>
+        <button class="tk-share-btn" onclick="shareTicket()" title="Share">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+      </div>
+      <button class="tk-close-done-btn" onclick="closeModal()">Done</button>
+      <div style="height:6px;"></div>
+
+    </div><!-- /step3 -->
+  </div><!-- /modal -->
+</div>
+
+<!-- LIGHTBOX -->
+<div class="ev-lightbox" id="evLightbox" onclick="closeLightbox()">
+  <div class="ev-lb-bar">
+    <button class="ev-lb-btn" onclick="closeLightbox();event.stopPropagation();">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <span class="ev-lb-name" id="lbName"></span>
+    <a class="ev-lb-btn" id="lbDownload" download="event-poster.jpg"
+       onclick="event.stopPropagation();">
+      <i class="fa-solid fa-download"></i>
+    </a>
+  </div>
+  <div class="ev-lb-img-wrap">
+    <img id="lbImg" src="" alt="event poster"/>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- QR lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+/* ════════════════════════════════════
+   DATA
+════════════════════════════════════ */
+
+const EVENTS = [
+];
+
+/* ── State ── */
+let activeTab   = 'all';
+let activeSearch = '';
+let currentEv   = null;
+let selectedType = 0;
+let qty         = 1;
+const CORRECT_PIN = '1234';  /* demo PIN — wire to your backend */
+let walletBalance = 12500;
+const event_id = "{{event_id}}"
+/* ════════════════════════════════════
+   RENDER
+════════════════════════════════════ */
+function getCSRFToken() {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    const t = c.trim();
+    if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
+  });
+  return v;
+}
+ 
+window.addEventListener('DOMContentLoaded',()=>{
+    Get_Event();
+})
+
+function Get_Event(){
+    fetch(`/events/get_event/${event_id}/`,{
+        method:'GET'
+    })
+    .then(res => res.json())
+    .then(data => {
+        EVENTS.splice(0, 0, ...data.events); 
+        list = EVENTS;
+        renderCards();   // ✅ THIS is the key
+    })
+}
+
+function renderCards(filter = 'all', search = '') {
+  const body = document.getElementById('tkBody');
+  let list = filter === 'all' ? EVENTS : EVENTS.filter(e => e.category === filter);
+  if (search.trim()) {
+    const q = search.toLowerCase();
+    list = list.filter(e =>
+      e.title.toLowerCase().includes(q) ||
+      e.venue.toLowerCase().includes(q) ||
+      e.catLabel.toLowerCase().includes(q)
+    );
+  }
+  if (!list.length) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <i class="fa-regular fa-calendar-xmark"
+           style="font-size:2.5rem;color:var(--border);display:block;margin-bottom:14px;"></i>
+        <p style="font-size:0.88rem;color:var(--text-muted);">No events found.</p>
+      </div>`;
+    return;
+  }
+  body.innerHTML = '';
+  list.forEach((ev, i) => {
+    const w = document.createElement('div');
+    w.innerHTML = buildCard(ev, i);
+    body.appendChild(w);
+  });
+}
+
+function buildCard(ev, i) {
+  const pct   = Math.round((1 - ev.seatsLeft / ev.totalSeats) * 100);
+  const low   = ev.seatsLeft > 0 && ev.seatsLeft <= 20;
+  const barC  = ev.soldOut ? '#ef4444' : low ? '#f59e0b' : '#22c55e';
+  const minP  = Math.min(...ev.ticketTypes.map(t => t.price));
+  const priceLabel = minP === 0 ? 'Free' : `From MK ${minP.toLocaleString()}`;
+  const typeChips  = ev.ticketTypes.map((t, idx) =>
+    `<div class="tk-type-chip ${idx === 0 ? 'selected' : ''}"
+          onclick="selectType(this,${ev.id},${idx})"
+          data-evid="${ev.id}" data-idx="${idx}">
+       ${t.label}
+       <span style="font-size:0.68rem;opacity:0.75;">
+         ${t.price === 0 ? 'Free' : 'MK '+t.price.toLocaleString()}
+       </span>
+     </div>`).join('');
+
+  return `
+  <div class="tk-card ${ev.soldOut ? 'sold-out' : ''}" style="animation-delay:${i*0.06}s">
+    <div class="tk-accent" style="background:${ev.accent};"></div>
+
+    <div class="tk-poster-wrap" onclick="openLightbox('${ev.poster}','${ev.title.replace(/'/g,"\\'")}')">
+      <img src="${ev.poster}" alt="${ev.title}" loading="lazy"/>
+      <a class="tk-dl-btn" href="${ev.poster}" download="event-poster.jpg"
+         onclick="event.stopPropagation();">
+        <i class="fa-solid fa-download"></i>
+      </a>
+      <div class="tk-price-tag ${minP === 0 ? 'free' : ''}">
+        <i class="fa-solid fa-tag" style="font-size:0.68rem;"></i>
+        ${priceLabel}
+      </div>
+      <span class="tk-cat-pill" style="background:${ev.catBg};color:${ev.catText};">
+        ${ev.catLabel}
+      </span>
+    </div>
+
+    <div class="tk-card-body">
+      <div class="tk-card-title">${ev.title}</div>
+      <div class="tk-info-grid">
+        <div class="tk-info-row">
+          <div class="tk-info-icon" style="background:${ev.catBg};color:${ev.catText};">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <span>${ev.venue}</span>
+        </div>
+        <div class="tk-info-row">
+          <div class="tk-info-icon" style="background:#e8f1fd;color:#1255a8;">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+          <span>${ev.startTime}</span>
+        </div>
+        <div class="tk-info-row">
+          <div class="tk-info-icon" style="background:#dcfce7;color:#14532d;">
+            <i class="fa-solid fa-flag-checkered"></i>
+          </div>
+          <span>Ends ${ev.endTime}</span>
+        </div>
+      </div>
+
+      <!-- availability -->
+      <div class="tk-avail-wrap">
+        <div class="tk-avail-label">
+          <span>Availability</span>
+          <span style="color:${barC};" id='Left'>
+            ${ev.soldOut ? 'Sold out' : low ? ev.seatsLeft+' seats left!' : ev.seatsLeft+' tickets left'}
+          </span>
+        </div>
+        <div class="tk-avail-bar">
+          <div class="tk-avail-fill" style="width:${pct}%;background:${barC};"></div>
+        </div>
+      </div>
+
+      <!-- ticket type chips -->
+      <div class="tk-types-row">${typeChips}</div>
+
+      <div class="tk-card-footer">
+        <div style="font-size:0.77rem;color:var(--text-muted);">
+          
+        </div>
+        <button class="tk-buy-btn" onclick="openModal(${ev.id})"
+                ${ev.soldOut ? 'disabled' : ''}>
+          <i class="fa-solid fa-ticket"></i>
+          ${ev.soldOut ? 'Sold Out' : 'Buy Ticket'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectType(chip, evId, idx) {
+  const parent = chip.closest('.tk-types-row');
+  parent.querySelectorAll('.tk-type-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+}
+
+/* ════════════════════════════════════
+   MODAL — OPEN / CLOSE / STEPS
+════════════════════════════════════ */
+function openModal(evId) {
+  currentEv   = EVENTS.find(e => e.id === evId);
+  console.log(currentEv.ticketTypes)
+  selectedType = 0;
+  qty          = 1;
+  if (!currentEv) return;
+
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'none';
+
+  document.getElementById('modalEvImg').src         = currentEv.poster;
+  document.getElementById('modalEvName').textContent = currentEv.title;
+  document.getElementById('modalEvDate').textContent = currentEv.startTime + ' · Ends ' + currentEv.endTime;
+  document.getElementById('qtyVal').value            = 1;
+  document.getElementById('pinError').classList.remove('show');
+
+  /* Build type buttons */
+  const typesWrap = document.getElementById('modalTypes');
+  typesWrap.innerHTML = currentEv.ticketTypes.map((t, idx) =>
+    `<button class="tk-modal-type-btn ${idx === 0 ? 'active' : ''}"
+             onclick="pickType(this, ${idx})">
+       ${t.label}
+       <span class="type-price">${t.price === 0 ? 'Free' : 'MK '+t.price.toLocaleString()}</span>
+     </button>`).join('');
+
+  /* Clear PIN boxes */
+  document.querySelectorAll('.tk-pin-box').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+
+  updateSummary();
+
+  document.getElementById('tkOverlay').classList.add('open');
+  history.pushState({ tkModal: true }, '');
+}
+
+function closeModal() {
+  document.getElementById('tkOverlay').classList.remove('open');
+  if (history.state && history.state.tkModal) history.back();
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('tkOverlay')) closeModal();
+}
+
+window.addEventListener('popstate', () => {
+  if (document.getElementById('tkOverlay').classList.contains('open')) {
+    document.getElementById('tkOverlay').classList.remove('open');
+  }
+  if (document.getElementById('evLightbox').classList.contains('open')) {
+    document.getElementById('evLightbox').classList.remove('open');
+  }
+});
+
+/* ════════════════════════════════════
+   FORM INTERACTIONS
+════════════════════════════════════ */
+function pickType(btn, idx) {
+  document.querySelectorAll('.tk-modal-type-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedType = idx;
+  updateSummary();
+}
+
+function changeQty(delta) {
+  qty = Math.max(1, Math.min(10, qty + delta));
+  document.getElementById('qtyVal').value = qty;
+  updateSummary();
+}
+
+function updateSummary() {
+  if (!currentEv) return;
+  const t       = currentEv.ticketTypes[selectedType];
+  const sub     = t.price * qty;
+  const fee     = Math.round(sub * 0.05);
+  const total   = sub + fee;
+  document.getElementById('summaryType').textContent    = `${t.label} · x${qty}`;
+  document.getElementById('summarySubtotal').textContent = t.price === 0 ? 'Free' : `MK ${sub.toLocaleString()}`;
+  document.getElementById('summaryFee').textContent      = fee === 0 ? 'MK 0' : `MK ${fee.toLocaleString()}`;
+  document.getElementById('summaryTotal').textContent    = total === 0 ? 'Free' : `MK ${total.toLocaleString()}`;
+}
+
+/* PIN boxes — auto-advance and handle backspace */
+document.querySelectorAll('.tk-pin-box').forEach((box, i, boxes) => {
+  box.addEventListener('input', () => {
+    box.value = box.value.replace(/\D/g, '').slice(-1);
+    box.classList.toggle('filled', box.value !== '');
+    if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+    document.getElementById('pinError').classList.remove('show');
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+  });
+});
+
+function getEnteredPin() {
+  return Array.from(document.querySelectorAll('.tk-pin-box')).map(b => b.value).join('');
+}
+
+/* ════════════════════════════════════
+   PAYMENT FLOW
+════════════════════════════════════ */
+
+async function proceedToPayment() {
+  const pin = getEnteredPin();
+
+  if (pin.length < 4) {
+    showToast('Enter PIN');
+    return;
+  }
+
+  const t = currentEv.ticketTypes[selectedType];
+ 
+
+  try {
+    const res = await fetch('/events/purchase_ticket/', {
+      method: 'POST',
+      headers: {
+        
+        'X-CSRFToken': getCSRFToken(),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        event_id: currentEv.id,
+        ticket_type: t.label,
+        quantity: qty,
+        pin: pin
+      })
+    });
+
+    const data = await res.json();
+    
+
+    if (!res.ok) {
+      showToast(data.error);
+      return;
+    }
+
+    // ✅ SUCCESS → SHOW STEP 3
+    showTicketFromBackend(data);
+
+  } catch (err) {
+    console.log(err)
+    showToast('Something went wrong',err);
+  }
+}
+/* ════════════════════════════════════
+   SHOW QR TICKET (step 3)
+════════════════════════════════════ */
+
+function showTicketFromBackend(ticket) {
+  console.log(ticket)
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step3').style.display = 'block';
+
+  document.getElementById('ticketEventName').textContent = ticket.event;
+  document.getElementById('ticketEventDate').textContent = ticket.date;
+  document.getElementById('ticketVenue').textContent = currentEv.venue;
+  document.getElementById('Left').textContent = ticket.left_tickets;
+
+
+  document.getElementById('ticketType').textContent = "Standard"; // or send from backend
+  document.getElementById('ticketAmt').textContent = ticket.detail;
+
+  document.getElementById('ticketId').textContent = "ID hidden"; // or send ID
+
+  // 🔥 LOAD QR FROM BACKEND
+  const canvas = document.getElementById('qrCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const img = new Image();
+  img.onload = () => ctx.drawImage(img, 0, 0, 160, 160);
+
+  // ⚠️ IMPORTANT: full URL
+  img.src = ticket.qr;
+}
+/* Simple fallback pattern if CDN fails */
+function drawFallbackQR(canvas, text) {
+  const ctx = canvas.getContext('2d');
+  const s = 8;
+  const n = 20;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,160,160);
+  ctx.fillStyle = '#0d1a2e';
+
+  /* Deterministic pseudo-random from text */
+  let h = 0;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) - h + text.charCodeAt(i)) | 0;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      h = ((h << 5) - h + r * 31 + c) | 0;
+      if (Math.abs(h) % 2 === 0) ctx.fillRect(c * s, r * s, s, s);
+    }
+  }
+  /* Corner squares */
+  [[0,0],[0,13],[13,0]].forEach(([r,c]) => {
+    ctx.fillStyle = '#0d1a2e';
+    ctx.fillRect(c*s,r*s,7*s,7*s);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(c*s+s,r*s+s,5*s,5*s);
+    ctx.fillStyle = '#0d1a2e';
+    ctx.fillRect(c*s+2*s,r*s+2*s,3*s,3*s);
+  });
+}
+
+/* ════════════════════════════════════
+   DOWNLOAD TICKET (canvas → PNG)
+════════════════════════════════════ */
+function downloadTicket() {
+  /* Snapshot the QR canvas */
+  const qrCanvas = document.getElementById('qrCanvas');
+  const ticketId = document.getElementById('ticketId').textContent;
+  const link = document.createElement('a');
+  link.download = `webs-QRCode.png`;
+  link.href = qrCanvas.toDataURL('image/png');
+  link.click();
+  showToast('Ticket downloaded! ✓');
+}
+
+function shareTicket() {
+  const ticketId = document.getElementById('ticketId').textContent;
+  if (navigator.share) {
+    navigator.share({
+      title: 'My Event Ticket',
+      text: `My ticket ID: ${ticketId}`,
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(ticketId)
+      .then(() => showToast('Ticket ID copied to clipboard!'))
+      .catch(() => showToast('Ticket ID: ' + ticketId));
+  }
+}
+
+/* ════════════════════════════════════
+   LIGHTBOX (poster)
+════════════════════════════════════ */
+function openLightbox(src, name) {
+  event.stopPropagation();
+  document.getElementById('lbImg').src           = src;
+  document.getElementById('lbDownload').href     = src;
+  document.getElementById('lbName').textContent  = name;
+  document.getElementById('evLightbox').classList.add('open');
+  history.pushState({ evLightbox: true }, '');
+}
+function closeLightbox() {
+  document.getElementById('evLightbox').classList.remove('open');
+  if (history.state && history.state.evLightbox) history.back();
+}
+
+/* ════════════════════════════════════
+   FILTERS / SEARCH
+════════════════════════════════════ */
+function setTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.tk-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(activeTab, activeSearch);
+}
+
+function filterCards(q) {
+  activeSearch = q;
+  renderCards(activeTab, activeSearch);
+}
+
+/* ════════════════════════════════════
+   TOAST
+════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ── INIT ── */
+renderCards();
+</script>
+{% endblock content %}

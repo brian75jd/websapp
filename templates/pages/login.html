@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden; /* 🔥 prevents scroll movement */
+    }
+
+    .card {
+        background: white;
+        padding: 25px;
+        width: 350px;
+        max-width: 90%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: rgba(15, 14, 14, 0.86);
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px; /* 🔥 better for mobile */
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 14px;
+        color: #007bff;
+        user-select: none;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:disabled {
+        background: #999;
+        cursor: not-allowed;
+    }
+
+    .spinner {
+        display: none;
+        margin: 10px auto;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    .message {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="card">
+    <h2>Login</h2>
+
+    <input type="text" id="phone" placeholder="Username/Phone Number">
+
+    <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Password">
+        <span class="toggle-btn" onclick="togglePassword()">Show</span>
+    </div>
+
+    <button id="submitBtn" onclick="LogginUser()">Login</button>
+
+    <div class="spinner" id="spinner"></div>
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordField = document.getElementById('password');
+    const toggleBtn = document.querySelector('.toggle-btn');
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        toggleBtn.innerText = "Hide";
+    } else {
+        passwordField.type = "password";
+        toggleBtn.innerText = "Show";
+    }
+}
+
+function getCSRFToken() {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    const t = c.trim();
+    if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
+  });
+  return v;
+}
+
+async function LogginUser() {
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    const btn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const message = document.getElementById('message');
+
+    message.innerText = "";
+
+    if (!phone || !password) {
+        message.style.color = "red";
+        message.innerText = "All fields are required";
+        return;
+    }
+
+    btn.disabled = true;
+    spinner.style.display = "block";
+
+    try {
+        const response = await fetch('/login_validate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                identifier: phone,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+        console.log("SERVER RESPONSE:", data); 
+
+        if (data.success) {
+            message.style.color = "green";
+            message.innerText = "Login successful 🎉";
+
+            document.getElementById('phone').value = "";
+            document.getElementById('password').value = "";
+
+            if (data.url) {
+                window.location.href = data.url;
+            }
+
+        } else {
+            message.style.color = "red";
+            message.innerText = data.detail || "Invalid credentials";
+        }
+
+    } catch (error) {
+        console.error("FETCH ERROR:", error);
+        message.style.color = "red";
+        message.innerText = "Network error. Try again.";
+    }
+
+    btn.disabled = false;
+    spinner.style.display = "none";
+}
+</script>
+
+</body>
+</html>

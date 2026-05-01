@@ -149,6 +149,7 @@ let serverNotifications = [];
 if (initialDataElement) {
   try {
     serverNotifications = JSON.parse(initialDataElement.textContent);
+    console.log(serverNotifications)
     
   } catch (err) {
     console.error('Error parsing notifications JSON', err);

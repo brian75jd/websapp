@@ -1,0 +1,476 @@
+{% extends "base/base2.html" %}
+
+{% block content %}
+<style>
+
+  .tk-header{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1.5px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+  .tk-header-left{display:flex;align-items:center;gap:10px;}
+  .tk-back-btn{width:36px;height:36px;border:none;background:var(--primary-soft);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:background 0.2s;flex-shrink:0;}
+  .tk-back-btn:hover{background:var(--border);}
+  .tk-page-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);}
+
+  /* ── PAGE WRAPPER — centres everything on wide screens ── */
+  .tk-page-wrap{max-width:1200px;margin:0 auto;width:100%;}
+
+  .tk-body{padding:16px 14px;display:grid;grid-template-columns:1fr;gap:16px;}
+  @media(min-width:768px){.tk-body{grid-template-columns:repeat(2,1fr);}}
+  @media(min-width:1024px){
+    body{
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      width: 100vw;
+    }
+    .tk-body{
+      padding:24px 24px;
+      width:100%;
+      }
+    }
+
+  #faqSection{padding:0 14px 100px;}
+  @media(min-width:1024px){#faqSection{padding:0 24px 80px;}}
+
+  .tk-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;animation:tkUp 0.38s ease both;position:relative;}
+  @keyframes tkUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .tk-card.sold-out .tk-poster-wrap::after{content:'SOLD OUT';position:absolute;inset:0;background:rgba(13,26,46,0.65);display:flex;align-items:center;justify-content:center;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;pointer-events:none;}
+  .tk-accent{height:4px;width:100%;}
+  .tk-poster-wrap{position:relative;overflow:hidden;height:185px;cursor:pointer;background:var(--bg);}
+  .tk-poster-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.3s;}
+  .tk-poster-wrap:hover img{transform:scale(1.04);}
+  .tk-dl-btn{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);color:white;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;opacity:0;transition:opacity 0.2s;}
+  .tk-poster-wrap:hover .tk-dl-btn{opacity:1;}
+  @media(hover:none){.tk-dl-btn{opacity:1;}}
+  .tk-cat-pill{position:absolute;bottom:10px;left:10px;border-radius:20px;padding:4px 11px;font-size:0.7rem;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:0.3px;}
+  .tk-price-tag{position:absolute;top:10px;left:10px;background:#0d1a2e;color:white;border-radius:20px;padding:5px 12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.78rem;font-weight:800;display:flex;align-items:center;gap:4px;}
+  .tk-price-tag.free{background:#22c55e;}
+  .tk-card-body{padding:14px 16px 16px;}
+  .tk-card-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:var(--text);margin-bottom:8px;line-height:1.35;}
+  .tk-info-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .tk-info-row{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);}
+  .tk-info-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.72rem;flex-shrink:0;}
+  .tk-avail-wrap{margin-bottom:14px;}
+  .tk-avail-label{display:flex;justify-content:space-between;font-size:0.74rem;margin-bottom:5px;}
+  .tk-avail-label span:first-child{color:var(--text-muted);}
+  .tk-avail-bar{height:6px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .tk-avail-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+  .tk-types-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+  .tk-type-chip{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);font-size:0.74rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text-muted);cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:5px;}
+  .tk-type-chip:hover{border-color:var(--primary);color:var(--primary);}
+  .tk-type-chip.selected{background:var(--primary);color:white;border-color:var(--primary);}
+  .tk-card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;border-top:1px solid var(--border);}
+  .tk-buy-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.82rem;border:none;cursor:pointer;background:var(--primary);color:white;box-shadow:0 3px 10px rgba(26,111,212,0.25);transition:all 0.22s;white-space:nowrap;}
+  .tk-buy-btn:hover{background:var(--primary-dark);transform:translateY(-1px);}
+  .tk-buy-btn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;background:var(--text-muted);}
+
+  /* FAQ */
+  .faq-section{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;animation:tkUp 0.45s ease both;}
+  .faq-header{padding:16px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .faq-header-icon{width:34px;height:34px;background:var(--primary-soft);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.9rem;flex-shrink:0;}
+  .faq-header-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.95rem;color:var(--text);}
+  .faq-header-sub{font-size:0.76rem;color:var(--text-muted);margin-top:1px;}
+  .faq-item{border-bottom:1px solid var(--border);}
+  .faq-item:last-child{border-bottom:none;}
+  .faq-question{width:100%;background:none;border:none;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;text-align:left;transition:background 0.18s;}
+  .faq-question:hover{background:var(--primary-soft);}
+  .faq-question-text{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.86rem;color:var(--text);line-height:1.4;flex:1;}
+  .faq-chevron{width:22px;height:22px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--primary);font-size:0.65rem;transition:transform 0.25s, background 0.18s;}
+  .faq-item.open .faq-chevron{transform:rotate(180deg);background:var(--primary);color:white;border-color:var(--primary);}
+  .faq-answer{display:none;padding:0 18px 14px;font-size:0.84rem;line-height:1.65;color:var(--text-muted);border-top:1px solid var(--border);}
+  .faq-item.open .faq-answer{display:block;animation:faqIn 0.22s ease;}
+  @keyframes faqIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+
+  /* CHAT FAB */
+  .chat-fab{position:fixed;bottom:calc(var(--nav-height,64px) + 16px);right:18px;z-index:400;width:54px;height:54px;border-radius:50%;border:none;background:var(--primary);color:white;box-shadow:0 4px 20px rgba(26,111,212,0.38);display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s,background 0.2s;}
+  .chat-fab:hover{background:var(--primary-dark);transform:scale(1.08);box-shadow:0 6px 26px rgba(26,111,212,0.45);}
+  .chat-fab:active{transform:scale(0.95);}
+  .chat-fab-dot{position:absolute;top:2px;right:2px;width:12px;height:12px;background:#ef4444;border-radius:50%;border:2px solid white;display:none;}
+  .chat-fab-dot.show{display:block;}
+  .chat-fab-tip{position:fixed;bottom:calc(var(--nav-height,64px) + 80px);right:18px;z-index:401;background:#0d1a2e;color:white;font-size:0.76rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;padding:6px 12px;border-radius:20px;white-space:nowrap;box-shadow:0 2px 10px rgba(13,26,46,0.22);opacity:0;pointer-events:none;transition:opacity 0.25s,transform 0.25s;transform:translateY(6px);}
+  .chat-fab:hover ~ .chat-fab-tip{opacity:1;transform:translateY(0);}
+
+  /* CHAT DRAWER */
+  .chat-overlay{position:fixed;inset:0;background:rgba(13,26,46,0.45);z-index:500;display:none;}
+  .chat-overlay.open{display:block;animation:fadeIn 0.2s ease;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .chat-drawer{position:fixed;bottom:0;left:0;right:0;background:white;border-radius:22px 22px 0 0;z-index:501;max-height:80dvh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);box-shadow:0 -4px 30px rgba(13,26,46,0.14);}
+  .chat-drawer.open{transform:translateY(0);}
+  .chat-drawer-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:14px auto 0;flex-shrink:0;}
+  .chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;}
+  .chat-input-row{display:flex;align-items:center;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);flex-shrink:0;}
+  .chat-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:22px;padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--text);outline:none;transition:border-color 0.2s;resize:none;max-height:80px;line-height:1.4;}
+  .chat-input:focus{border-color:var(--primary);}
+  .chat-send-btn{width:38px;height:38px;background:var(--primary);color:white;border:none;border-radius:50%;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s;}
+  .chat-send-btn:hover{background:var(--primary-dark);}
+
+  /* PURCHASE MODAL */
+  .tk-modal-overlay{position:fixed;inset:0;background:rgba(13,26,46,0.55);z-index:600;display:none;align-items:center;justify-content:center;}
+  .tk-modal-overlay.open{display:flex;animation:mdFadeIn 0.2s ease;}
+  @keyframes mdFadeIn{from{opacity:0;}to{opacity:1;}}
+  .tk-modal{background:white;border-radius:20px;width:100%;max-width:440px;max-height:90dvh;overflow-y:auto;display:flex;flex-direction:column;animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);-webkit-overflow-scrolling:touch;margin:16px;}
+  /* On mobile keep it as bottom sheet */
+  @media(max-width:600px){
+    .tk-modal-overlay{align-items:flex-end;}
+    .tk-modal{border-radius:24px 24px 0 0;margin:0;max-width:100%;}
+  }
+  @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .tk-modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:14px auto 0;flex-shrink:0;}
+  @media(min-width:601px){.tk-modal-handle{display:none;}}
+  .tk-modal-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+  .tk-modal-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:var(--text);}
+  .tk-modal-close{width:32px;height:32px;border:none;background:var(--bg);color:var(--text-muted);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;transition:all 0.18s;flex-shrink:0;}
+  .tk-modal-close:hover{background:var(--border);color:var(--text);}
+  .tk-modal-event-strip{display:flex;align-items:center;gap:12px;margin:16px 20px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border:1.5px solid var(--border);flex-shrink:0;}
+  .tk-modal-event-img{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;}
+  .tk-modal-event-name{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.92rem;color:var(--text);}
+  .tk-modal-event-date{font-size:0.76rem;color:var(--text-muted);margin-top:3px;}
+  .tk-modal-actions{display:flex;gap:10px;padding:8px 20px 28px;flex-shrink:0;}
+  .tk-btn-cancel{flex:1;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.2s;}
+  .tk-btn-cancel:hover{border-color:var(--primary);color:var(--primary);}
+  .tk-btn-proceed{flex:2;background:var(--primary);color:white;border:none;padding:12px;border-radius:30px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 3px 10px rgba(26,111,212,0.25);}
+  .tk-btn-proceed:hover{background:var(--primary-dark);}
+  .tk-btn-proceed:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
+
+  /* PROCESSING STEP */
+  .tk-processing{padding:36px 20px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;flex:1;}
+  .tk-spinner-ring{width:64px;height:64px;border-radius:50%;border:4px solid var(--primary-soft);border-top-color:var(--primary);animation:spin 0.8s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .tk-processing-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1rem;color:var(--text);}
+  .tk-processing-sub{font-size:0.82rem;color:var(--text-muted);line-height:1.5;}
+  .tk-proc-steps{display:flex;flex-direction:column;gap:8px;width:100%;}
+  .tk-proc-step{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:9px 14px;font-size:0.82rem;color:var(--text-muted);border:1px solid var(--border);}
+  .tk-proc-step.done{color:var(--text);}
+  .step-icon{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;background:var(--primary-soft);color:var(--primary);}
+  .tk-proc-step.done .step-icon{background:#dcfce7;color:#15803d;}
+
+  /* LIGHTBOX */
+  .ev-lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:700;display:none;flex-direction:column;align-items:center;justify-content:center;}
+  .ev-lightbox.open{display:flex;animation:lbFade 0.2s ease;}
+  @keyframes lbFade{from{opacity:0;}to{opacity:1;}}
+  .ev-lb-bar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:linear-gradient(to bottom,rgba(0,0,0,0.55),transparent);z-index:10;}
+  .ev-lb-btn{width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);color:white;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background 0.2s;}
+  .ev-lb-btn:hover{background:rgba(255,255,255,0.3);}
+  .ev-lb-name{color:rgba(255,255,255,0.85);font-size:0.82rem;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;max-width:50%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ev-lb-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:56px 14px 14px;}
+  .ev-lightbox img{max-width:100%;max-height:calc(100vh - 70px);border-radius:10px;object-fit:contain;display:block;}
+
+  .toast{position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+
+<!-- HEADER -->
+<header class="tk-header">
+  <div style="max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between;">
+    <div class="tk-header-left">
+      <button class="tk-back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+      <span class="tk-page-title">Buy Tickets</span>
+    </div>
+  </div>
+</header>
+
+<!-- CENTRED PAGE WRAPPER -->
+<div class="tk-page-wrap">
+
+  <!-- EVENT CARDS -->
+  <div class="tk-body" id="tkBody"></div>
+
+  <!-- FAQ SECTION -->
+  <div id="faqSection"></div>
+
+</div><!-- /tk-page-wrap -->
+
+<!-- CHAT FAB -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Ask the organiser">
+  <i class="fa-solid fa-message"></i>
+  <span class="chat-fab-dot" id="chatDot"></span>
+</button>
+<div class="chat-fab-tip">Ask the organiser</div>
+
+<!-- CHAT OVERLAY + DRAWER -->
+<div class="chat-overlay" id="chatOverlay" onclick="toggleChat()"></div>
+<div class="chat-drawer" id="chatDrawer">
+  <div class="chat-drawer-handle"></div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="EmailInput" type="email" placeholder="Email (optional — get notified when organiser replies)"/>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chatInput" rows="1"
+              placeholder="Ask a question…"
+              onkeydown="handleChatKey(event)"
+              oninput="autoResizeChat(this)"></textarea>
+    <button class="chat-send-btn" onclick="sendChatMessage()">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+</div>
+
+<!-- PURCHASE MODAL -->
+<div class="tk-modal-overlay" id="tkOverlay" onclick="handleOverlayClick(event)">
+  <div class="tk-modal" id="tkModal" onclick="event.stopPropagation()">
+    <div class="tk-modal-handle"></div>
+
+    <!-- STEP 1 — event details + proceed -->
+    <div id="step1">
+      <div class="tk-modal-head">
+        <div class="tk-modal-title">Purchase Ticket</div>
+        <button class="tk-modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="tk-modal-event-strip">
+        <img class="tk-modal-event-img" id="modalEvImg" src="" alt=""/>
+        <div>
+          <div class="tk-modal-event-name" id="modalEvName"></div>
+          <div class="tk-modal-event-date" id="modalEvDate"></div>
+        </div>
+      </div>
+      <div class="tk-modal-actions">
+        <button class="tk-btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="tk-btn-proceed" onclick="proceedToPayment()">
+          <i class="fa-solid fa-lock"></i> Proceed to Pay
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2 — processing -->
+    <div id="step2" style="display:none">
+      <div class="tk-processing">
+        <div class="tk-spinner-ring"></div>
+        <div class="tk-processing-title">Processing your payment…</div>
+        <div class="tk-processing-sub">Please wait while we<br/>secure your tickets.</div>
+        <div class="tk-proc-steps">
+          <div class="tk-proc-step" id="ps1"><div class="step-icon"><i class="fa-solid fa-spinner fa-spin"></i></div>Verifying payment</div>
+          <div class="tk-proc-step" id="ps2"><div class="step-icon"><i class="fa-solid fa-ellipsis"></i></div>Processing payment</div>
+          <div class="tk-proc-step" id="ps3"><div class="step-icon"><i class="fa-solid fa-ellipsis"></i></div>Generating ticket</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="ev-lightbox" id="evLightbox" onclick="closeLightbox()">
+  <div class="ev-lb-bar">
+    <button class="ev-lb-btn" onclick="closeLightbox();event.stopPropagation();"><i class="fa-solid fa-xmark"></i></button>
+    <span class="ev-lb-name" id="lbName"></span>
+    <a class="ev-lb-btn" id="lbDownload" download="event-poster.jpg" onclick="event.stopPropagation();"><i class="fa-solid fa-download"></i></a>
+  </div>
+  <div class="ev-lb-img-wrap"><img id="lbImg" src="" alt="event poster"/></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getCSRFToken(){
+  let v=null;
+  document.cookie.split(';').forEach(c=>{const t=c.trim();if(t.startsWith('csrftoken='))v=t.substring('csrftoken='.length);});
+  return v;
+}
+
+const EVENTS=[];
+const event_id="{{ event_id }}";
+let currentEv=null,selectedType=0,qty=1;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  getQuestion();
+  document.getElementById('tkBody').innerHTML=`<div style="text-align:center;padding:60px 20px;grid-column:1/-1;"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem;color:var(--primary);display:block;margin-bottom:12px;"></i><p style="font-size:0.88rem;color:var(--text-muted);">Loading event…</p></div>`;
+
+  fetch(`/get_event/${event_id}/`,{method:'GET'})
+    .then(r=>r.json())
+    .then(data=>{
+      EVENTS.splice(0,EVENTS.length,...data.events);
+      renderCards();
+      renderFAQ();
+    })
+    .catch(()=>{document.getElementById('tkBody').innerHTML=`<div style="text-align:center;padding:60px 20px;grid-column:1/-1;"><p style="font-size:0.88rem;color:var(--text-muted);">Could not load event.</p></div>`;});
+
+  setTimeout(()=>{ document.getElementById('chatDot').classList.add('show'); }, 3000);
+});
+
+/* ── RENDER CARDS ── */
+function renderCards(){
+  const body=document.getElementById('tkBody');
+  if(!EVENTS.length){body.innerHTML=`<div style="text-align:center;padding:60px 20px;grid-column:1/-1;"><p style="font-size:0.88rem;color:var(--text-muted);">No event found.</p></div>`;return;}
+  body.innerHTML='';
+  EVENTS.forEach((ev,i)=>{const w=document.createElement('div');w.innerHTML=buildCard(ev,i);body.appendChild(w);});
+}
+
+function buildCard(ev,i){
+  const pct=Math.round((1-ev.seatsLeft/ev.totalSeats)*100);
+  const low=ev.seatsLeft>0&&ev.seatsLeft<=20;
+  const barC=ev.soldOut?'#ef4444':low?'#f59e0b':'#22c55e';
+  const minP=Math.min(...ev.ticketTypes.map(t=>t.price));
+  const priceLabel=minP===0?'Free':`From MK ${minP.toLocaleString()}`;
+  const typeChips=ev.ticketTypes.map((t,idx)=>`${t.left===0?``:`<div class="tk-type-chip ${idx===0?'selected':''}" onclick="selectType(this,${ev.id},${idx})">${t.label}<span style="font-size:0.68rem;opacity:0.75;">${t.price===0?'Free':'MK '+t.price.toLocaleString()}</span>(${t.left})</div>`}`).join('');
+  return `<div class="tk-card ${ev.soldOut?'sold-out':''}" style="animation-delay:${i*0.06}s">
+    <div class="tk-accent" style="background:${ev.accent};"></div>
+    <div class="tk-poster-wrap" onclick="openLightbox('${ev.poster}','${ev.title.replace(/'/g,"\\'")}')">
+      <img src="${ev.poster}" alt="${ev.title}" loading="lazy"/>
+      <a class="tk-dl-btn" href="${ev.poster}" download="event-poster.jpg" onclick="event.stopPropagation();"><i class="fa-solid fa-download"></i></a>
+      <div class="tk-price-tag ${minP===0?'free':''}"><i class="fa-solid fa-tag" style="font-size:0.68rem;"></i> ${priceLabel}</div>
+      <span class="tk-cat-pill" style="background:${ev.catBg};color:${ev.catText};">${ev.catLabel}</span>
+    </div>
+    <div class="tk-card-body">
+      <div class="tk-card-title">${ev.title}</div>
+      <div class="tk-info-grid">
+        <div class="tk-info-row"><div class="tk-info-icon" style="background:${ev.catBg};color:${ev.catText};"><i class="fa-solid fa-location-dot"></i></div><span>${ev.venue}</span></div>
+        <div class="tk-info-row"><div class="tk-info-icon" style="background:#e8f1fd;color:#1255a8;"><i class="fa-regular fa-clock"></i></div><span>${ev.startTime}</span></div>
+        <div class="tk-info-row"><div class="tk-info-icon" style="background:#dcfce7;color:#14532d;"><i class="fa-solid fa-flag-checkered"></i></div><span>Ends ${ev.endTime}</span></div>
+      </div>
+      <div class="tk-avail-wrap">
+        <div class="tk-avail-label"><span>Availability</span><span id="avail-${ev.id}" style="color:${barC};font-weight:700;">${ev.soldOut?'Sold out':low?ev.seatsLeft+' seats left!':ev.seatsLeft+' tickets left'}</span></div>
+        <div class="tk-avail-bar"><div class="tk-avail-fill" style="width:${pct}%;background:${barC};"></div></div>
+      </div>
+      <div class="tk-types-row">${typeChips}</div>
+      <div class="tk-card-footer">
+        <div></div>
+        <button class="tk-buy-btn" onclick="openModal(${ev.id})" ${ev.soldOut?'disabled':''}>
+          <i class="fa-solid fa-ticket"></i> ${ev.soldOut?'Sold Out':'Buy Ticket'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function selectType(chip,evId,idx){chip.closest('.tk-types-row').querySelectorAll('.tk-type-chip').forEach(c=>c.classList.remove('selected'));chip.classList.add('selected');}
+
+/* ── FAQ ── */
+function getQuestion(){
+  fetch(`/questions/`,{
+    method:'POST',
+    headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/json'},
+    body:JSON.stringify({eventId:event_id})
+  }).then(resp=>resp.json()).then(data=>{DEFAULT_FAQS.splice(0,0,...data.data);});
+}
+const DEFAULT_FAQS=[];
+
+function renderFAQ(){
+  const faqs=(EVENTS[0]&&EVENTS[0].faqs&&EVENTS[0].faqs.length)?EVENTS[0].faqs:DEFAULT_FAQS;
+  const evAccent=(EVENTS[0]&&EVENTS[0].accent)?EVENTS[0].accent:'var(--primary)';
+  const itemsHTML=faqs.map((item,i)=>`
+    <div class="faq-item" id="faq-${i}">
+      <button class="faq-question" onclick="toggleFAQ(${i})">
+        <span class="faq-question-text">${item.q}</span>
+        <span class="faq-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+      </button>
+      <div class="faq-answer">${item.a}</div>
+    </div>`).join('');
+  document.getElementById('faqSection').innerHTML=`
+    <div class="faq-section" style="animation-delay:0.18s;margin-bottom:100px;">
+      <div class="faq-header">
+        <div class="faq-header-icon" style="background:${evAccent}20;color:${evAccent};"><i class="fa-solid fa-circle-question"></i></div>
+        <div class="faq-header-text">
+          <div class="faq-header-title">Frequently Asked Questions</div>
+          <div class="faq-header-sub">Tap a question to read the answer</div>
+        </div>
+      </div>
+      ${itemsHTML}
+    </div>`;
+}
+
+function toggleFAQ(i){
+  const item=document.getElementById(`faq-${i}`);
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el=>el.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+
+/* ── CHAT ── */
+let chatOpen=false;
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatDrawer').classList.toggle('open',chatOpen);
+  document.getElementById('chatOverlay').classList.toggle('open',chatOpen);
+  document.getElementById('chatDot').classList.remove('show');
+}
+function sendChatMessage(){
+  const inp=document.getElementById('chatInput');
+  const email=document.getElementById('EmailInput').value.trim();
+  const text=inp.value.trim();
+  if(!text)return;
+  fetch(`{% url "events:send_questions" %}`,{
+    method:'POST',
+    headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/json'},
+    body:JSON.stringify({'message':text,'eventId':event_id,'email':email})
+  }).then(res=>res.json()).then(data=>{
+    if(!data.success){showToast('An error occurred');}
+    else{
+      document.getElementById('chatInput').value='';
+      document.getElementById('EmailInput').value='';
+      showToast('Message sent. The organiser will reply soon.');
+    }
+  });
+}
+function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}}
+function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+
+/* ── MODAL ── */
+function switchStep(n){[1,2].forEach(i=>document.getElementById(`step${i}`).style.display=i===n?'block':'none');document.getElementById('tkModal').scrollTop=0;}
+
+function openModal(evId){
+  currentEv=EVENTS.find(e=>e.id===evId);selectedType=0;qty=1;
+  if(!currentEv)return;
+  document.getElementById('modalEvImg').src=currentEv.poster;
+  document.getElementById('modalEvName').textContent=currentEv.title;
+  document.getElementById('modalEvDate').textContent=currentEv.startTime+' · Ends '+currentEv.endTime;
+  switchStep(1);
+  document.getElementById('tkOverlay').classList.add('open');
+  history.pushState({tkModal:true},'');
+}
+
+function closeModal(){document.getElementById('tkOverlay').classList.remove('open');if(history.state&&history.state.tkModal)history.back();}
+function handleOverlayClick(e){if(e.target===document.getElementById('tkOverlay'))closeModal();}
+
+async function proceedToPayment(){
+  const t=currentEv.ticketTypes[selectedType];
+  switchStep(2);
+  const stepIds=['ps1','ps2','ps3'];
+  stepIds.forEach(id=>{const el=document.getElementById(id);el.classList.remove('done');el.querySelector('.step-icon').innerHTML='<i class="fa-solid fa-ellipsis"></i>';});
+  document.getElementById('ps1').querySelector('.step-icon').innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+  let stepIdx=0;
+  const iv=setInterval(()=>{
+    if(stepIdx>=stepIds.length){clearInterval(iv);return;}
+    const el=document.getElementById(stepIds[stepIdx]);
+    el.classList.add('done');el.querySelector('.step-icon').innerHTML='<i class="fa-solid fa-check"></i>';
+    stepIdx++;
+    if(stepIdx<stepIds.length)document.getElementById(stepIds[stepIdx]).querySelector('.step-icon').innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+  },900);
+  try{
+    const res=await fetch('/purchase_ticket/',{
+      method:'POST',
+      headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({event_id:currentEv.id,ticket_type:t.label,quantity:qty})
+    });
+    const data=await res.json();
+    clearInterval(iv);
+    if(data.success){
+      window.location.href=data.checkout_url;
+      return;
+    }
+    switchStep(1);
+    showToast(data.error||'Purchase failed. Please try again.');
+  }catch(err){clearInterval(iv);switchStep(1);showToast('Network error. Please try again.');}
+}
+
+/* ── LIGHTBOX ── */
+function openLightbox(src,name){
+  event.stopPropagation();
+  document.getElementById('lbImg').src=src;
+  document.getElementById('lbDownload').href=src;
+  document.getElementById('lbName').textContent=name;
+  document.getElementById('evLightbox').classList.add('open');
+  history.pushState({evLightbox:true},'');
+}
+function closeLightbox(){document.getElementById('evLightbox').classList.remove('open');if(history.state&&history.state.evLightbox)history.back();}
+
+window.addEventListener('popstate',()=>{
+  if(chatOpen){chatOpen=false;document.getElementById('chatDrawer').classList.remove('open');document.getElementById('chatOverlay').classList.remove('open');}
+  if(document.getElementById('tkOverlay').classList.contains('open'))document.getElementById('tkOverlay').classList.remove('open');
+  if(document.getElementById('evLightbox').classList.contains('open'))document.getElementById('evLightbox').classList.remove('open');
+});
+
+let toastTimer;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+
+renderCards();
+</script>
+{% endblock content %}

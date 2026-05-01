@@ -1,0 +1,241 @@
+{% extends "base/base2.html" %}
+
+{% block content %}
+<style>
+  /* ── DESKTOP LAYOUT ── */
+  @media (min-width: 768px) {
+    .tc-body { max-width: 520px; margin: 0 auto; padding: 32px 24px 100px; }
+    .tc-header { padding: 0 24px; }
+  }
+
+  .tc-header{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1.5px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(26,111,212,0.07);}
+  .tc-back-btn{width:36px;height:36px;border:none;background:var(--primary-soft);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.9rem;transition:background 0.2s;flex-shrink:0;}
+  .tc-back-btn:hover{background:var(--border);}
+  .tc-page-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:var(--text);}
+
+  .tc-body{padding:16px 14px 100px;}
+
+  /* ── SUCCESS BANNER ── */
+  .tc-success-banner{display:flex;align-items:center;gap:12px;background:#dcfce7;border:1.5px solid #86efac;border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;animation:tcUp 0.4s ease both;}
+  @keyframes tcUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .tc-success-icon{width:40px;height:40px;background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem;flex-shrink:0;}
+  .tc-success-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.95rem;color:#14532d;}
+  .tc-success-sub{font-size:0.78rem;color:#166534;margin-top:2px;}
+
+  /* ── TICKET CARD ── */
+  .tc-ticket{background:var(--card);border:2px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow-md);animation:tcUp 0.45s ease both;}
+  .tc-ticket-band{padding:20px 22px 18px;color:white;}
+  .tc-ticket-band-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.08rem;margin-bottom:4px;line-height:1.3;}
+  .tc-ticket-band-sub{font-size:0.8rem;opacity:0.85;}
+  .tc-perf{display:flex;align-items:center;border-top:2px dashed var(--border);padding:0 22px;position:relative;background:var(--card);}
+  .tc-perf-circle{width:22px;height:22px;border-radius:50%;background:var(--bg);border:2px solid var(--border);flex-shrink:0;}
+  .tc-perf-circle.left{margin-left:-33px;}
+  .tc-perf-circle.right{margin-right:-33px;margin-left:auto;}
+  .tc-ticket-body{padding:18px 22px;}
+
+  .tc-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+  .tc-detail-label{font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-bottom:3px;font-family:'Plus Jakarta Sans',sans-serif;}
+  .tc-detail-value{font-size:0.86rem;font-weight:600;color:var(--text);line-height:1.3;}
+
+  /* ── QR BLOCK ── */
+  .tc-qr-wrap{display:flex;flex-direction:column;align-items:center;padding:20px 16px;background:var(--bg);border-radius:14px;border:1px solid var(--border);margin-bottom:16px;gap:12px;}
+  #qrCanvas{border-radius:10px;display:block;}
+  .tc-qr-label{font-size:0.74rem;color:var(--text-muted);text-align:center;font-weight:500;line-height:1.5;}
+  .tc-ticket-id{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.8rem;background:var(--primary-soft);color:var(--primary);border-radius:7px;padding:4px 12px;letter-spacing:1.2px;}
+
+  .tc-seats-note{text-align:center;font-size:0.77rem;color:var(--text-muted);margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:5px;}
+
+  /* ── ACTION BUTTONS ── */
+  .tc-actions{display:flex;gap:10px;margin-top:20px;animation:tcUp 0.5s ease both;}
+  .tc-dl-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:30px;background:var(--primary);color:white;border:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.86rem;cursor:pointer;transition:all 0.2s;box-shadow:0 3px 12px rgba(26,111,212,0.25);}
+  .tc-dl-btn:hover{background:var(--primary-dark);transform:translateY(-1px);}
+  .tc-share-btn{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);color:var(--primary);font-size:1rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .tc-share-btn:hover{background:var(--primary-soft);}
+  .tc-done-btn{display:block;width:100%;padding:13px;border-radius:30px;background:var(--bg);color:var(--text-muted);border:1.5px solid var(--border);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:0.86rem;cursor:pointer;transition:all 0.2s;text-align:center;margin-top:12px;animation:tcUp 0.55s ease both;}
+  .tc-done-btn:hover{border-color:var(--primary);color:var(--primary);}
+
+  /* ── IMPORTANT NOTES CARD ── */
+  .tc-notes-card{background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);padding:16px 18px;margin-top:20px;animation:tcUp 0.6s ease both;}
+  .tc-notes-title{font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+  .tc-notes-title i{color:#f59e0b;font-size:0.82rem;}
+  .tc-note-row{display:flex;align-items:flex-start;gap:9px;font-size:0.81rem;color:var(--text-muted);line-height:1.55;padding:7px 0;border-bottom:1px solid var(--border);}
+  .tc-note-row:last-child{border-bottom:none;padding-bottom:0;}
+  .tc-note-row i{color:var(--primary);font-size:0.72rem;margin-top:3px;flex-shrink:0;}
+
+  .toast{position:fixed;bottom:calc(var(--nav-height) + 14px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:white;padding:10px 22px;border-radius:30px;font-size:0.85rem;font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+</style>
+
+<!-- HEADER -->
+<header class="tc-header">
+  <button class="tc-back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+  <span class="tc-page-title">Your Ticket</span>
+</header>
+
+<div class="tc-body" id="tcBody">
+  <!-- Loading state — replaced by JS -->
+  <div style="text-align:center;padding:60px 20px;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size:1.8rem;color:var(--primary);display:block;margin-bottom:12px;"></i>
+    <p style="font-size:0.88rem;color:var(--text-muted);">Loading your ticket…</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── The backend should pass ticket data into the template.
+      If using a Django view, render the ticket JSON into the
+      page via a context variable, e.g.:
+        const TICKET = {{ ticket_json|safe }};
+      For now we read it from sessionStorage as a fallback so
+      the buy_ticket page can store it there after a successful
+      payment response if preferred.
+── */
+const TICKET = (() => {
+  try {
+    /* 1. Prefer Django template variable (set in your view) */
+    const raw = '{{ ticket_json|safe }}';
+    if (raw && raw !== '') return JSON.parse(raw);
+  } catch(_){}
+  /* 2. Fallback: sessionStorage written by buy_ticket page */
+  try { return JSON.parse(sessionStorage.getItem('lastTicket')||'null'); } catch(_){}
+  return null;
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!TICKET) {
+    document.getElementById('tcBody').innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <i class="fa-regular fa-circle-xmark" style="font-size:2.4rem;color:var(--border);display:block;margin-bottom:12px;"></i>
+        <p style="font-size:0.88rem;color:var(--text-muted);">Ticket data not found.<br/>Please check your purchased tickets.</p>
+      </div>`;
+    return;
+  }
+  renderTicket(TICKET);
+});
+
+function renderTicket(tk) {
+  const bandColor = tk.accent || 'var(--primary)';
+
+  document.getElementById('tcBody').innerHTML = `
+    <!-- Success banner -->
+    <div class="tc-success-banner">
+      <div class="tc-success-icon"><i class="fa-solid fa-circle-check"></i></div>
+      <div>
+        <div class="tc-success-title">Payment Confirmed!</div>
+        <div class="tc-success-sub">Your ticket has been secured. See you there 🎉</div>
+      </div>
+    </div>
+
+    <!-- Ticket -->
+    <div class="tc-ticket">
+      <div class="tc-ticket-band" style="background:${bandColor};">
+        <div class="tc-ticket-band-title" id="tcEvName">${tk.event||'Event'}</div>
+        <div class="tc-ticket-band-sub" id="tcEvDate">${tk.date||''}</div>
+      </div>
+      <div class="tc-perf">
+        <div class="tc-perf-circle left"></div>
+        <div class="tc-perf-circle right"></div>
+      </div>
+      <div class="tc-ticket-body">
+        <div class="tc-detail-grid">
+          <div>
+            <div class="tc-detail-label">Venue</div>
+            <div class="tc-detail-value">${tk.venue||'—'}</div>
+          </div>
+          <div>
+            <div class="tc-detail-label">Date &amp; Time</div>
+            <div class="tc-detail-value">${tk.date||'—'}</div>
+          </div>
+          <div>
+            <div class="tc-detail-label">Ticket type</div>
+            <div class="tc-detail-value">${tk.ticket_type||'Standard'}</div>
+          </div>
+          <div>
+            <div class="tc-detail-label">Qty · Amount</div>
+            <div class="tc-detail-value">${tk.total_paid||'—'}</div>
+          </div>
+        </div>
+
+        <div class="tc-qr-wrap">
+          <canvas id="qrCanvas" width="180" height="180"></canvas>
+          <div class="tc-qr-label">Scan at the entrance · valid once only</div>
+          <div class="tc-ticket-id" id="tcTicketId">${tk.ticket_code||''}</div>
+        </div>
+
+        <div class="tc-seats-note">
+          <i class="fa-solid fa-chair" style="color:var(--primary);font-size:0.7rem;"></i>
+          <span id="tcSeatsLeft">${tk.left_tickets !== undefined ? tk.left_tickets + ' tickets remaining' : ''}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="tc-actions">
+      <button class="tc-dl-btn" onclick="downloadTicket()">
+        <i class="fa-solid fa-download"></i> Download Ticket
+      </button>
+      <button class="tc-share-btn" onclick="shareQR()" title="Share QR">
+        <i class="fa-solid fa-share-nodes"></i>
+      </button>
+    </div>
+    <button class="tc-done-btn" onclick="goHome()">Done</button>
+
+    <!-- Important notes -->
+    <div class="tc-notes-card">
+      <div class="tc-notes-title"><i class="fa-solid fa-triangle-exclamation"></i> Important</div>
+      <div class="tc-note-row"><i class="fa-solid fa-circle-dot"></i> This QR code is valid for one scan only. Do not share it publicly before the event.</div>
+      <div class="tc-note-row"><i class="fa-solid fa-circle-dot"></i> Keep a screenshot of this ticket in case you lose signal at the venue.</div>
+      <div class="tc-note-row"><i class="fa-solid fa-circle-dot"></i> Arrive at the venue before the start time to avoid queue delays.</div>
+    </div>`;
+
+  /* Draw QR from backend-supplied image data */
+  const canvas = document.getElementById('qrCanvas');
+  const ctx    = canvas.getContext('2d');
+  if (tk.qr) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, 180, 180);
+    img.src    = tk.qr;
+  }
+}
+
+function downloadTicket() {
+  const canvas   = document.getElementById('qrCanvas');
+  const ticketId = document.getElementById('tcTicketId').textContent;
+  const link     = document.createElement('a');
+  link.download  = `Ticket-${ticketId}.png`;
+  link.href      = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Ticket QR downloaded ✓');
+}
+
+async function shareQR() {
+  const canvas   = document.getElementById('qrCanvas');
+  const ticketId = document.getElementById('tcTicketId').textContent;
+  const evName   = document.getElementById('tcEvName').textContent;
+  if (!navigator.share && !navigator.canShare) { downloadTicket(); showToast('QR saved — send the image to your friend 📸'); return; }
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], `Ticket-${ticketId}.png`, { type:'image/png' });
+    const shareData = { title:`Ticket for ${evName}`, text:`Here's your ticket for "${evName}".\nTicket code: ${ticketId}`, files:[file] };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      try { await navigator.share(shareData); showToast('Ticket shared! 🎟️'); }
+      catch(e) { if(e.name!=='AbortError') { try { await navigator.share({ title:`Ticket for ${evName}`, text:`Ticket code: ${ticketId}` }); } catch(_){} } }
+    } else {
+      try { await navigator.share({ title:`Ticket for ${evName}`, text:`Your ticket for "${evName}". Code: ${ticketId}` }); showToast('Shared! Download the QR too for scanning.'); }
+      catch(e) { if(e.name!=='AbortError') { downloadTicket(); showToast('QR saved — send the image to share the ticket.'); } }
+    }
+  }, 'image/png');
+}
+
+function goHome() { window.location.href = '/'; }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+{% endblock content %}
