@@ -7,7 +7,7 @@ class CustomuserAdmin(UserAdmin):
 
     fieldsets = UserAdmin.fieldsets + (
         ('Additional Info',{
-            'fields':('phone_number','photo','department','date_of_birth','gender','cover_photo','last_active'),
+            'fields':('phone_number','photo','department','date_of_birth','gender','cover_photo','last_active','is_organizer'),
         }),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
