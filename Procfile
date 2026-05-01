@@ -1,1 +1,1 @@
-web: gunicorn websapp.wsgi
+web: python manage.py migrate && gunicorn websapp.wsgi
