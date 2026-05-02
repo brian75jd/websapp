@@ -71,7 +71,7 @@ class Get_Ticket(APIView):
                 'id':ticket.id,
                 'is_paid':ticket.is_paid,
                 'qr_code':ticket.ticket_code,
-                'qr_image': ticket.qr_image.url,
+                'qr_image':  request.build_absolute_uri(ticket.qr_image.url) if ticket.qr_image else "",
               })
               return Response({
                   "data":resp_data,
