@@ -187,13 +187,14 @@ class Buy_Tickets(APIView):
             "last_name": "Bingala",
             'meta':[],
             "email": "brian75jd@gmail.com",
-            "callback_url": "https://kaylin-plumbic-luana.ngrok-free.dev/await-ticket/",   # ← No query params here
-            "webhook_url": "https://webhook.site/57288aed-c175-43b3-bcbb-89a1aca2b346",   # Optional: failure page
+            "callback_url": "https://websapp.up.railway.app/await-ticket/", 
+            "webhook_url": "https://websapp.up.railway.app/payment/webhook",
+            "webhook_url": "https://websapp.up.railway.app/payment/api/webhook",   
             "customization": {
                 "title": "Ticket Payment",
                 "description": f"{quantity} ticket(s) for {event.title}"
             }
-            # Remove meta and uuid unless docs say otherwise
+        
         }
 
         headers = {
@@ -217,7 +218,7 @@ class Buy_Tickets(APIView):
                         'tx_ref': tx_ref
                     })
 
-            # If we reach here, something went wrong
+            
             return Response({
                 'success': False,
                 'error': data.get('message') or data.get('error') or str(data)
@@ -225,64 +226,6 @@ class Buy_Tickets(APIView):
 
         except requests.exceptions.RequestException as e:
             return Response({'success': False, 'error': f'Network error'}, status=500)
-
-"""
-        if not event_id or not ticket_type_value:
-            return Response({'error': 'Missing data'}, status=bad_request_status)
-
-        if quantity <= 0:
-            return Response({'error': 'Invalid quantity'}, status=bad_request_status)
-
-        with transaction.atomic():
-        
-            ticket_type = TicketType.objects.select_for_update().get(
-                event_id=event_id,
-                type=ticket_type_value
-            )
-
-            event = ticket_type.event
-
-            sold = ticket_type.tickets.aggregate(total=Sum('quantity'))['total'] or 0
-            available = ticket_type.capacity - sold
-
-            if available < quantity:
-                return Response({
-                    'error': 'Not enough tickets left',
-                    'available': available
-                }, status=400)
-
-            tickets_created = []
-
-            for _ in range(quantity):
-                ticket = Ticket.objects.create(
-                    event=event,
-                    ticket_type=ticket_type,
-                    quantity=1,
-                    amount_paid=ticket_type.price,
-                    is_paid=True,
-                    ticket_code = generate_ticket_code(event=event)
-
-                )
-
-                tickets_created.append({
-                    'ticket_code': ticket.ticket_code,
-                    
-                })
-        total_left = sum([t.tickets_left() for t in event.ticket_types.all()])
-
-        return Response({
-            'message': 'Tickets purchased successfully',
-            'event': event.title,
-            'ticket_type': ticket_type.type,
-            'quantity': quantity,
-            'total_paid': ticket_type.price * quantity,
-            'tickets': tickets_created,
-            'qr': ticket.qr_image.url if ticket.qr_image else None,
-            'left_tickets':total_left,
-            'ticket_code':ticket.ticket_code,
-            'date':event.start_datetime.strftime("%b-%m-%d")
-        },success_status)
-"""
 
 
 class HandleQuestions(APIView):
