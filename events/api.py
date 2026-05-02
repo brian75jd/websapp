@@ -131,10 +131,9 @@ class Get_EventId(APIView):
                 'startTime': event.start_time.strftime('%I:%M %p'),
                 'endTime': event.finish_time.strftime('%I:%M %p'),
                 'date': str(event.event_date),
-,
                 'soldOut': total_left == 0,
-                
-                'poster': request.build_absolute_uri(event.poster.url) event.poster else "",
+
+                'poster': request.build_absolute_uri(event.poster.url) if event.thumbnail else "",
                 'src': request.build_absolute_uri(event.thumbnail.url) if event.thumbnail else "",
 
                 'ticketTypes': ticket_types_data,
