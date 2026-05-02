@@ -188,22 +188,28 @@ class Ticket(models.Model):
 
         super().save(*args, **kwargs)
 
-        if self.qr_code and not self.qr_image and self.is_paid:
-            url = f"https://kaylin-plumbic-luana.ngrok-free.dev/verify/{self.qr_code}/"
+    def generate_qr(self):
+        if self.qr_image:
+            return  
 
-            qr = qrcode.make(url)
+        base_url = getattr(settings, "SITE_URL", "https://websapp.up.railway.app")
+        url = f"{base_url}/verify/{self.qr_code}/"
 
-            buffer = BytesIO()
-            qr.save(buffer, format='PNG')
+        qr = qrcode.make(url)
 
-            self.qr_image.save(
-                f"ticket_{self.id}.png",
-                File(buffer),
-                save=False
-            )
+        buffer = BytesIO()
+        qr.save(buffer, format='PNG')
 
-            super().save(update_fields=['qr_image'])
+        self.qr_image.save(
+            f"ticket_{self.id}.png",
+            File(buffer),
+            save=False
+        )
 
+        self.save(update_fields=['qr_image'])
+
+    def __str__(self):
+        return f"Ticket {self.id} - {self.event}"
 
 class Question(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE,related_name='questions')

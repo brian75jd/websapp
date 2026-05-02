@@ -34,6 +34,7 @@ class Payment_Webhook(APIView):
               event = ticket.event
               ticket.is_paid = True
               ticket.save()
+              ticket.generate_qr()
 
               payment = Payment(
                  event = event,
