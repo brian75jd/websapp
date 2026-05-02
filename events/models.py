@@ -189,6 +189,7 @@ class Ticket(models.Model):
         super().save(*args, **kwargs)
 
     def generate_qr(self):
+        from django.conf import settings
         if self.qr_image:
             return  
 
