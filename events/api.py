@@ -36,10 +36,10 @@ def GetEvents(request):
             'start_at':event.start_time.strftime('%H:%M'),
             'finish_at':event.finish_time.strftime('%H:%M'),
             'is_paid':event.is_paid,
-            'poster':event.poster.url,
             'organizers':'Ecom',
             'seeds':['tom','james','emily'],
-            'thumbnail':event.thumbnail.url if event.thumbnail else "",
+            'poster': request.build_absolute_uri(event.poster.url) if event.thumbnail else "",
+            'thumbnail': request.build_absolute_uri(event.thumbnail.url) if event.thumbnail else "",
             'tickets_left': total_left
         })
     
@@ -131,10 +131,11 @@ class Get_EventId(APIView):
                 'startTime': event.start_time.strftime('%I:%M %p'),
                 'endTime': event.finish_time.strftime('%I:%M %p'),
                 'date': str(event.event_date),
-
-                'poster': event.poster.url if event.poster else "",
+,
                 'soldOut': total_left == 0,
-                'src': event.thumbnail.url if event.thumbnail else "",
+                
+                'poster': request.build_absolute_uri(event.poster.url) event.poster else "",
+                'src': request.build_absolute_uri(event.thumbnail.url) if event.thumbnail else "",
 
                 'ticketTypes': ticket_types_data,
 
