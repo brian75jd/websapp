@@ -92,6 +92,19 @@
       the buy_ticket page can store it there after a successful
       payment response if preferred.
 ── */
+function getCSRF() {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    const t = c.trim();
+    if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
+  });
+  return v;
+}
+
+const param = new URLSearchParams(window.location.search);
+const tx_ref = param.get('tx_ref')
+console.log(tx_ref)
+
 const TICKET = (() => {
   try {
     /* 1. Prefer Django template variable (set in your view) */
@@ -103,6 +116,33 @@ const TICKET = (() => {
   return null;
 })();
 
+window.addEventListener('DOMContentLoaded',()=>{
+  fechtTicket();
+})
+
+async function fechtTicket(){
+  try{
+    const response = await fetch('/payment/api/success/',{
+      method:'POST',
+      headers:{
+        'X-CSRFToken':getCSRF(),
+        'Content-Type':'application/json',
+      },
+      body: JSON.stringify({
+        tx_ref:tx_ref
+      })
+    })
+    const data = await response.json()
+    if(data.success){
+      renderTicket(data.data[0]);
+    }
+    console.log(data)
+  }
+  catch(error){
+    console.log(error)
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if (!TICKET) {
     document.getElementById('tcBody').innerHTML = `
@@ -112,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
     return;
   }
-  renderTicket(TICKET);
+  
 });
 
 function renderTicket(tk) {
@@ -161,7 +201,7 @@ function renderTicket(tk) {
         <div class="tc-qr-wrap">
           <canvas id="qrCanvas" width="180" height="180"></canvas>
           <div class="tc-qr-label">Scan at the entrance · valid once only</div>
-          <div class="tc-ticket-id" id="tcTicketId">${tk.ticket_code||''}</div>
+          <div class="tc-ticket-id" id="tcTicketId">${tk.qr_code||''}</div>
         </div>
 
         <div class="tc-seats-note">
@@ -193,10 +233,10 @@ function renderTicket(tk) {
   /* Draw QR from backend-supplied image data */
   const canvas = document.getElementById('qrCanvas');
   const ctx    = canvas.getContext('2d');
-  if (tk.qr) {
+  if (tk.qr_image) {
     const img = new Image();
     img.onload = () => ctx.drawImage(img, 0, 0, 180, 180);
-    img.src    = tk.qr;
+    img.src    = tk.qr_image;
   }
 }
 

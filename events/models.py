@@ -157,9 +157,8 @@ class Ticket(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='tickets')
-    ticket_code = models.CharField(null=True,blank=True)
-
-    tx_reference = models.CharField(null=True,blank=True)
+   
+    tx_reference = models.CharField(null=True,blank=True,unique=True)
 
     ticket_type = models.ForeignKey(
         TicketType,
@@ -178,22 +177,18 @@ class Ticket(models.Model):
     qr_image = models.ImageField(upload_to='qr_codes/', blank=True,null=True)
     verified_by = models.ForeignKey(User,on_delete = models.CASCADE,null=True,blank=True)
 
-
     ticket_code = models.CharField(max_length=225, blank=True,null=True,default='',unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        print(args)
-        print(kwargs)
         if not self.qr_code:
             raw = f"{self.id}{self.event_id}"
             self.qr_code = hashlib.sha256(raw.encode()).hexdigest()
 
         super().save(*args, **kwargs)
 
-
-        if self.qr_code and not self.qr_image:
+        if self.qr_code and not self.qr_image and self.is_paid:
             url = f"https://kaylin-plumbic-luana.ngrok-free.dev/verify/{self.qr_code}/"
 
             qr = qrcode.make(url)

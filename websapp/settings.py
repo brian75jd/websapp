@@ -23,7 +23,8 @@ DEBUG = os.getenv("DEBUG") == "True"
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "websapp.up.railway.app"
+    "websapp.up.railway.app",
+    "kaylin-plumbic-luana.ngrok-free.dev"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -103,7 +104,6 @@ CHANNEL_LAYERS = {
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 """
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -116,6 +116,7 @@ import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
+
 
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

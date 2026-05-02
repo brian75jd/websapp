@@ -5,6 +5,8 @@ from payment import views
 app_name = 'payment'
 
 urlpatterns = [
-    path('api/webhook/',views.Payment_Webhook.as_view(),
-         name='webhook')
+    path('api/webhook/',views.Payment_Webhook.as_view(),name='webhook'),
+    path('api/success/',views.Get_Ticket.as_view())
+
+    
 ]

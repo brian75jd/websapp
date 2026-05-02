@@ -158,9 +158,10 @@ class Buy_Tickets(APIView):
     
     def post(self, request,*args, **kwargs):
         import uuid
-        event_id = request.POST.get('event_id')
-        ticket_type_value = request.POST.get('ticket_type', '').lower()
-        quantity = int(request.POST.get('quantity', 1))
+        event_id = request.data.get('event_id')
+        ticket_type_value = request.data.get('ticket_type', '').lower()
+        quantity = int(request.data.get('quantity', 1))
+
 
         if quantity <= 0:
             return Response({'error': 'Invalid quantity'}, status=400)
@@ -169,13 +170,23 @@ class Buy_Tickets(APIView):
             return Response({'error': 'Missing event_id or ticket_type'}, status=400)
 
         try:
+            tx_ref = str(uuid.uuid4()) 
             event = Event.objects.get(pk=event_id)
             ticket_type = TicketType.objects.get(event=event, type=ticket_type_value)
             amount = ticket_type.price * quantity
+            ticket_type = TicketType.objects.get(type=ticket_type_value,event=event)
+            Ticket.objects.create(
+                event = event,
+                tx_reference = tx_ref,
+                amount_paid = amount,
+                ticket_type = ticket_type,
+                quantity = quantity,
+                ticket_code = uuid.uuid4().hex[:10].upper()
+            )
         except (Event.DoesNotExist, TicketType.DoesNotExist):
             return Response({'error': 'Event or ticket type not found'}, status=404)
 
-        tx_ref = uuid.uuid4().hex[:16]   # Make it a bit longer for safety
+        
 
         url = "https://api.paychangu.com/payment"
 
@@ -185,11 +196,15 @@ class Buy_Tickets(APIView):
             "tx_ref": tx_ref,
             "first_name": "Brian",
             "last_name": "Bingala",
-            'meta':[],
+            "meta": [{
+                    "event_id": event_id,
+                    "ticket_type": ticket_type_value,
+                    "tx_ref": str(tx_ref)
+                }],
             "email": "brian75jd@gmail.com",
-            "callback_url": "https://websapp.up.railway.app/await-ticket/", 
-            "webhook_url": "https://websapp.up.railway.app/payment/webhook",
-            "return_url": "https://websapp.up.railway.app/payment/api/webhook",   
+            "callback_url": "https://kaylin-plumbic-luana.ngrok-free.dev/await-ticket/", 
+            "webhook_url": "https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/webhook/", 
+            'return_url':"https://kaylin-plumbic-luana.ngrok-free.dev/payment/api/webhook/",  
             "customization": {
                 "title": "Ticket Payment",
                 "description": f"{quantity} ticket(s) for {event.title}"
