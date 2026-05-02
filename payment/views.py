@@ -58,34 +58,41 @@ class Payment_Webhook(APIView):
            return Response({'success':False},
                            status=status.HTTP_400_BAD_REQUEST)
 
-
 class Get_Ticket(APIView):
-   def post(self,request,*args, **kwargs):
-      tx_ref = request.data.get('tx_ref')
-      resp_data = []
-      if tx_ref:
-         try:
-            ticket = Ticket.objects.get(tx_reference= tx_ref)
-            if ticket:
-              resp_data.append({
-                'id':ticket.id,
-                'is_paid':ticket.is_paid,
-                'qr_code':ticket.ticket_code,
-                'qr_image':  request.build_absolute_uri(ticket.qr_image.url) if ticket.qr_image else "",
-              })
-              return Response({
-                  "data":resp_data,
-                  'success':True
-              },status=status.HTTP_200_OK)
-          
-         except Ticket.DoesNotExist:
-            return Response({'detail':'ticket not found'},status=400)
-         return Response({'detail':'Ticket not found',"success":False},
-                         status=status.HTTP_400_BAD_REQUEST)
-      
-      return Response({'detail':'No tx_ref given',"success":False},
-                    status=status.HTTP_400_BAD_REQUEST)
-      
+    def post(self, request, *args, **kwargs):
+        tx_ref = request.data.get('tx_ref')
+
+        if not tx_ref:
+            return Response(
+                {'detail': 'No tx_ref given', 'success': False},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            ticket = Ticket.objects.get(tx_reference=tx_ref)
+
+            qr_image_url = ""
+            if ticket.qr_image:
+                try:
+                    qr_image_url = request.build_absolute_uri(ticket.qr_image.url)
+                except ValueError:
+                    qr_image_url = ""
+
+            return Response({
+                "success": True,
+                "data": {
+                    "id": ticket.id,
+                    "is_paid": ticket.is_paid,
+                    "ticket_code": ticket.ticket_code,
+                    "qr_image": qr_image_url,
+                }
+            }, status=status.HTTP_200_OK)
+
+        except Ticket.DoesNotExist:
+            return Response(
+                {'detail': 'ticket not found', 'success': False},
+                status=status.HTTP_404_NOT_FOUND
+            )      
       
       
             
