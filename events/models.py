@@ -190,6 +190,8 @@ class Ticket(models.Model):
 
     def generate_qr(self):
         from django.conf import settings
+        print('started running')
+
         if self.qr_image:
             return  
 
@@ -206,6 +208,7 @@ class Ticket(models.Model):
             File(buffer),
             save=False
         )
+        print('finished running')
 
         self.save(update_fields=['qr_image'])
 
