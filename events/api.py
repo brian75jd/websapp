@@ -206,13 +206,11 @@ class Buy_Tickets(APIView):
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             data = response.json()
 
-            print("PayChangu Response:", data)   # Always log during testing
-
             if data.get('status') == 'success':
             
                 checkout_url = data.get('data', {}).get('checkout_url') or data.get('data', {}).get('link')
                 if checkout_url:
-                    # Optionally save the tx_ref + event/quantity in your DB here for later matching
+                   
                     return Response({
                         'success': True,
                         'checkout_url': checkout_url,
@@ -226,7 +224,7 @@ class Buy_Tickets(APIView):
             }, status=400)
 
         except requests.exceptions.RequestException as e:
-            return Response({'success': False, 'error': f'Network error: {str(e)}'}, status=500)
+            return Response({'success': False, 'error': f'Network error'}, status=500)
 
 """
         if not event_id or not ticket_type_value:

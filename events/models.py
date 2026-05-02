@@ -137,6 +137,7 @@ class TicketType(models.Model):
     price = models.PositiveIntegerField(default=0)
 
     class Meta:
+        ordering = ['price']
         constraints = [
             models.UniqueConstraint(fields=['event', 'type'], name='unique_ticket_type_per_event')
         ]

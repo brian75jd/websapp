@@ -268,7 +268,8 @@ function getCSRFToken(){
 
 const EVENTS=[];
 const event_id="{{ event_id }}";
-let currentEv=null,selectedType=0,qty=1;
+let currentEv=null;
+let selectedType=0,qty=1;
 
 document.addEventListener('DOMContentLoaded',()=>{
   getQuestion();
@@ -300,7 +301,8 @@ function buildCard(ev,i){
   const barC=ev.soldOut?'#ef4444':low?'#f59e0b':'#22c55e';
   const minP=Math.min(...ev.ticketTypes.map(t=>t.price));
   const priceLabel=minP===0?'Free':`From MK ${minP.toLocaleString()}`;
-  const typeChips=ev.ticketTypes.map((t,idx)=>`${t.left===0?``:`<div class="tk-type-chip ${idx===0?'selected':''}" onclick="selectType(this,${ev.id},${idx})">${t.label}<span style="font-size:0.68rem;opacity:0.75;">${t.price===0?'Free':'MK '+t.price.toLocaleString()}</span>(${t.left})</div>`}`).join('');
+  const typeChips=ev.ticketTypes.map((t,idx)=>`
+      ${t.left===0?``:`<div class="tk-type-chip ${idx===0?'selected':''}" onclick="selectType(this,${ev.id},${idx})">${t.label}<span style="font-size:0.68rem;opacity:0.75;">${t.price===0?'Free':'MK '+t.price.toLocaleString()}</span>(${t.left})</div>`}`).join('');
   return `<div class="tk-card ${ev.soldOut?'sold-out':''}" style="animation-delay:${i*0.06}s">
     <div class="tk-accent" style="background:${ev.accent};"></div>
     <div class="tk-poster-wrap" onclick="openLightbox('${ev.poster}','${ev.title.replace(/'/g,"\\'")}')">
@@ -331,7 +333,10 @@ function buildCard(ev,i){
   </div>`;
 }
 
-function selectType(chip,evId,idx){chip.closest('.tk-types-row').querySelectorAll('.tk-type-chip').forEach(c=>c.classList.remove('selected'));chip.classList.add('selected');}
+function selectType(chip,evId,idx){
+  selectedType = idx;
+  chip.closest('.tk-types-row').querySelectorAll('.tk-type-chip').forEach(c=>c.classList.remove('selected'));
+  chip.classList.add('selected');}
 
 /* ── FAQ ── */
 function getQuestion(){
@@ -386,7 +391,10 @@ function sendChatMessage(){
   const inp=document.getElementById('chatInput');
   const email=document.getElementById('EmailInput').value.trim();
   const text=inp.value.trim();
-  if(!text)return;
+  if(!text){
+    showToast('message is required');
+    return;
+  };
   fetch(`{% url "events:send_questions" %}`,{
     method:'POST',
     headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/json'},
@@ -400,14 +408,19 @@ function sendChatMessage(){
     }
   });
 }
-function handleChatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}}
-function autoResizeChat(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
+function handleChatKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();}
+  }
+function autoResizeChat(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,80)+'px';
+}
 
 /* ── MODAL ── */
 function switchStep(n){[1,2].forEach(i=>document.getElementById(`step${i}`).style.display=i===n?'block':'none');document.getElementById('tkModal').scrollTop=0;}
 
 function openModal(evId){
-  currentEv=EVENTS.find(e=>e.id===evId);selectedType=0;qty=1;
+  currentEv=EVENTS.find(e=>e.id===evId);
   if(!currentEv)return;
   document.getElementById('modalEvImg').src=currentEv.poster;
   document.getElementById('modalEvName').textContent=currentEv.title;
@@ -424,11 +437,20 @@ async function proceedToPayment(){
   const t=currentEv.ticketTypes[selectedType];
   switchStep(2);
   const stepIds=['ps1','ps2','ps3'];
-  stepIds.forEach(id=>{const el=document.getElementById(id);el.classList.remove('done');el.querySelector('.step-icon').innerHTML='<i class="fa-solid fa-ellipsis"></i>';});
+
+  stepIds.forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.remove('done');
+    el.querySelector('.step-icon').innerHTML='<i class="fa-solid fa-ellipsis"></i>';
+  
+  });
   document.getElementById('ps1').querySelector('.step-icon').innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
   let stepIdx=0;
   const iv=setInterval(()=>{
-    if(stepIdx>=stepIds.length){clearInterval(iv);return;}
+    if(stepIdx>=stepIds.length){
+      clearInterval(iv);
+      return;
+    }
     const el=document.getElementById(stepIds[stepIdx]);
     el.classList.add('done');el.querySelector('.step-icon').innerHTML='<i class="fa-solid fa-check"></i>';
     stepIdx++;
@@ -437,10 +459,18 @@ async function proceedToPayment(){
   try{
     const res=await fetch('/purchase_ticket/',{
       method:'POST',
-      headers:{'X-CSRFToken':getCSRFToken(),'Content-Type':'application/x-www-form-urlencoded'},
-      body:new URLSearchParams({event_id:currentEv.id,ticket_type:t.label,quantity:qty})
+      headers:{
+        'X-CSRFToken':getCSRFToken(),
+        'Content-Type':'application/x-www-form-urlencoded'
+      },
+      body:new URLSearchParams({
+        event_id:currentEv.id,
+        ticket_type:t.label,
+        quantity:1
+      })
     });
     const data=await res.json();
+    console.log(data)
     clearInterval(iv);
     if(data.success){
       window.location.href=data.checkout_url;
