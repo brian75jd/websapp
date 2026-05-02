@@ -204,7 +204,7 @@ class Buy_Tickets(APIView):
             "email": "brian75jd@gmail.com",
             "callback_url": "https://websapp.up.railway.app/await-ticket/", 
             "webhook_url": "https://websapp.up.railway.app/payment/api/webhook/", 
-            'return_url':"https://websapp.up.railway.app//payment/api/webhook/",  
+            'return_url':"https://websapp.up.railway.app/payment/api/success/",  
             "customization": {
                 "title": "Ticket Payment",
                 "description": f"{quantity} ticket(s) for {event.title}"
