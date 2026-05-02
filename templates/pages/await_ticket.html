@@ -133,13 +133,16 @@ async function fechtTicket(){
       })
     })
     const data = await response.json()
-    if(data.success){
-      renderTicket(data.data[0]);
-    }
     console.log(data)
+    if(data.success){
+      renderTicket(data.data);
+    }
+    else{
+      return;
+    }
   }
   catch(error){
-    console.log(error)
+    showToast(`error: ${error} has occurred`)
   }
 }
 
@@ -148,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tcBody').innerHTML = `
       <div style="text-align:center;padding:60px 20px;">
         <i class="fa-regular fa-circle-xmark" style="font-size:2.4rem;color:var(--border);display:block;margin-bottom:12px;"></i>
-        <p style="font-size:0.88rem;color:var(--text-muted);">Ticket data not found.<br/>Please check your purchased tickets.</p>
+        <p style="font-size:0.88rem;color:var(--text-muted);">Ticket data not found.<br/>Please check your purchased tickets or refresh the page.</p>
       </div>`;
     return;
   }
@@ -156,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderTicket(tk) {
-  const bandColor = tk.accent || 'var(--primary)';
+  const bandColor =  'var(--primary)';
 
   document.getElementById('tcBody').innerHTML = `
     <!-- Success banner -->
@@ -171,7 +174,7 @@ function renderTicket(tk) {
     <!-- Ticket -->
     <div class="tc-ticket">
       <div class="tc-ticket-band" style="background:${bandColor};">
-        <div class="tc-ticket-band-title" id="tcEvName">${tk.event||'Event'}</div>
+        <div class="tc-ticket-band-title" id="tcEvName">${'Event'}</div>
         <div class="tc-ticket-band-sub" id="tcEvDate">${tk.date||''}</div>
       </div>
       <div class="tc-perf">

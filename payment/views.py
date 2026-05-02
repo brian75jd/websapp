@@ -83,7 +83,7 @@ class Get_Ticket(APIView):
                 "data": {
                     "id": ticket.id,
                     "is_paid": ticket.is_paid,
-                    "ticket_code": ticket.ticket_code,
+                    "qr_code": ticket.ticket_code,
                     "qr_image": qr_image_url,
                 }
             }, status=status.HTTP_200_OK)
