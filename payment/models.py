@@ -10,7 +10,7 @@ class Payment(models.Model):
     description = models.CharField(max_length=255,null=True,blank=True)
     phone = models.CharField(max_length=20,null=True,blank=True)
     event = models.ForeignKey(Event,on_delete=models.SET_NULL,
-                                            related_name='payments',null=True,blank=true)
+                                            related_name='payments',null=True,blank=True)
    
     tx_ref = models.CharField(max_length=100, unique=True)
     reference = models.CharField(max_length=100, unique=True, null=True, blank=True)
