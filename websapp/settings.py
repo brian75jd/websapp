@@ -201,6 +201,9 @@ cloudinary.config(
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
+print("FORCED STORAGE:", DEFAULT_FILE_STORAGE)
+
+
 CLOUDINARY_NAME = os.getenv('CLOUDINARY_NAME')
 CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
 CLODINARY_SECRET_KEY = os.getenv('CLOUDINARY_SECRET_KEY')

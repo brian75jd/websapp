@@ -18,6 +18,7 @@ def Events(request):
     print(f'Cloud_name: {settings.CLOUDINARY_NAME}')
     print(f"cloud_key: {settings.CLOUDINARY_API_KEY}")
     print(f"cloud_secret: {settings.CLODINARY_SECRET_KEY}")
+    print(settings.__file__)
     return render(request,template_name='pages/events.html')
 
 def Loggin(request):
