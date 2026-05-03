@@ -202,14 +202,22 @@ import cloudinary
 import cloudinary.uploader
 import cloudinary.api
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME':'dvatywepr' ,
+    'API_KEY': '468857745154238',
+    'API_SECRET': '8rzWGUo7OqlxvQiIDba2uIkxwug',
+}
+
+
+"""
 cloudinary.config(
     cloud_name = 'dvatywepr',
     api_key = '468857745154238',
     api_secret = '8rzWGUo7OqlxvQiIDba2uIkxwug',
 )
 
-
-
 CLOUDINARY_NAME = os.getenv('CLOUDINARY_NAME')
 CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
 CLODINARY_SECRET_KEY = os.getenv('CLOUDINARY_SECRET_KEY')
+
+"""
