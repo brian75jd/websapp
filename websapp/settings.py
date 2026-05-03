@@ -189,11 +189,14 @@ CALLBACK_URL = os.getenv('CALLBACK_URL')
 RETURN_URL = os.getenv('RETURN_URL')
 WEBHOOK_URL = os.getenv('WEBHOOK_URL')
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_SECRET_KEY'),
-}
+cloudinary.config(
+    cloudinary_name = os.getenv('CLOUDINARY_NAME'),
+    api_key = os.getenv('CLOUDINARY_API_KEY'),
+    api_secret =  os.getenv('CLOUDINARY_SECRET_KEY'),
+)
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
