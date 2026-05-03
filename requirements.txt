@@ -6,10 +6,12 @@ certifi==2026.4.22
 cffi==2.0.0
 channels==4.3.2
 charset-normalizer==3.4.7
+cloudinary==1.44.2
 colorama==0.4.6
 constantly==23.10.4
 dj-database-url==3.1.2
 Django==5.2.12
+django-cloudinary-storage==0.3.0
 django-unfold==0.91.0
 djangorestframework==3.17.1
 dotenv==0.9.9
@@ -28,6 +30,7 @@ pycparser==3.0
 python-dotenv==1.2.2
 qrcode==8.2
 requests==2.33.1
+six==1.17.0
 sqlparse==0.5.5
 Twisted==25.5.0
 txaio==25.12.2
