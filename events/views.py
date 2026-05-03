@@ -8,10 +8,16 @@ from events.models import Event,TicketType
 from django.views.decorators.csrf import ensure_csrf_cookie
 from events.utils import organizer_required
 from django.contrib.auth import logout
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 User = get_user_model()
 
 def Events(request):
+    print(f"default storage:{default_storage}")
+    print(f'Cloud_name: {settings.CLOUDINARY_NAME}')
+    print(f"cloud_key: {settings.CLOUDINARY_API_KEY}")
+    print(f"cloud_secret: {settings.CLODINARY_SECRET_KEY}")
     return render(request,template_name='pages/events.html')
 
 def Loggin(request):
