@@ -19,6 +19,15 @@ DEBUG = False
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
   
 ALLOWED_HOSTS = [
     "localhost",
@@ -199,9 +208,6 @@ cloudinary.config(
     api_secret = '8rzWGUo7OqlxvQiIDba2uIkxwug',
 )
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-print("FORCED STORAGE:", DEFAULT_FILE_STORAGE)
 
 
 CLOUDINARY_NAME = os.getenv('CLOUDINARY_NAME')
