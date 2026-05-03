@@ -190,7 +190,6 @@ class Ticket(models.Model):
 
     def generate_qr(self):
         from django.conf import settings
-        print('started running')
 
         if self.qr_image:
             return  
@@ -202,14 +201,14 @@ class Ticket(models.Model):
 
         buffer = BytesIO()
         qr.save(buffer, format='PNG')
-
+        
+        buffer.seek(0)
         self.qr_image.save(
             f"ticket_{self.id}.png",
             File(buffer),
             save=False
         )
-        print('finished running')
-
+        
         self.save(update_fields=['qr_image'])
 
     def __str__(self):

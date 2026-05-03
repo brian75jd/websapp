@@ -32,6 +32,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://kaylin-plumbic-luana.ngrok-free.dev'
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
 
 
 # Application definition
@@ -57,6 +63,8 @@ INSTALLED_APPS = [
     'chat.apps.ChatConfig',
     'events.apps.EventsConfig',
     'rest_framework',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -175,3 +183,17 @@ EMAIL_HOST_USER =  os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD =  os.getenv('EMAIL_HOST_PASSWORD')
 
 PAYCHANGU_SECRET_KEY = os.getenv('PY_SECRET_KEY')
+
+
+CALLBACK_URL = os.getenv('CALLBACK_URL')
+RETURN_URL = os.getenv('RETURN_URL')
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('ClOUDINARY_NAME'),
+    'API_KEY': os.getenv('ClOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('ClOUDINARY_SECRET_KEY'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
