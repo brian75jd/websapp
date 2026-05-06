@@ -378,7 +378,6 @@ function getCSRFToken() {
   }
   return null;
 }
-console.log(getCSRFToken());
   async function createOrganizer() {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -430,7 +429,7 @@ console.log(getCSRFToken());
     } catch (error) {
       console.log(`${error}`)
       message.className = 'message error';
-      message.innerText = `${error}`;
+      message.innerText = `Server error. Please try again`;
     }
 
     btn.disabled = false;
