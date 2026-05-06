@@ -18,3 +18,4 @@ class CustomuserAdmin(UserAdmin):
     list_display = ('username','email','phone_number','first_name','last_name','is_organizer','is_approved')
 
 admin.site.register(User, CustomuserAdmin)
+

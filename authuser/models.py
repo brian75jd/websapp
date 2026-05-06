@@ -18,17 +18,7 @@ class User(AbstractUser):
     is_approved = models.BooleanField(default=False)
     name = models.CharField(max_length=255,blank=True,null=True)
     is_organizer = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        if not self.is_organizer:
-            if not self.photo:
-                if self.gender =='male':
-                    self.photo ='default/male.png'
-                else:
-                    self.photo ='default/female.png'
-            return super().save(*args, **kwargs)
-        
-        super().save(*args, **kwargs)
+    bio = models.CharField(max_length =300,null=True,blank=True)
 
     class Meta:
         indexes = [

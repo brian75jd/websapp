@@ -236,9 +236,16 @@
   <div class="dr-body">
 
     <span class="dr-nav-lbl">Account</span>
+    {% if request.user.is_authenticated %}
+    <a  class="nav-item" href = '{% url "events:logout" %}'>
+      <i class="fa-solid fa-right-to-bracket"></i> Logout
+    </a>
+    {% else %}
     <a  class="nav-item" onclick = 'Loggin();'>
       <i class="fa-solid fa-right-to-bracket"></i> Login
     </a>
+    {% endif %}
+
 
     <a  class="nav-item" onclick = 'CreateOrg();'>
       <i class="fa-solid fa-building"></i> Create Organiser account
@@ -318,6 +325,7 @@
    DATA
 ────────────────────────────── */
 const user = "{{user}}"
+
 
 
 function getCSRFToken() {
@@ -451,7 +459,7 @@ function cardHTML(ev, i) {
           ${ev.is_paid ? `<div class="info-lbl">Tickets</div>
             <div class="info-val">${ev.tickets_left}</div>` : `
             <div class="info-lbl">Capacity</div>
-            <div class="info-val">10</div>
+            <div class="info-val"></div>
             `}
           </div>
         </div>

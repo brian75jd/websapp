@@ -523,7 +523,7 @@
     </div>
     <div class="modal-section">
       <div class="modal-section-lbl">Full Name</div>
-      <input class="form-input" type="text" id="ep-name" placeholder="Your full name" value="{{ request.user.get_full_name }}">
+      <input class="form-input" type="text" id="ep-name" placeholder="Your full name" value="{{ request.user.username }}">
     </div>
     <div class="modal-section">
       <div class="modal-section-lbl">Email</div>
@@ -758,12 +758,73 @@ document.querySelectorAll('.modal-backdrop').forEach(bd => {
 });
 
 /* ── SETTINGS MODAL SAVES ── */
-function saveProfileSettings()         { closeModal('modal-edit-profile');               showToast('Profile updated ✓'); }
+function saveProfileSettings()  { 
+  const name = document.getElementById('ep-name').value.trim();
+  const email = document.getElementById('ep-email').value.trim();
+  const bio = document.getElementById('ep-bio').value.trim();
+  fetch(`{% url "authuser:update_user" %}`,{
+    method:'POST',
+    headers:{
+      'X-CSRFToken':getCSRF(),
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      name:name,
+      email:email,
+      bio:bio
+    })
+  })
+  .then(response=>response.json())
+  .then(data=>{
+    console.log(data);
+    if(data.success){
+      document.getElementById('ep-bio').value = '';
+      document.getElementById('ep-email').value = '';
+      document.getElementById('ep-name').value = '' 
+      closeModal('modal-edit-profile');
+      showToast('Profile updated ✓');
+    }
+    else{
+      showToast(`${data.detail}`)
+    }
+    
+  })
+ 
+}
 function savePasswordChange()          {
-  const np = document.getElementById('cp-new').value;
-  const cp = document.getElementById('cp-confirm').value;
-  if (np !== cp) { showToast('Passwords do not match.'); return; }
-  closeModal('modal-change-password'); showToast('Password changed ✓');
+  const oldpassword = document.getElementById('cp-current').value.trim();
+  const newpassword = document.getElementById('cp-new').value;
+  const confirmpassword = document.getElementById('cp-confirm').value;
+  if (newpassword !== confirmpassword) { showToast('Passwords do not match.'); return; }
+  else{
+    fetch('{% url "authuser:edit_password" %}',{
+      method:'POST',
+      headers:{
+        'X-CSRFToken':getCSRF(),
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        old_password:oldpassword,
+        new_password:newpassword
+      })
+    }).then(resp=>resp.json())
+    .then(data=>{
+      if(data.success){
+        showToast(`${data.detail}`)
+        document.getElementById('cp-current').value = '';
+        document.getElementById('cp-new').value = '';
+        document.getElementById('cp-confirm').value = '';
+        closeModal('modal-change-password');
+      }
+      else{
+        showToast(`${data.detail}`)
+      }
+    })
+    .catch((error)=>{
+      console.log(`${error}`)
+    })
+  }
+  // showToast('Password changed ✓');
 }
 function saveOrgProfile()              { closeModal('modal-org-profile');                showToast('Organizer profile saved ✓'); }
 function savePayoutSettings()          { closeModal('modal-payout');                     showToast('Payout info saved ✓'); }

@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = False 
+DEBUG = False
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
     'chat.apps.ChatConfig',
     'events.apps.EventsConfig',
+    'superAdmin',
     'rest_framework',
     'cloudinary',
     'cloudinary_storage',
@@ -133,6 +134,7 @@ import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
+
 
 
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

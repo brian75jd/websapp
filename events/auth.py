@@ -32,7 +32,7 @@ def CreateOrganizer(request):
         password = form.cleaned_data.get('password')
 
         user =  User.objects.create_user(
-            username= email,
+            username= name,
             name = name,
             phone_number =phone_number,
             email=email,
