@@ -13,6 +13,7 @@ from django.core.files.storage import default_storage
 
 User = get_user_model()
 
+
 def Events(request):
     return render(request,template_name='pages/events.html')
 
@@ -26,10 +27,10 @@ def verify_ticket(request, code):
 
 def Tickets(request,event_id): 
     return render(request,'pages/tickets.html',{'event_id':event_id})
-
+@ensure_csrf_cookie
 def organizers(request):
     return render(request,template_name='organizer.html')
-
+@ensure_csrf_cookie
 def create_User_account(request):
     return render(request,template_name='pages/createuser.html')
 

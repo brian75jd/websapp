@@ -346,15 +346,21 @@
     btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
   }
 
-  function getCSRFToken() {
-    let v = null;
-    document.cookie.split(';').forEach(c => {
-      const t = c.trim();
-      if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length);
-    });
-    return v;
-  }
+function getCSRFToken() {
+  const name = 'csrftoken=';
+  const decoded = decodeURIComponent(document.cookie);
+  const cookies = decoded.split(';');
 
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.startsWith(name)) {
+      return cookie.substring(name.length);
+    }
+  }
+  return null;
+}
+
+console.log(getCSRFToken());
   async function createUser() {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
@@ -393,6 +399,7 @@
           'Content-Type': 'application/json',
           'X-CSRFToken': getCSRFToken(),
         },
+        credentials: 'same-origin', 
         body: JSON.stringify({ name, email, phone_number: phone, password, password2 })
       });
 
