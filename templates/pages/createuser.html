@@ -409,9 +409,10 @@
         message.className = 'message error';
         message.innerText = Array.isArray(data.detail) ? data.detail.join(' ') : (data.detail || 'Something went wrong.');
       }
-    } catch {
+    } catch(error) {
+      console.log(`${error}`)
       message.className = 'message error';
-      message.innerText = 'Network error. Please try again.';
+      message.innerText = `${error}`;
     }
 
     btn.disabled = false;

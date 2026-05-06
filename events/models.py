@@ -4,13 +4,10 @@ from django.core.files.base import ContentFile
 from django.core.files import File
 from PIL import Image
 from io import BytesIO
-from django.utils import timezone
-from datetime import datetime
 import qrcode
 import hashlib
-import string
 import uuid
-import random
+
 from django.db.models import Sum
 
 User = get_user_model()

@@ -9,6 +9,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 
 
 def _event_dict(event):
@@ -123,7 +124,7 @@ class Organizer_Tickets(APIView):
 #    GET /events/ajax/attendees/
 # ─────────────────────────────────────────
 @login_required
-@require_GET
+@api_view(['GET'])
 def organizer_attendees(request):
     attendances = (
         EventAttendance.objects

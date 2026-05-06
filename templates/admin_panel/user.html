@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users — Super Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f9fafb;
+      --surface:   #ffffff;
+      --surface2:  #f3f4f6;
+      --border:    #e5e7eb;
+      --border2:   #d1d5db;
+      --text:      #111827;
+      --text2:     #6b7280;
+      --text3:     #9ca3af;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --green:     #059669; --green-bg: #d1fae5; --green-txt: #065f46;
+      --yellow:    #d97706; --yellow-bg:#fef3c7; --yellow-txt:#92400e;
+      --red:       #dc2626; --red-bg:   #fee2e2; --red-txt:   #991b1b;
+      --blue:      #2563eb; --blue-bg:  #dbeafe; --blue-txt:  #1e40af;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #0f172a;
+        --surface: #1e293b;
+        --surface2:#334155;
+        --border:  #334155;
+        --border2: #475569;
+        --text:    #f1f5f9;
+        --text2:   #94a3b8;
+        --text3:   #64748b;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+    }
+
+    /* ── Page header ───────────────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .page-header h1 { font-size: 20px; font-weight: 700; }
+    .page-header p  { font-size: 12px; color: var(--text2); margin-top: 3px; }
+    .live-badge {
+      font-size: 11px; font-weight: 600;
+      background: var(--blue-bg); color: var(--blue-txt);
+      padding: 4px 12px; border-radius: 20px;
+    }
+
+    /* ── Summary counters ──────────────────────────────── */
+    .sa-counts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    .sa-cnt {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 11px;
+      color: var(--text2);
+    }
+    .sa-cnt span { display: block; font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .sa-cnt.success span { color: var(--green); }
+    .sa-cnt.warning span { color: var(--yellow); }
+    .sa-cnt.danger  span { color: var(--red); }
+    .sa-cnt.info    span { color: var(--blue); }
+
+    /* ── Charts grid ───────────────────────────────────── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 860px) { .charts-row { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .charts-row { grid-template-columns: 1fr; } }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+    }
+    .chart-card h3 {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+    .chart-wrap          { position: relative; width: 100%; }
+    .chart-wrap.h-160    { height: 160px; }
+    .chart-wrap.h-140    { height: 140px; }
+
+    .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+    .legend-dot  { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+    /* dept bars */
+    .dept-bars { display: flex; flex-direction: column; gap: 9px; }
+    .dept-bar-row { display: flex; align-items: center; gap: 8px; }
+    .dept-bar-label { min-width: 80px; font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dept-bar-bg { flex: 1; background: var(--surface2); border-radius: 4px; height: 7px; overflow: hidden; }
+    .dept-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .dept-bar-val { min-width: 28px; text-align: right; font-size: 11px; color: var(--text2); }
+
+    /* ── Toolbar ───────────────────────────────────────── */
+    .sa-toolbar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 14px; align-items: center;
+    }
+    .sa-toolbar input,
+    .sa-toolbar select {
+      height: 36px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 0 12px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+    .sa-toolbar input:focus,
+    .sa-toolbar select:focus { border-color: var(--blue); }
+    .sa-toolbar input  { flex: 1; min-width: 200px; }
+    .sa-toolbar select { min-width: 130px; }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .sa-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      margin-bottom: 12px;
+    }
+    .sa-table {
+      width: 100%; border-collapse: collapse;
+      table-layout: fixed; min-width: 820px;
+    }
+    .sa-table th {
+      text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--text2); padding: 11px 10px 11px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    .sa-table th:hover { color: var(--text); }
+    .sa-table th.sorted { color: var(--blue); }
+    .sa-table td {
+      padding: 10px 10px 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text); vertical-align: middle;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: 13px;
+    }
+    .sa-table tr:last-child td { border-bottom: none; }
+    .sa-table tbody tr:hover td { background: var(--surface2); }
+    .sa-loading { text-align: center; padding: 2.5rem; color: var(--text3); }
+
+    .sa-av {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    .sa-user-cell { display: flex; align-items: center; gap: 9px; }
+    .sa-user-cell .uname  { font-weight: 600; font-size: 13px; }
+    .sa-user-cell .uemail { font-size: 11px; color: var(--text2); }
+
+    .pill { display: inline-block; font-size: 10px; padding: 2px 9px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+    .pill-success { background: var(--green-bg);  color: var(--green-txt); }
+    .pill-warning { background: var(--yellow-bg); color: var(--yellow-txt); }
+    .pill-danger  { background: var(--red-bg);    color: var(--red-txt); }
+    .pill-info    { background: var(--blue-bg);   color: var(--blue-txt); }
+    .pill-gray    { background: var(--surface2);  color: var(--text2); }
+
+    .sa-action-btn {
+      font-size: 11px; padding: 3px 9px; border-radius: 6px;
+      border: 1px solid var(--border2); background: var(--surface);
+      cursor: pointer; color: var(--text); margin-right: 4px;
+    }
+    .sa-action-btn:hover:not(:disabled) { background: var(--surface2); }
+    .sa-action-btn.approve { border-color: #6ee7b7; color: var(--green-txt); }
+    .sa-action-btn.reject  { border-color: #fca5a5; color: var(--red-txt); }
+    .sa-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Pager ─────────────────────────────────────────── */
+    .sa-pager { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text2); }
+    .sa-pager-btns { display: flex; gap: 6px; }
+    .sa-pager-btns button {
+      font-size: 12px; padding: 5px 14px;
+      border: 1px solid var(--border2); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text); cursor: pointer;
+    }
+    .sa-pager-btns button:hover:not(:disabled) { background: var(--surface2); }
+    .sa-pager-btns button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .arr { font-size: 9px; opacity: 0.4; margin-left: 2px; }
+    th.sorted .arr { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Users</h1>
+      <p>All registered users — super admin view</p>
+    </div>
+    <span class="live-badge">Live</span>
+  </div>
+
+  <!-- Summary counters -->
+  <div class="sa-counts">
+    <div class="sa-cnt">        <span id="cTotal">—</span>Total users</div>
+    <div class="sa-cnt success"><span id="cApproved">—</span>Approved</div>
+    <div class="sa-cnt warning"><span id="cPending">—</span>Pending</div>
+    <div class="sa-cnt danger"> <span id="cRejected">—</span>Rejected</div>
+    <div class="sa-cnt info">   <span id="cOrg">—</span>Organizers</div>
+  </div>
+
+  <!-- Charts: registrations + status donut + gender donut -->
+  <div class="charts-row">
+
+    <div class="chart-card">
+      <h3>New registrations — last 6 months</h3>
+      <div class="chart-wrap h-160">
+        <canvas id="chartRegistrations" role="img" aria-label="Bar and line chart of new user registrations and approvals over 6 months"></canvas>
+      </div>
+      <div class="legend-row">
+        <span class="legend-item"><span class="legend-dot" style="background:#CECBF6;"></span>Registrations</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1D9E75;"></span>Approved</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Approval status</h3>
+      <div class="chart-wrap h-140">
+        <canvas id="chartStatus" role="img" aria-label="Donut chart of user approval statuses"></canvas>
+      </div>
+      <div class="legend-row">
+        <span class="legend-item"><span class="legend-dot" style="background:#1D9E75;"></span>Approved</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#EF9F27;"></span>Pending</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#E24B4A;"></span>Rejected</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Gender split</h3>
+      <div class="chart-wrap h-140">
+        <canvas id="chartGender" role="img" aria-label="Donut chart of user gender distribution"></canvas>
+      </div>
+      <div class="legend-row">
+        <span class="legend-item"><span class="legend-dot" style="background:#378ADD;"></span>Male</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#D4537E;"></span>Female</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#888780;"></span>Other</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Department breakdown bar chart (full width) -->
+  <div class="chart-card" style="margin-bottom:1.5rem;">
+    <h3>Users by department</h3>
+    <div id="deptBars" class="dept-bars" style="margin-top:6px;">
+      <div class="sa-loading" style="padding:1rem 0;">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="sa-toolbar">
+    <input type="text" id="search" placeholder="Search name, email, username…" autocomplete="off" />
+    <select id="filterStatus">
+      <option value="">All statuses</option>
+      <option value="approved">Approved</option>
+      <option value="pending">Pending</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <select id="filterRole">
+      <option value="">All roles</option>
+      <option value="organizer">Organizer</option>
+      <option value="member">Member</option>
+    </select>
+    <select id="filterDept">
+      <option value="">All departments</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="sa-table-wrap">
+    <table class="sa-table">
+      <colgroup>
+        <col style="width:210px"><col style="width:105px"><col style="width:120px">
+        <col style="width:95px"><col style="width:72px"><col style="width:85px">
+        <col style="width:85px"><col style="width:100px"><col style="width:125px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th data-sort="name">User <span class="arr">↕</span></th>
+          <th data-sort="department">Dept <span class="arr">↕</span></th>
+          <th>Phone</th>
+          <th data-sort="-date_joined">Joined <span class="arr">↕</span></th>
+          <th>Gender</th>
+          <th data-sort="role">Role <span class="arr">↕</span></th>
+          <th data-sort="status">Status <span class="arr">↕</span></th>
+          <th data-sort="-last_active">Last active <span class="arr">↕</span></th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="9" class="sa-loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="sa-pager">
+    <span id="pageInfo"></span>
+    <div class="sa-pager-btns">
+      <button id="btnPrev" disabled>Prev</button>
+      <button id="btnNext" disabled>Next</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const API_BASE  = '/api';
+    const PAGE_SIZE = 10;
+
+    let currentPage = 1;
+    let totalCount  = 0;
+    let sortField   = 'name';
+    let searchTimer = null;
+    let chartReg    = null;
+    let chartStatus = null;
+    let chartGender = null;
+
+    const DEPT_PALETTE = [
+      '#7F77DD','#1D9E75','#D85A30','#378ADD',
+      '#D4537E','#EF9F27','#639922','#888780',
+    ];
+
+    /* ── CSRF ─────────────────────────────────────────── */
+    function getCookie(name) {
+      const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? v.pop() : '';
+    }
+
+    /* ── XSS ──────────────────────────────────────────── */
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* ── Avatar ───────────────────────────────────────── */
+    const AV = [
+      {bg:'#EEEDFE',fg:'#3C3489'},{bg:'#E1F5EE',fg:'#085041'},
+      {bg:'#FAECE7',fg:'#712B13'},{bg:'#E6F1FB',fg:'#0C447C'},
+      {bg:'#FBEAF0',fg:'#72243E'},{bg:'#FAEEDA',fg:'#633806'},
+      {bg:'#EAF3DE',fg:'#27500A'},
+    ];
+    const avStyle  = n => AV[(n||'?').charCodeAt(0) % AV.length];
+    const initials = n => (n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+    /* ── Pills ────────────────────────────────────────── */
+    function statusPill(s) {
+      const map = {
+        approved: ['pill-success','Approved'],
+        pending:  ['pill-warning','Pending'],
+        rejected: ['pill-danger','Rejected'],
+      };
+      const [c,l] = map[s] || ['pill-gray', s];
+      return `<span class="pill ${c}">${l}</span>`;
+    }
+    function rolePill(r) {
+      return r === 'organizer'
+        ? `<span class="pill pill-info">Organizer</span>`
+        : `<span class="pill pill-gray">Member</span>`;
+    }
+    function fmtDate(d) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    }
+
+    /* ── Params ───────────────────────────────────────── */
+    function buildParams() {
+      const p = new URLSearchParams();
+      const q = document.getElementById('search').value.trim();
+      const s = document.getElementById('filterStatus').value;
+      const r = document.getElementById('filterRole').value;
+      const d = document.getElementById('filterDept').value;
+      if (q) p.set('q', q);
+      if (s) p.set('status', s);
+      if (r) p.set('role', r);
+      if (d) p.set('department', d);
+      p.set('sort', sortField);
+      p.set('page', currentPage);
+      p.set('page_size', PAGE_SIZE);
+      return p;
+    }
+
+    /* ── Fetch users ──────────────────────────────────── */
+    function fetchUsers() {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = `<tr><td colspan="9" class="sa-loading">Loading…</td></tr>`;
+      fetch(`${API_BASE}/admin/users/?${buildParams()}`, {
+        headers: {'X-Requested-With':'XMLHttpRequest'},
+        credentials: 'same-origin',
+      })
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+        .then(renderTable)
+        .catch(err => {
+          tbody.innerHTML = `<tr><td colspan="9" class="sa-loading" style="color:#dc2626;">
+            Error loading users: ${esc(err.message)}</td></tr>`;
+        });
+    }
+
+    /* ── Render table ─────────────────────────────────── */
+    function renderTable(data) {
+      totalCount = data.count;
+      const users = data.results || [];
+      const tbody = document.getElementById('tbody');
+
+      /* counters reflect full dataset totals from stats, not just page */
+      const start = (currentPage - 1) * PAGE_SIZE + 1;
+      const end   = Math.min(currentPage * PAGE_SIZE, totalCount);
+      document.getElementById('pageInfo').textContent = totalCount
+        ? `${start}–${end} of ${totalCount} users` : '0 users';
+      document.getElementById('btnPrev').disabled = !data.previous;
+      document.getElementById('btnNext').disabled = !data.next;
+
+      if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="sa-loading">No users match your filters.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const av   = avStyle(u.full_name || u.username);
+        const name = u.full_name || u.username;
+        return `
+        <tr>
+          <td>
+            <div class="sa-user-cell">
+              <div class="sa-av" style="background:${av.bg};color:${av.fg};">${initials(name)}</div>
+              <div>
+                <div class="uname">${esc(name)}</div>
+                <div class="uemail">${esc(u.email)}</div>
+              </div>
+            </div>
+          </td>
+          <td>${esc(u.department || '—')}</td>
+          <td style="font-size:11px;">${esc(u.phone_number || '—')}</td>
+          <td style="font-size:11px;">${fmtDate(u.date_joined)}</td>
+          <td style="font-size:11px;text-transform:capitalize;color:var(--text2);">${esc(u.gender || '—')}</td>
+          <td>${rolePill(u.role)}</td>
+          <td>${statusPill(u.status)}</td>
+          <td style="font-size:11px;color:var(--text2);">${esc(u.last_active_display || '—')}</td>
+          <td>
+            <button class="sa-action-btn approve"
+              onclick="approveUser(${u.id}, this)"
+              ${u.status !== 'approved' ? '' : 'disabled'}>Approve</button>
+            <button class="sa-action-btn reject"
+              onclick="rejectUser(${u.id}, this)"
+              ${u.status !== 'rejected' ? '' : 'disabled'}>Reject</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Approve / Reject ─────────────────────────────── */
+    window.approveUser = function(id, btn) {
+      btn.disabled = true; btn.textContent = '…';
+      fetch(`${API_BASE}/admin/users/${id}/approve/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'},
+        credentials: 'same-origin',
+      })
+        .then(r => r.json())
+        .then(() => { fetchUsers(); fetchStats(); })
+        .catch(() => { btn.disabled = false; btn.textContent = 'Approve'; });
+    };
+
+    window.rejectUser = function(id, btn) {
+      if (!confirm('Reject this user? They will be deactivated.')) return;
+      btn.disabled = true; btn.textContent = '…';
+      fetch(`${API_BASE}/admin/users/${id}/reject/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest'},
+        credentials: 'same-origin',
+      })
+        .then(r => r.json())
+        .then(() => { fetchUsers(); fetchStats(); })
+        .catch(() => { btn.disabled = false; btn.textContent = 'Reject'; });
+    };
+
+    /* ── Sort ─────────────────────────────────────────── */
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.sort;
+        sortField = (sortField === col) ? `-${col}` : col;
+        currentPage = 1;
+        document.querySelectorAll('th[data-sort]').forEach(h => {
+          const base = h.dataset.sort;
+          const active = sortField === base || sortField === `-${base}`;
+          h.classList.toggle('sorted', active);
+          const arr = h.querySelector('.arr');
+          if (arr) arr.textContent = active ? (sortField.startsWith('-') ? '↓' : '↑') : '↕';
+        });
+        fetchUsers();
+      });
+    });
+
+    /* ── Filters ──────────────────────────────────────── */
+    document.getElementById('search').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { currentPage = 1; fetchUsers(); }, 350);
+    });
+    ['filterStatus','filterRole','filterDept'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => { currentPage = 1; fetchUsers(); });
+    });
+
+    /* ── Pagination ───────────────────────────────────── */
+    document.getElementById('btnPrev').addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; fetchUsers(); }
+    });
+    document.getElementById('btnNext').addEventListener('click', () => {
+      if (currentPage * PAGE_SIZE < totalCount) { currentPage++; fetchUsers(); }
+    });
+
+    /* ══════════════════════════════════════════════════
+       CHARTS
+       initCharts() is called once. fetchStats() updates
+       chart data on subsequent calls (e.g. after approve).
+
+       Your /api/admin/stats/ response should include:
+       {
+         users: { total, approved, pending, rejected, organizers },
+         gender: { male, female, other },
+         registrations: {
+           labels: ["Dec","Jan","Feb","Mar","Apr","May"],
+           counts: [42, 67, 55, 89, 120, 98],
+           approved: [30, 55, 48, 80, 110, 90]
+         },
+         department_counts: [
+           { department: "Engineering", count: 320 },
+           { department: "Medicine",    count: 210 },
+           ...
+         ],
+         departments: ["Engineering", "Medicine", ...]
+       }
+    ══════════════════════════════════════════════════ */
+
+    function chartDefaults() {
+      const dark  = matchMedia('(prefers-color-scheme: dark)').matches;
+      return {
+        gridColor: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+        tickColor: dark ? '#64748b' : '#9ca3af',
+      };
+    }
+
+    function initCharts(stats) {
+      const { gridColor, tickColor } = chartDefaults();
+
+      /* 1 — Registrations combo (bar + line) */
+      chartReg = new Chart(
+        document.getElementById('chartRegistrations').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: stats.registrations.labels,
+          datasets: [
+            {
+              label: 'Registrations',
+              data: stats.registrations.counts,
+              backgroundColor: '#CECBF6',
+              borderRadius: 4,
+              borderSkipped: false,
+              order: 2,
+            },
+            {
+              label: 'Approved',
+              data: stats.registrations.approved,
+              type: 'line',
+              borderColor: '#1D9E75',
+              backgroundColor: 'rgba(29,158,117,0.08)',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointBackgroundColor: '#1D9E75',
+              tension: 0.35,
+              fill: true,
+              order: 1,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false },
+          },
+          scales: {
+            x: { grid:{color:gridColor}, ticks:{color:tickColor,font:{size:10}}, border:{display:false} },
+            y: { grid:{color:gridColor}, ticks:{color:tickColor,font:{size:10}}, border:{display:false}, beginAtZero:true },
+          }
+        }
+      });
+
+      /* 2 — Approval status donut */
+      chartStatus = new Chart(
+        document.getElementById('chartStatus').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Approved','Pending','Rejected'],
+          datasets: [{
+            data: [stats.users.approved, stats.users.pending, stats.users.rejected],
+            backgroundColor: ['#1D9E75','#EF9F27','#E24B4A'],
+            borderWidth: 0,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      /* 3 — Gender donut */
+      chartGender = new Chart(
+        document.getElementById('chartGender').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Male','Female','Other'],
+          datasets: [{
+            data: [
+              (stats.gender || {}).male   || 0,
+              (stats.gender || {}).female || 0,
+              (stats.gender || {}).other  || 0,
+            ],
+            backgroundColor: ['#378ADD','#D4537E','#888780'],
+            borderWidth: 0,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      /* 4 — Dept bars */
+      renderDeptBars(stats.department_counts || []);
+    }
+
+    function renderDeptBars(deptCounts) {
+      const container = document.getElementById('deptBars');
+      if (!deptCounts.length) {
+        container.innerHTML = '<p style="color:var(--text3);font-size:12px;">No department data.</p>';
+        return;
+      }
+      const max = Math.max(...deptCounts.map(d => d.count), 1);
+      container.innerHTML = deptCounts.map((d, i) => `
+        <div class="dept-bar-row">
+          <span class="dept-bar-label" title="${esc(d.department)}">${esc(d.department)}</span>
+          <div class="dept-bar-bg">
+            <div class="dept-bar-fill"
+              style="width:${Math.round((d.count / max) * 100)}%;background:${DEPT_PALETTE[i % DEPT_PALETTE.length]};">
+            </div>
+          </div>
+          <span class="dept-bar-val">${d.count}</span>
+        </div>
+      `).join('');
+    }
+
+    /* ── Fetch stats ──────────────────────────────────── */
+    function fetchStats() {
+      fetch(`${API_BASE}/admin/stats/`, { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => {
+          /* Populate dept dropdown */
+          const sel = document.getElementById('filterDept');
+          sel.querySelectorAll('option:not(:first-child)').forEach(o => o.remove());
+          (data.departments || []).forEach(dept => {
+            const opt = document.createElement('option');
+            opt.value = dept; opt.textContent = dept;
+            sel.appendChild(opt);
+          });
+
+          /* Update stat cards */
+          document.getElementById('cTotal').textContent    = data.users.total;
+          document.getElementById('cApproved').textContent = data.users.approved;
+          document.getElementById('cPending').textContent  = data.users.pending;
+          document.getElementById('cRejected').textContent = data.users.rejected;
+          document.getElementById('cOrg').textContent      = data.users.organizers;
+
+          if (!chartStatus) {
+            /* First load — draw all charts */
+            initCharts(data);
+          } else {
+            /* Subsequent calls — patch data in place */
+            chartStatus.data.datasets[0].data = [
+              data.users.approved, data.users.pending, data.users.rejected
+            ];
+            chartStatus.update();
+
+            if (data.gender) {
+              chartGender.data.datasets[0].data = [
+                data.gender.male, data.gender.female, data.gender.other
+              ];
+              chartGender.update();
+            }
+
+            if (data.registrations) {
+              chartReg.data.labels              = data.registrations.labels;
+              chartReg.data.datasets[0].data    = data.registrations.counts;
+              chartReg.data.datasets[1].data    = data.registrations.approved;
+              chartReg.update();
+            }
+
+            if (data.department_counts) renderDeptBars(data.department_counts);
+          }
+        })
+        .catch(() => {
+          /* Draw empty placeholders so the page isn't broken */
+          if (!chartStatus) {
+            initCharts({
+              users: { total:0, approved:0, pending:0, rejected:0, organizers:0 },
+              gender: { male:0, female:0, other:0 },
+              registrations: {
+                labels:   ['Dec','Jan','Feb','Mar','Apr','May'],
+                counts:   [0,0,0,0,0,0],
+                approved: [0,0,0,0,0,0],
+              },
+              department_counts: [],
+            });
+          }
+        });
+    }
+
+    /* ── Boot ─────────────────────────────────────────── */
+    fetchStats();
+    fetchUsers();
+
+  })();
+  </script>
+
+</body>
+</html>

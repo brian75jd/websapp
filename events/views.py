@@ -71,8 +71,6 @@ def Create_Event(request):
                     created_by=request.user,
                     organizer=request.user
                 )
-
-
             
                 if request.POST.get('enable_vip') == 'on':
                     TicketType.objects.create(
