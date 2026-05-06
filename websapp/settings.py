@@ -71,7 +71,6 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
     'chat.apps.ChatConfig',
     'events.apps.EventsConfig',
-    'superAdmin',
     'rest_framework',
     'cloudinary',
     'cloudinary_storage',
