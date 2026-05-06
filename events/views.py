@@ -15,7 +15,8 @@ User = get_user_model()
 
 
 def Events(request):
-    return render(request,template_name='pages/events.html')
+    user = request.user
+    return render(request,'pages/events.html', {'user':user})
 
 def Loggin(request):
     return render(request,template_name='pages/login.html')

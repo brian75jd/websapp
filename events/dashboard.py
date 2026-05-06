@@ -67,10 +67,6 @@ class Dasboard_Data(APIView):
         },status=status.HTTP_200_OK)
 
 
-# ─────────────────────────────────────────
-# 2. MY EVENTS (full list)
-#    GET /events/ajax/events/
-# ─────────────────────────────────────────
 
 class Organizer_Events(APIView):
     permission_classes = [IsAuthenticated]
@@ -79,10 +75,6 @@ class Organizer_Events(APIView):
         return Response({"events": [_event_dict(e) for e in events]},status=status.HTTP_200_OK)
 
 
-# ─────────────────────────────────────────
-# 3. TICKETS
-#    GET /events/ajax/tickets/
-# ─────────────────────────────────────────
 class Organizer_Tickets(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -119,10 +111,6 @@ class Organizer_Tickets(APIView):
         return Response({"events": data},status=status.HTTP_200_OK)
 
 
-# ─────────────────────────────────────────
-# 4. ATTENDEES
-#    GET /events/ajax/attendees/
-# ─────────────────────────────────────────
 @login_required
 @api_view(['GET'])
 def organizer_attendees(request):
@@ -151,10 +139,7 @@ def organizer_attendees(request):
     return Response({"attendees": data})
 
 
-# ─────────────────────────────────────────
-# 5. Q&A
-#    GET /events/ajax/questions/
-# ─────────────────────────────────────────
+
 class Organizer_Questions(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -182,10 +167,6 @@ class Organizer_Questions(APIView):
         return Response({"questions": data},status=status.HTTP_200_OK)
 
 
-# ─────────────────────────────────────────
-# 6. ANSWER A QUESTION
-#    POST /events/ajax/answer-question/
-# ─────────────────────────────────────────
 def do_nothing():
     pass
 
@@ -214,10 +195,6 @@ class Answer_Question(APIView):
             return Response({"success": False, "error": "Not found."}, status=404)
 
 
-# ─────────────────────────────────────────
-# 7. DELETE AN EVENT
-#    POST /events/delete/<id>/
-# ─────────────────────────────────────────
 class Delete_Event(APIView):
     permission_classes = [IsAuthenticated]
     def post(self,request, pk):
@@ -229,3 +206,54 @@ class Delete_Event(APIView):
             return Response({"success": False, "error": "Not found."}, status=404)
 
 
+class UpdateEvent(APIView):
+    def post(self,request,*args, **kwargs):
+        from datetime import datetime
+        from django.utils import timezone
+        today = timezone.now()
+        try:
+        
+            data = request.data
+            title = data.get('title')
+            location = data.get('location')
+            event_id = data.get('id')
+            is_promoted = data.get('is_promoted')
+            event_type = data.get('event_type')
+
+            start_datetime_str = data.get('start_datetime')
+            end_datetime_str = data.get('end_datetime')
+            start_datetime = datetime.fromisoformat(start_datetime_str)
+            end_datetime = datetime.fromisoformat(end_datetime_str)
+            start_datetime = timezone.make_aware(start_datetime)
+            end_datetime = timezone.make_aware(end_datetime)
+
+            if start_datetime < today:
+                return Response({
+                    'success':False,
+                    'detail':'start date should not be in the past'
+                })
+            if end_datetime < today:
+                return Response({
+                    'success':False,
+                    'detail':'end time can not be in the past'
+                })
+            
+            event = Event.objects.get(id=event_id)
+            event.title = title
+            event.location = location
+            event.start_datetime = start_datetime
+            event.end_datetime = end_datetime
+            event.event_type = event_type
+            event.is_promoted = True if is_promoted =="1" else False
+            event.save()
+            return Response({
+                'success':True,
+                'detail':'Event updated successfully..'},
+                status=status.HTTP_200_OK)
+        except Exception as exp:
+            print(exp)
+            return Response({
+                'detail':str(exp),
+                'success':False
+            },status=
+            status.HTTP_400_BAD_REQUEST)

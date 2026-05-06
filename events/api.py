@@ -36,7 +36,7 @@ def GetEvents(request):
             'start_at':event.start_time.strftime('%H:%M'),
             'finish_at':event.finish_time.strftime('%H:%M'),
             'is_paid':event.is_paid,
-            'organizers':'Ecom',
+            'organizers': event.organizer.username if event.organizer else " ",
             'seeds':['tom','james','emily'],
             'poster': request.build_absolute_uri(event.poster.url) if event.thumbnail else "",
             'thumbnail': request.build_absolute_uri(event.thumbnail.url) if event.thumbnail else "",

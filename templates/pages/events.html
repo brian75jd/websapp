@@ -54,6 +54,7 @@
   .event-card.t-sports{border-top:4px solid var(--ev-red);}
   .event-card.t-cultural{border-top:4px solid #8b5cf6;}
   .event-card.t-workshop{border-top:4px solid var(--success);}
+  .event-card.t-other{border-top:4px solid var(--ev-gold);}
 
   /* POSTER */
   .poster-wrap{position:relative;overflow:hidden;height:210px;background:#000;cursor:pointer;}
@@ -66,6 +67,7 @@
   .tb-sports{background:var(--ev-red);color:white;}
   .tb-cultural{background:#8b5cf6;color:white;}
   .tb-workshop{background:var(--success);color:white;}
+  .tb-social{background:var(--ev-gold);color:var(--ev-blk);}
 
   .poster-dl{position:absolute;top:9px;right:9px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);color:white;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;text-decoration:none;}
   .poster-wrap:hover .poster-dl{opacity:1;}
@@ -315,6 +317,9 @@
 /* ──────────────────────────────
    DATA
 ────────────────────────────── */
+const user = "{{user}}"
+
+
 function getCSRFToken() {
   let v = null;
   document.cookie.split(';').forEach(c => {
@@ -331,9 +336,9 @@ function CreateUser(){window.location.href = `/createuser/`}
 
 const EVENTS = [];
 
-const TYPE_CLS   = {academic:'t-academic',social:'t-social',sports:'t-sports',cultural:'t-cultural',workshop:'t-workshop'};
-const BADGE_CLS  = {academic:'tb-academic',social:'tb-social',sports:'tb-sports',cultural:'tb-cultural',workshop:'tb-workshop'};
-const BADGE_LBL  = {academic:'Academic',social:'Social',sports:'Sports',cultural:'Cultural',workshop:'Workshop'};
+const TYPE_CLS   = {academic:'t-academic',social:'t-social',sports:'t-sports',cultural:'t-cultural',workshop:'t-workshop','other':'t-other'};
+const BADGE_CLS  = {academic:'tb-academic',social:'tb-social',sports:'tb-sports',cultural:'tb-cultural',workshop:'tb-workshop','tb-other':'other'};
+const BADGE_LBL  = {academic:'Academic',social:'Social',sports:'Sports',cultural:'Cultural',workshop:'Workshop','other':'Other'};
 
 let planned = new Set();
 let activeFilter = 'all';
@@ -388,6 +393,7 @@ function renderEvents() {
 }
 
 function cardHTML(ev, i) {
+  console.log(ev.type)
   const on    = planned.has(ev.id);
   const words = ev.desc.split(' ');
   const short = words.slice(0, 22).join(' ');
@@ -404,6 +410,7 @@ function cardHTML(ev, i) {
     <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.title}')">
       <img src="${ev.poster}" alt="${ev.title}" loading="lazy"/>
       <div class="poster-gradient"></div>
+
       <span class="type-badge ${BADGE_CLS[ev.type]}">${BADGE_LBL[ev.type]}</span>
       <a class="poster-dl" href="${ev.poster}" download="event-poster.jpg"
          title="Download poster" onclick="event.stopPropagation();showToast('Downloading poster...')">
@@ -465,7 +472,7 @@ function cardHTML(ev, i) {
           `<button class="plan-btn off" id="pb-${ev.id}" onclick="BuyTicket(${ev.id})">
             <i class="fa fa-wallet"></i> Buy Ticket
           </button>` :
-          `<button class="plan-btn ${ev.is_planned ? 'on' : 'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})">
+          `<button class="plan-btn ${ev.is_planned ? 'on' : 'off'}" id="pb-${ev.id}"  onclick="handleAttend()">
             <i class="fa-${ev.is_planned ? 'solid fa-check' : 'regular fa-calendar-plus'}"></i>
             ${ev.is_planned ? 'Planned' : 'Plan to Attend'}
           </button>`}
@@ -477,6 +484,17 @@ function cardHTML(ev, i) {
 
 function BuyTicket(Id) {
   window.location.href = `/buy_ticket/${Id}/`;
+}
+
+function handleAttend(){
+  if(user ==='AnonymousUser'){
+    alert('You need to create an account or login for this action');return;
+    console.log(Id)
+  }
+  else{
+    alert('Event added')
+  }
+
 }
 
 /* ──────────────────────────────

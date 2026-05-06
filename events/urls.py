@@ -26,6 +26,8 @@ urlpatterns = [
     path('dashboard/',views.Dashboard,name='dashboard'),
     path('logout/',views.LogoutUser,name='logout'),
     path('await-ticket/',views.ticket_await,name='await-ticket'),
+
+    path('update_event/',dashboard.UpdateEvent.as_view(),name='update_event'),
     
 
     #create event
