@@ -10,7 +10,7 @@ User = get_user_model()
 class OrganizerCreationForm(forms.Form):
     name = forms.CharField(max_length=255)
     email = forms.EmailField()
-    phone_number = forms.CharField(max_length=13)
+    phone_number = forms.CharField(max_length=14)
     password = forms.CharField(max_length=255)
 
 
@@ -23,7 +23,7 @@ class OrganizerCreationForm(forms.Form):
     def clean_phone_number(self):
         phone = self.cleaned_data.get('phone_number').strip()
 
-        if len(phone) > 13:
+        if len(phone) > 14:
             raise forms.ValidationError('Phone number is too long')
 
         if phone.startswith('0'):
