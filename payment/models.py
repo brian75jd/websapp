@@ -28,7 +28,7 @@ class Payment(models.Model):
 
     payment_channel = models.CharField(max_length=50, null=True, blank=True)
 
-    paid_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     created_at_gateway = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

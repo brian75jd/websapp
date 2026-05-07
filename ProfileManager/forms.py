@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django import forms
 from django.contrib.auth.password_validation import validate_password
-from authuser.departments import FormDepartment
 import re
 from datetime import date
 
