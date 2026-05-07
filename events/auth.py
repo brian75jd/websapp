@@ -70,8 +70,13 @@ def CreateUser(request):
             phone_number = phone_number,
             password = password
         )
+        login(request,user)
 
-        return JsonResponse({"success":True,'detail':'user Created'},status = 200)
+        return JsonResponse({
+            "success":True,
+            'detail':'user Created. Redirecting.....',
+            'url':'/auth/feed/'
+            },status = 200)
     except Exception as exp:
         return JsonResponse({'detail':str(exp)},status = 400)
 

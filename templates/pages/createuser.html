@@ -255,7 +255,7 @@
           <line x1="2" y1="10" x2="22" y2="10" stroke="#fff" stroke-opacity=".2" stroke-width=".75"/>
         </svg>
       </div>
-      <span class="brand-name">E<span>Ticket</span></span>
+      <span class="brand-name"><span>Webs Tickets</span></span>
     </div>
 
     <div class="divider-line"></div>
@@ -280,7 +280,7 @@
     <div class="field">
       <label for="phone">Phone number</label>
       <div class="input-wrap">
-        <input type="text" id="phone" placeholder="+265 999 000 000">
+        <input type="text" id="phone" placeholder="+265/0 999 000 000">
       </div>
     </div>
 
@@ -406,11 +406,16 @@ function getCSRFToken() {
 
       if (response.ok) {
         message.className = 'message success';
+        btn.disabled = true;
+        spinner.style.display = 'block';
+        btnText.innerText = 'Redirecting...';
         message.innerText = data.detail || 'Account created successfully!';
         ['name','email','phone','password','password2'].forEach(id => {
           document.getElementById(id).value = '';
         });
-        if (data.url) setTimeout(() => { window.location.href = data.url; }, 800);
+        if (data.url) setTimeout(() => { 
+          window.location.href = data.url; 
+        }, 1000);
       } else {
         message.className = 'message error';
         message.innerText = Array.isArray(data.detail) ? data.detail.join(' ') : (data.detail || 'Something went wrong.');
