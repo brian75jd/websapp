@@ -106,7 +106,7 @@ def LogginCredential(request):
             login(request, user)
             return JsonResponse({
                 'success': True,
-                'url': '/dashboard/' if user.is_organizer else "/"
+                'url': '/dashboard/' if user.is_organizer else "/auth/feed/"
             })
             
 

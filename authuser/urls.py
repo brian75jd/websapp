@@ -1,9 +1,11 @@
 from authuser import views
 from django.urls import path
 from authuser import user_auth
+from authuser import user_feed
 
 
 app_name = 'authuser'
+
 
 urlpatterns = [
     path('',views.LoginView,name='loginview'),
@@ -17,7 +19,10 @@ urlpatterns = [
 
     #User management settings
     path('edit_password/',user_auth.EditPassword,name='edit_password'),
-    path('update_user/',user_auth.UpdateOrganizerInfo,name='update_user')
+    path('update_user/',user_auth.UpdateOrganizerInfo,name='update_user'),
+
+    #feed page
+    path('feed/',user_feed.UserFeed,name='feed')
     
 ] 
 

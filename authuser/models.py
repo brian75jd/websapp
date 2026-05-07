@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from authuser.departments import Department
 import uuid
 
 class User(AbstractUser):

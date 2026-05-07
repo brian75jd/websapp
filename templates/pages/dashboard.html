@@ -323,6 +323,7 @@
   <button class="nav-tab"        onclick="switchTab('notifications')" id="tab-notifications"><i class="fa-solid fa-bell"></i> Alerts <span class="tab-count red" id="notif-count" style="display:none;">0</span></button>
   <button class="nav-tab"        onclick="switchTab('create')"        id="tab-create"><i class="fa-solid fa-plus"></i> Create</button>
   <button class="nav-tab"        onclick="switchTab('settings')"      id="tab-settings"><i class="fa-solid fa-gear"></i> Settings</button>
+   <button class="nav-tab"        onclick="GoHome()"      id="tab-settings"><i class="fa-solid fa-home"></i> Home</button>
 </div>
 
 <!-- ══ OVERVIEW ══ -->
@@ -733,15 +734,29 @@ const URLS = {
 
 function getCSRF() {
   let v = null;
-  document.cookie.split(';').forEach(c => { const t = c.trim(); if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length); });
+  document.cookie.split(';').forEach(c => {
+     const t = c.trim();
+      if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length); 
+    });
   return v;
+}
+
+function GoHome(){
+  window.location.href = '/'
 }
 
 function api(url, opts = {}) {
   return fetch(url, {
-    headers: { 'X-CSRFToken': getCSRF(), 'X-Requested-With': 'XMLHttpRequest', ...opts.headers },
+    headers: { 
+      'X-CSRFToken': getCSRF(), 
+      'X-Requested-With': 'XMLHttpRequest',
+       ...opts.headers 
+      },
     ...opts
-  }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+  }).then(r => { 
+    if (!r.ok) throw new Error(r.status); 
+    return r.json(); 
+  });
 }
 
 /* ── MODAL HELPERS ── */
@@ -1012,13 +1027,19 @@ function loadDashboard() {
       document.getElementById('stat-revenue').textContent   = 'MK' + data.total_revenue;
       document.getElementById('stat-attendees').textContent = data.total_attendees;
       document.getElementById('events-count').textContent   = data.total_events;
-      if (data.unanswered_count > 0) { const b = document.getElementById('qa-count'); b.textContent = data.unanswered_count; b.style.display = 'inline-block'; }
+
+      if (data.unanswered_count > 0) {
+         const b = document.getElementById('qa-count'); 
+         b.textContent = data.unanswered_count;
+          b.style.display = 'inline-block';
+         }
       const list = document.getElementById('overview-events-list');
       list.innerHTML = data.events.length
         ? data.events.slice(0,5).map((ev,i) => evRowHTML(ev, i*0.055)).join('')
         : empty('fa-regular fa-calendar-xmark', "You haven't created any events yet.<br>Tap <strong>+ New Event</strong> to get started.");
     })
-    .catch(() => { document.getElementById('overview-events-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load dashboard. Please refresh.'); });
+    .catch(() => { 
+      document.getElementById('overview-events-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load dashboard. Please refresh.'); });
 }
 
 /* ── LOAD: MY EVENTS ── */
@@ -1029,6 +1050,7 @@ function loadEvents() {
     .then(data => { allEvents = data.events; document.getElementById('events-count').textContent = allEvents.length; renderFilteredEvents(); })
     .catch(() => { document.getElementById('events-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load events.'); });
 }
+
 function renderFilteredEvents() {
   let f = allEvents;
   if      (eventsFilter === 'paid') f = allEvents.filter(e => e.is_paid);
@@ -1049,7 +1071,10 @@ function loadTickets() {
   document.getElementById('tickets-list').innerHTML = skeleton(3);
   api(URLS.tickets)
     .then(data => {
-      if (!data.events.length) { document.getElementById('tickets-list').innerHTML = empty('fa-solid fa-ticket', 'No paid events with ticket types yet.'); return; }
+      if (!data.events.length) { 
+        document.getElementById('tickets-list').innerHTML = empty('fa-solid fa-ticket', 'No paid events with ticket types yet.');
+         return; 
+        }
       document.getElementById('tickets-list').innerHTML = data.events.map((ev,i) => {
         const cells = ev.ticket_types.map(tt => {
           const pct = tt.capacity > 0 ? Math.round((tt.tickets_sold/tt.capacity)*100) : 0;
@@ -1058,7 +1083,9 @@ function loadTickets() {
         return `<div class="ticket-row" style="animation-delay:${i*0.07}s"><div class="ticket-head"><div class="ticket-event-name">${ev.title}</div><span style="font-size:0.67rem;color:var(--text-3);flex-shrink:0;font-weight:600;">${ev.date}</span></div><div class="ticket-types-grid">${cells}</div></div>`;
       }).join('');
     })
-    .catch(() => { document.getElementById('tickets-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load ticket data.'); });
+    .catch(() => {
+       document.getElementById('tickets-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load ticket data.'); 
+      });
 }
 
 /* ── LOAD: ATTENDEES ── */
@@ -1069,6 +1096,7 @@ function loadAttendees() {
     .then(data => { allAttendees = data.attendees; renderAttendees(allAttendees); })
     .catch(() => { document.getElementById('attendee-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load attendees.'); });
 }
+
 function renderAttendees(items) {
   document.getElementById('attendee-list').innerHTML = items.length
     ? items.map((att,i) => {
@@ -1077,7 +1105,8 @@ function renderAttendees(items) {
       }).join('')
     : empty('fa-solid fa-users', 'No attendees yet across your events.');
 }
-function filterAttendees(val) { renderAttendees(allAttendees.filter(a => a.name.toLowerCase().includes(val.toLowerCase()))); }
+function filterAttendees(val) { 
+  renderAttendees(allAttendees.filter(a => a.name.toLowerCase().includes(val.toLowerCase()))); }
 
 /* ── LOAD: Q&A ── */
 let allQuestions = [], qaFilter = 'all';
@@ -1216,6 +1245,7 @@ function switchTab(name) {
     if (name === 'attendees')      loadAttendees();
     if (name === 'qa')             loadQuestions();
     if (name === 'notifications')  loadNotifications();
+  
   }
 }
 

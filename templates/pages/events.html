@@ -263,6 +263,17 @@
     <a href="" class="nav-item">
       <i class="fa-solid fa-ticket"></i> My Tickets
     </a>
+    {% if request.user.is_authenticated %}
+    {% if request.user.is_organizer %}
+        <a  class="nav-item" onclick='GoDashboard()'>
+      <i class="fa-solid fa-line-chart"></i> Dashboard
+    </a>
+    {% else %}
+      <a  class="nav-item" onclick='Feed()'>
+      <i class="fa-solid fa-line-chart"></i> Explore
+      </a>
+    {% endif %}
+    {% endif %}
 
   </div>
 </div>
@@ -336,6 +347,12 @@ function getCSRFToken() {
   });
   return v;
 }
+function GoDashboard(){
+  window.location.href = '/dashboard/';
+}
+
+function Feed(){window.location.href = '/auth/feed/'}
+
 function CreateOrg(){
   window.location.href = `/organizer/`
 }

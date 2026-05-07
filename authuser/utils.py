@@ -1,6 +1,18 @@
 import random
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.shortcuts import redirect
+
+
+def normal_user_required(func):
+    def wrapper(request,*args, **kwargs):
+        user = request.user
+        if not user:
+            return redirect('/')
+        if user.is_organizer:
+            return redirect('/')
+        return func
+    return wrapper
 
 
 def get_otp():
