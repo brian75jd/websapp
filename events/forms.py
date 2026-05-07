@@ -81,9 +81,16 @@ class UserCreationForm(forms.Form):
         password2 = cleaned_data.get('password2')
 
         if password != password2:
-            raise forms.ValidationError('Password do not match')
+            raise forms.ValidationError('Passwords do not match')
         
         return cleaned_data
+    
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if User.objects.filter(username=name).exists():
+            raise forms.ValidationError('username already taken.Choose another one')
+        
+        return name
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -95,7 +102,7 @@ class UserCreationForm(forms.Form):
         
         phone = self.cleaned_data.get('phone_number').strip()
         if len(phone) > 13:
-            return forms.ValidationError('Phone number is too long')
+            raise forms.ValidationError('Phone number is too long')
 
         if phone.startswith('0'):
             phone = '+265' + phone[1:]

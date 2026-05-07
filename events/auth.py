@@ -64,12 +64,14 @@ def CreateUser(request):
         email = form.cleaned_data.get('email')
         password = form.cleaned_data.get('password')
         phone_number = form.cleaned_data.get('phone_number')
-        user = User.objects.create(
+    
+        user = User.objects.create_user(
             username = username,
             email = email if email else " ",
             phone_number = phone_number,
             password = password
         )
+        
         login(request,user)
 
         return JsonResponse({
