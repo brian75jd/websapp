@@ -6,9 +6,10 @@ from APIS.serializers import MatchSerializer
 from APIS.models import Match
 from APIS.authentication import APIClientAuthentication
 from rest_framework.permissions import AllowAny
-from rest_framework.decorators import parser_classes, authentication_classes
+from rest_framework.decorators import permission_classes, authentication_classes
 from APIS.models import APIClient
 from django.contrib.auth.decorators import login_required
+from rest_framework.permissions import IsAuthenticated
 
 
 @login_required
@@ -37,8 +38,26 @@ class Sports_Update(APIView):
             },status=status.HTTP_200_OK)
         
         except Exception as exp:
-            print(exp)
             return Response({''
             'success':False,
             'error':str(exp)},status=status.HTTP_400_BAD_REQUEST)
+
+class App_Sports_Update(APIView):
+    permission_classes =[IsAuthenticated]
+    def get(self,request,*args, **kwargs):
+        try:
+            queryset = Match.objects.select_related('league') \
+                        .all()
+            
+            serializer = MatchSerializer(queryset,many=True).data
+            return Response({
+                'success':True,
+                'data':serializer
+            },status=status.HTTP_200_OK)
+        
+        except Exception as exp:
+            return Response({''
+            'success':False,
+            'error':str(exp)},status=status.HTTP_400_BAD_REQUEST)
+
             

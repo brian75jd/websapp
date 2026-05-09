@@ -5,5 +5,6 @@ app_name = 'apis'
 
 urlpatterns = [
     path('get_matches/',views.Sports_Update.as_view(),name='get_matches'),
-    path('settings/developer/',views.developer_page,name='developer')
+    path('settings/developer/',views.developer_page,name='developer'),
+    path('internal/matches/',views.App_Sports_Update.as_view(),name='int_matches')
 ]

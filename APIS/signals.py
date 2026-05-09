@@ -11,4 +11,4 @@ def create_api_keys(sender,instance,created, **kwargs):
         APIClient.objects.create(
             user = instance
         )
-        print('API keys generated')
+        
