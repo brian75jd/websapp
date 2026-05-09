@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = False
+DEBUG = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -41,12 +41,13 @@ CSRF_TRUSTED_ORIGINS = [
     'https://kaylin-plumbic-luana.ngrok-free.dev'
 ]
 
+"""
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
 }
-
+"""
 
 
 # Application definition
@@ -62,17 +63,17 @@ INSTALLED_APPS = [
     'channels',
     'authuser.apps.AuthuserConfig',
     'feed.apps.FeedConfig',
-    'groups.apps.GroupsConfig',
     'ProfileManager.apps.ProfilemanagerConfig',
-    'AppSettings.apps.AppsettingsConfig',
     'posts.apps.PostsConfig',
     'usermanager.apps.UsermanagerConfig',
     'notifications.apps.NotificationsConfig',
     'payment.apps.PaymentConfig',
     'chat.apps.ChatConfig',
     'events.apps.EventsConfig',
+    'superAdmin',
     'rest_framework',
     'cloudinary',
+    'APIS',
     'cloudinary_storage',
 ]
 
@@ -120,7 +121,7 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-"""
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -133,7 +134,7 @@ import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
-
+"""
 
 
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

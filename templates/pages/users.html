@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feed</title>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
     
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
@@ -206,7 +208,7 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
     Webs <span>Events</span>
   </div>
   <div class="topbar-right">
-    <div class="avatar" aria-label="User JB">JB</div>
+    <div class="avatar" aria-label="User JB">{{request.user.username|first|upper}}</div>
     <button class="burger" onclick="openDrawer()" aria-label="Open menu">
       <i class="fa-solid fa-bars" aria-hidden="true"></i>
     </button>
@@ -259,17 +261,22 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
       <div class="dr-title"><i class="fa-solid fa-star" style="font-size:0.8rem;" aria-hidden="true"></i> Menu</div>
       <button class="dr-close" onclick="closeDrawer()" aria-label="Close menu"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
     </div>
-    <div class="dr-sub">Welcome back, John</div>
+    <div class="dr-sub">Welcome back, {{request.user.username|title}}</div>
   </div>
   <div class="dr-body">
     <span class="dr-sec-lbl">Account</span>
-    <button class="dr-nav-item"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Logout</button>
+    <button class="dr-nav-item" ><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><a style='color:white; text-decoration:none;' href="{% url "events:logout" %}"> 
+      Logout</a></button>
     <button class="dr-nav-item"><i class="fa-solid fa-building" aria-hidden="true"></i> Create Organiser account</button>
-    <button class="dr-nav-item"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Create user account</button>
     <div class="dr-divider"></div>
+
     <span class="dr-sec-lbl">My Events</span>
     <button class="dr-nav-item"><i class="fa-solid fa-ticket" aria-hidden="true"></i> My Tickets</button>
-    <button class="dr-nav-item"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Dashboard</button>
+    <div class="dr-divider"></div>
+
+    <span class="dr-sec-lbl">Management</span>
+    <button class="dr-nav-item"><i class="fa-solid fa-gears" aria-hidden="true"></i> Settings</button>
+    <button class="dr-nav-item"><i class="fa-solid fa-computer" aria-hidden="true"></i>Developer</button>
     <div class="dr-divider"></div>
 
     <div class="planned-section">
@@ -300,12 +307,14 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
 
 <script>
 const EVENTS = [
+/*
   {id:1,type:'academic',title:'Annual Science Fair 2025',org:'Faculty of Science · MZUNI',date:'May 15, 2025',start:'09:00',end:'17:00',venue:'MZUNI Main Hall',desc:'A showcase of student research projects across all science disciplines. Exhibits, demos, prizes and guest lectures from leading academics and industry professionals.',is_paid:false,poster:'https://images.unsplash.com/photo-1564069114051-6a12914679e7?w=600&q=70',seeds:['alice','bob','carol']},
   {id:2,type:'social',title:'Cultural Night 2025',org:'MZUNI Student Union',date:'May 22, 2025',start:'18:00',end:'22:30',venue:'Open Air Stage',desc:'An evening celebrating the diverse cultures of MZUNI students. Performances, food, fashion and more. Tickets include dinner.',is_paid:true,price:'MK 1,000',tickets_left:'142 tickets left',poster:'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&q=70',seeds:['dave','eve','frank']},
   {id:3,type:'sports',title:'Inter-Faculty Sports Day',org:'MZUNI Sports Council',date:'Jun 1, 2025',start:'08:00',end:'16:00',venue:'MZUNI Sports Ground',desc:'Annual inter-faculty competition featuring football, basketball, volleyball, athletics and more. Come support your faculty!',is_paid:false,poster:'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&q=70',seeds:['grace','henry','ivy']},
   {id:4,type:'workshop',title:'Tech Talk: AI Futures',org:'CS Department · MZUNI',date:'Jun 8, 2025',start:'14:00',end:'17:00',venue:'ICT Lab 3',desc:'Industry experts discuss how artificial intelligence is reshaping careers, research and society. Open to all students and staff.',is_paid:false,poster:'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=70',seeds:['jack','karen','leo']},
   {id:5,type:'academic',title:'Research Symposium',org:'Postgraduate Office · MZUNI',date:'Jun 15, 2025',start:'09:00',end:'16:00',venue:'Senate Chamber',desc:'A platform for postgraduate students to present research findings. Keynote addresses, paper presentations and a networking lunch.',is_paid:true,price:'MK 500',tickets_left:'88 tickets left',poster:'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&q=70',seeds:['mia','noah','olivia']},
-];
+
+*/  ];
 const VACANCIES=[
   {id:1,role:'Research Assistant — Computer Science',org:'Faculty of Science · MZUNI',type:'part',pay:'MK 15K/mo',location:'On-campus',deadline:'Closes May 20',accent:'#1a6fd4'},
   {id:2,role:'Student Union Events Coordinator',org:'MZUNI Student Union',type:'vol',pay:'Volunteer',location:'On-campus',deadline:'Closes May 25',accent:'#1a7a6e'},
@@ -313,10 +322,12 @@ const VACANCIES=[
   {id:4,role:'Library Assistant',org:'MZUNI Library Services',type:'part',pay:'MK 8K/mo',location:'On-campus',deadline:'Closes Jun 2',accent:'#cc1f1f'},
 ];
 const SPORTS=[
+/*
   {id:1,league:'Charity Shield · Semifinal',t1:'Mighty Mukuru wanderers',t1s:'SCI',t2:'Civo United',t2s:'LAW',score:'2 – 1',status:'live',time:"72'",accent:'#cc1f1f'},
-  {id:2,league:'MZUNI Basketball Cup',t1:'Engineering',t1s:'ENG',t2:'Med School',t2s:'MED',score:'68 – 71',status:'ft',accent:'#1a6fd4'},
+  
+{id:2,league:'MZUNI Basketball Cup',t1:'Engineering',t1s:'ENG',t2:'Med School',t2s:'MED',score:'68 – 71',status:'ft',accent:'#1a6fd4'},
   {id:3,league:'MZUNI Volleyball League',t1:'Education',t1s:'ED',t2:'Agriculture',t2s:'AGR',score:'vs',status:'upcoming',time:'Tomorrow 14:00',accent:'#1a7a6e'},
-];
+*/];
 const TYPE_TOP={academic:'#1a6fd4',social:'#f5c518',sports:'#cc1f1f',cultural:'#5b4fcf',workshop:'#22c55e'};
 const TYPE_BADGE={academic:'tb-academic',social:'tb-social',sports:'tb-sports',cultural:'tb-cultural',workshop:'tb-workshop'};
 const TYPE_LBL={academic:'Academic',social:'Social',sports:'Sports',cultural:'Cultural',workshop:'Workshop'};
@@ -331,6 +342,48 @@ function setFilter(t,btn){
   document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   renderEvents();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  FetchSports();
+})
+
+window.addEventListener('DOMContentLoaded',()=>{
+  fetch('{% url "events:get_events" %}',{
+    method:'GET'
+  }).then(res=>res.json())
+  .then(data=>{
+    console.log(data);
+      EVENTS.splice(0, 0, ...data.events)
+      renderEvents();
+      
+    
+  })
+  .catch((error)=>{
+    console.log(error);
+    showToast(`${error}`);
+  })
+})
+
+async function FetchSports(){
+try{
+    const response = await fetch('{% url "apis:get_matches" %}',{
+    method:"GET"
+  })
+
+  let data = await response.json()
+  if(data.success){
+    console.log(data)
+    SPORTS.splice(0,0,...data.data);
+    renderSports()
+  }
+  else{
+    showToast(`${data.detail}`)
+  }
+}
+catch{
+  console.log(error)
+}
 }
 
 function renderEvents(){
@@ -354,13 +407,13 @@ function evCardHTML(ev,i){
     <a class="poster-dl" href="${ev.poster}" download="poster.jpg" title="Download poster" onclick="event.stopPropagation();showToast('Downloading poster…')"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
     <div class="poster-bottom">
       <div class="poster-name">${ev.title}</div>
-      <div class="poster-org">${ev.org}</div>
+      <div class="poster-org">${ev.organizers}</div>
     </div>
   </div>
   <div class="ev-body">
     <div class="info-grid">
       <div class="info-cell"><div class="iico ic-cal"><i class="fa-solid fa-calendar-day" aria-hidden="true"></i></div><div><div class="info-lbl">Date</div><div class="info-val">${ev.date}</div></div></div>
-      <div class="info-cell"><div class="iico ic-clk"><i class="fa-regular fa-clock" aria-hidden="true"></i></div><div><div class="info-lbl">Time</div><div class="info-val">${ev.start} – ${ev.end}</div></div></div>
+      <div class="info-cell"><div class="iico ic-clk"><i class="fa-regular fa-clock" aria-hidden="true"></i></div><div><div class="info-lbl">Time</div><div class="info-val">${ev.start_at} – ${ev.finish_at}</div></div></div>
       <div class="info-cell full"><div class="iico ic-loc"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></div><div><div class="info-lbl">Venue</div><div class="info-val">${ev.venue}</div></div></div>
       ${ev.is_paid?`<div class="info-cell full"><div class="iico ic-tkt"><i class="fa-solid fa-ticket" aria-hidden="true"></i></div><div><div class="info-lbl">Tickets</div><div class="info-val">${ev.tickets_left}</div></div></div>`:''}
     </div>
@@ -368,12 +421,19 @@ function evCardHTML(ev,i){
     <div class="ev-footer">
       ${!ev.is_paid?`<div class="av-stack">${stack}</div><span class="av-label">6 interested</span>`:''}
       ${ev.is_paid
-        ?`<span style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--text);">${ev.price}</span><button class="plan-btn off"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Buy Ticket</button>`
+        ?`<span style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--text);"></span><button class="plan-btn off" onclick = "BuyTicket(${ev.id})"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Buy Ticket</button>`
         :`<button class="plan-btn ${on?'on':'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})"><i class="fa-${on?'solid fa-check':'regular fa-calendar-plus'}" aria-hidden="true"></i> ${on?'Planned':'Plan to Attend'}</button>`}
     </div>
   </div>
 </div>`;
+
 }
+
+
+function BuyTicket(Id) {
+  window.location.href = `/buy_ticket/${Id}/`;
+}
+
 
 function renderVacancies(){
   document.getElementById('vacList').innerHTML=VACANCIES.map((v,i)=>{
@@ -402,30 +462,31 @@ function renderVacancies(){
 
 function renderSports(){
   document.getElementById('sportsList').innerHTML=SPORTS.map((m,i)=>{
+    const accent = '#1a6fd4'
     const isLive=m.status==='live';
     const isFt=m.status==='ft';
-    const statusCls=isLive?'ms-live':isFt?'ms-ft':'ms-up';
-    const statusLbl=isLive?`<span class="live-dot live-blink"></span>LIVE ${m.time}`:isFt?'FT':`${m.time}`;
+    const statusCls=m.is_played?'ms-live':m.is_played?'ms-ft':'ms-up';
+    const statusLbl=isLive?`<span class="live-dot live-blink"></span>LIVE ${m.time_started}`:m.is_played?'FT':`${m.time_started}`;
     return`<div class="match-card" style="animation:fadeUp 0.32s ease ${i*0.06}s both;">
   <div class="match-card-top">
-    <div class="match-accent" style="background:${m.accent};"></div>
+    <div class="match-accent" style="background:${accent};"></div>
     <div class="match-inner">
       <div class="match-league-row">
-        <div class="match-league"><i class="fa-solid fa-trophy" aria-hidden="true"></i>${m.league}</div>
+        <div class="match-league"><i class="fa-solid fa-trophy" aria-hidden="true"></i>${m.league.leage_name}</div>
         <span class="match-status-badge ${statusCls}">${statusLbl}</span>
       </div>
       <div class="match-row">
         <div class="match-team">
-          <div class="match-logo">${m.t1s}</div>
-          <div class="match-tname">${m.t1}</div>
+          <div class="match-logo">${m.away_team.short_hand}</div>
+          <div class="match-tname">${m.away_team.name}</div>
         </div>
         <div class="match-score-wrap">
-          <div class="match-score">${m.score}</div>
-          <div class="match-score-lbl">${isFt?'Full Time':isLive?'Live':'Upcoming'}</div>
+          <div class="match-score">${m.away_team_scores}-${m.home_team_scores}</div>
+          <div class="match-score-lbl">${m.is_played?'Full Time':m.is_played?'Live':'Upcoming'}</div>
         </div>
         <div class="match-team">
-          <div class="match-logo">${m.t2s}</div>
-          <div class="match-tname">${m.t2}</div>
+          <div class="match-logo">${m.home_team.short_hand}</div>
+          <div class="match-tname">${m.home_team.name}</div>
         </div>
       </div>
     </div>
