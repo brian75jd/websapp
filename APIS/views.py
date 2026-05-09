@@ -7,11 +7,24 @@ from APIS.models import Match
 from APIS.authentication import APIClientAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import parser_classes, authentication_classes
+from APIS.models import APIClient
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
+def developer_page(request):
+    try:
+        client = APIClient.objects.get(user=request.user)
+    except APIClient.DoesNotExist:
+        client = APIClient.objects.create(user=request.user)
+    
+    return render(request, 'pages/developer.html', {
+        'api_key': client.api_key if client.api_key else "",
+        'secret_key': client.secret_key if client.api_key else "",
+    })
 
 class Sports_Update(APIView):
-    #authentication_classes =[APIClientAuthentication]
+    authentication_classes =[APIClientAuthentication]
     def get(self,request,*args, **kwargs):
         try:
             queryset = Match.objects.select_related('league') \

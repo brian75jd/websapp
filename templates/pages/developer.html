@@ -1,0 +1,556 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0a0c10;--ink-2:#1a1d24;--ink-3:#252830;
+  --gold:#c9a84c;--gold-light:#f5c518;--gold-pale:#fdf7e8;
+  --primary:#1a6fd4;--primary-light:#3d8ef0;--primary-soft:#e8f1fd;
+  --teal:#1a7a6e;--teal-pale:#eaf5f3;
+  --violet:#5b4fcf;--violet-pale:#f0eefb;
+  --crimson:#cc1f1f;--crimson-pale:#fee2e2;
+  --success:#22c55e;--success-pale:#dcfce7;
+  --amber:#d97706;--amber-pale:#fef3c7;
+  --text:#0d1a2e;--text-2:#4a4d58;--text-3:#6b82a0;
+  --surface:#f0f4fb;--line:rgba(10,12,16,0.10);
+  --radius:14px;--radius-sm:10px;
+  --font-head:'Plus Jakarta Sans',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'JetBrains Mono','Fira Code',monospace;
+}
+body{font-family:var(--font-body);background:var(--surface);color:var(--text);padding:0 0 40px;}
+.page-header{background:var(--ink);padding:28px 20px 24px;position:relative;overflow:hidden;}
+.page-header::before{content:'';position:absolute;top:-30px;right:-30px;width:180px;height:180px;border-radius:50%;background:rgba(245,197,24,0.06);}
+.page-header::after{content:'';position:absolute;bottom:-20px;left:40px;width:100px;height:100px;border-radius:50%;background:rgba(26,111,212,0.08);}
+.ph-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,197,24,0.12);border:1px solid rgba(245,197,24,0.25);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--gold-light);font-family:var(--font-head);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;}
+.ph-title{font-family:var(--font-head);font-weight:800;font-size:1.35rem;color:#fff;margin-bottom:6px;}
+.ph-sub{font-size:0.8rem;color:rgba(255,255,255,0.45);line-height:1.6;}
+.page-body{padding:16px 14px 0;}
+.status-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;}
+.status-left{display:flex;align-items:center;gap:8px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px rgba(34,197,94,0.15);}
+.status-lbl{font-size:0.78rem;font-weight:600;color:var(--text-2);}
+.status-val{font-size:0.73rem;color:var(--text-3);}
+.status-right{font-size:0.7rem;font-weight:700;color:var(--success);background:var(--success-pale);padding:3px 9px;border-radius:20px;}
+.key-card{background:#fff;border-radius:var(--radius);border:1.5px solid var(--line);overflow:hidden;margin-bottom:14px;}
+.kc-header{background:var(--ink-2);padding:12px 15px;display:flex;align-items:center;gap:8px;}
+.kc-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.kc-title{font-family:var(--font-head);font-weight:700;font-size:0.82rem;color:#fff;}
+.kc-sub{font-size:0.68rem;color:rgba(255,255,255,0.38);margin-top:1px;}
+.kc-body{padding:14px 15px;}
+.key-field{margin-bottom:10px;}
+.kf-label{font-size:0.62rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.kf-box{display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+.kf-val{flex:1;padding:9px 12px;font-family:var(--font-mono);font-size:0.73rem;color:var(--text);word-break:break-all;line-height:1.5;}
+.kf-copy{flex-shrink:0;border:none;border-left:1.5px solid var(--line);background:#fff;width:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-3);font-size:14px;height:100%;padding:0 10px;transition:all 0.18s;min-height:40px;}
+.kf-copy:hover{background:var(--primary-soft);color:var(--primary);}
+.kf-copy.copied{background:var(--success-pale);color:var(--success);}
+.regen-btn{width:100%;padding:10px;border-radius:var(--radius-sm);border:1.5px dashed rgba(204,31,31,0.3);background:transparent;color:#cc1f1f;font-family:var(--font-head);font-weight:700;font-size:0.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:4px;transition:all 0.2s;}
+.regen-btn:hover{background:var(--crimson-pale);border-color:var(--crimson);}
+.section-lbl{font-family:var(--font-head);font-weight:700;font-size:0.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.section-lbl::before{content:'';display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;}
+.endpoint-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.ep-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);}
+.ep-method{font-family:var(--font-head);font-weight:800;font-size:0.68rem;padding:3px 9px;border-radius:20px;letter-spacing:0.3px;}
+.ep-get{background:var(--success-pale);color:#166534;}
+.ep-url{font-family:var(--font-mono);font-size:0.72rem;color:var(--primary);font-weight:600;flex:1;word-break:break-all;}
+.ep-body{padding:12px 14px;}
+.ep-desc{font-size:0.78rem;color:var(--text-2);line-height:1.6;margin-bottom:12px;}
+.ep-param-lbl{font-size:0.61rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:7px;}
+.param-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);}
+.param-row:last-child{border-bottom:none;}
+.param-name{font-family:var(--font-mono);font-size:0.71rem;color:var(--violet);font-weight:600;min-width:90px;flex-shrink:0;}
+.param-type{font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--violet-pale);color:var(--violet);flex-shrink:0;margin-top:1px;}
+.param-desc{font-size:0.72rem;color:var(--text-2);line-height:1.5;}
+.param-req{font-size:0.6rem;font-weight:700;color:var(--crimson);background:var(--crimson-pale);padding:2px 6px;border-radius:20px;flex-shrink:0;margin-top:1px;}
+.code-card{background:var(--ink);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;}
+.cc-topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.cc-dots{display:flex;gap:5px;}
+.cc-dot{width:10px;height:10px;border-radius:50%;}
+.cc-lang-tabs{display:flex;gap:2px;}
+.cc-tab{font-size:0.68rem;font-weight:700;padding:4px 10px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font-head);transition:all 0.18s;background:transparent;color:rgba(255,255,255,0.35);}
+.cc-tab.active{background:rgba(255,255,255,0.08);color:var(--gold-light);}
+.cc-copy{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(255,255,255,0.5);font-size:11px;padding:3px 9px;cursor:pointer;font-family:var(--font-head);font-weight:600;transition:all 0.18s;display:flex;align-items:center;gap:4px;}
+.cc-copy:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.cc-copy.copied{color:var(--success);background:rgba(34,197,94,0.1);}
+.code-block{padding:14px;overflow-x:auto;}
+.code-block pre{font-family:var(--font-mono);font-size:0.73rem;line-height:1.75;color:rgba(255,255,255,0.82);white-space:pre;margin:0;}
+.t-kw{color:#c792ea;}
+.t-str{color:#c3e88d;}
+.t-fn{color:#f5c518;}
+.t-var{color:#79d3f5;}
+.t-num{color:#f78c6c;}
+.t-cmt{color:rgba(255,255,255,0.3);font-style:italic;}
+.t-op{color:#89ddff;}
+.resp-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.resp-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);}
+.resp-code{font-family:var(--font-mono);font-weight:700;font-size:0.78rem;}
+.resp-200{color:var(--success);}
+.resp-401{color:var(--amber);}
+.resp-403{color:var(--crimson);}
+.resp-lbl{font-size:0.72rem;color:var(--text-3);}
+.resp-body{padding:12px 14px;}
+.resp-block{background:var(--ink);border-radius:8px;padding:12px;overflow-x:auto;}
+.resp-block pre{font-family:var(--font-mono);font-size:0.68rem;line-height:1.7;color:rgba(255,255,255,0.78);white-space:pre;margin:0;}
+.info-banner{display:flex;gap:10px;align-items:flex-start;background:var(--amber-pale);border:1.5px solid rgba(217,119,6,0.2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;}
+.ib-icon{font-size:14px;color:var(--amber);margin-top:1px;flex-shrink:0;}
+.ib-text{font-size:0.75rem;color:#92400e;line-height:1.6;}
+.ib-text strong{font-weight:700;}
+.rate-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.rate-cell{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;text-align:center;}
+.rate-val{font-family:var(--font-head);font-weight:800;font-size:1.1rem;margin-bottom:2px;}
+.rate-lbl{font-size:0.63rem;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.toast-mini{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--gold-light);border:1px solid rgba(201,168,76,0.22);padding:7px 16px;border-radius:30px;font-size:0.73rem;font-weight:700;opacity:0;transition:all 0.25s;pointer-events:none;z-index:9999;white-space:nowrap;font-family:var(--font-body);}
+.toast-mini.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<div class="page-header">
+  <div class="ph-badge"><i class="fa-solid fa-terminal" style="font-size:9px;"></i> Developer Portal</div>
+  <div class="ph-title">Webs API Console</div>
+  <div class="ph-sub">Manage your credentials and integrate Webs APIs into your applications.</div>
+</div>
+
+<div class="page-body">
+
+  <div class="status-row">
+    <div class="status-left">
+      <div class="status-dot"></div>
+      <div>
+        <div class="status-lbl">API Status</div>
+        <div class="status-val">All systems operational</div>
+      </div>
+    </div>
+    <div class="status-right">Live</div>
+  </div>
+
+  <div class="key-card">
+    <div class="kc-header">
+      <div class="kc-icon" style="background:rgba(245,197,24,0.15);">
+        <i class="fa-solid fa-key" style="color:var(--gold-light);font-size:13px;"></i>
+      </div>
+      <div>
+        <div class="kc-title">Your API Credentials</div>
+        <div class="kc-sub">Keep these secret — never expose in client-side code</div>
+      </div>
+    </div>
+    <div class="kc-body">
+      <div class="key-field">
+        <div class="kf-label">
+          <i class="fa-solid fa-fingerprint" style="color:var(--primary);font-size:11px;"></i>
+          API Key
+        </div>
+        <div class="kf-box">
+          <div class="kf-val" id="apiKeyDisplay">••••••••••••••••••••••••••••••</div>
+          <button class="kf-copy" onclick="toggleKey('api')" title="Show/hide">
+            <i class="fa-regular fa-eye" id="eyeApiKey"></i>
+          </button>
+          <button class="kf-copy" id="copyApiKey" onclick="copyKey('api')" title="Copy">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+      </div>
+      <div class="key-field">
+        <div class="kf-label">
+          <i class="fa-solid fa-shield-halved" style="color:var(--violet);font-size:11px;"></i>
+          Secret Key
+        </div>
+        <div class="kf-box">
+          <div class="kf-val" id="secretKeyDisplay">••••••••••••••••••••••••••••••</div>
+          <button class="kf-copy" onclick="toggleKey('secret')" title="Show/hide">
+            <i class="fa-regular fa-eye" id="eyeSecretKey"></i>
+          </button>
+          <button class="kf-copy" id="copySecretKey" onclick="copyKey('secret')" title="Copy">
+            <i class="fa-regular fa-copy"></i>
+          </button>
+        </div>
+      </div>
+      <div class="info-banner">
+        <div class="ib-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="ib-text"><strong>Security notice:</strong> Your API key identifies your account. Treat it like a password — never commit it to version control or share it publicly.</div>
+      </div>
+      <button class="regen-btn" onclick="showRegen()">
+        <i class="fa-solid fa-arrows-rotate"></i> Regenerate keys
+      </button>
+    </div>
+  </div>
+
+  <div class="section-lbl">Rate Limits</div>
+  <div class="rate-grid">
+    <div class="rate-cell">
+      <div class="rate-val" style="color:var(--primary);">1,000</div>
+      <div class="rate-lbl">Req / day</div>
+    </div>
+    <div class="rate-cell">
+      <div class="rate-val" style="color:var(--teal);">60</div>
+      <div class="rate-lbl">Req / min</div>
+    </div>
+    <div class="rate-cell">
+      <div class="rate-val" style="color:var(--violet);">5</div>
+      <div class="rate-lbl">Concurrent</div>
+    </div>
+  </div>
+
+  <div class="section-lbl">Endpoints</div>
+  <div class="endpoint-card">
+    <div class="ep-header">
+      <span class="ep-method ep-get">GET</span>
+      <span class="ep-url">https://websapp.up.railway.app/sports/get_matches</span>
+    </div>
+    <div class="ep-body">
+      <div class="ep-desc">Returns all sports matches including league info, teams, scores, and match status. Requires authentication via your API key in the request headers.</div>
+      <div class="ep-param-lbl">Required Headers</div>
+      <div class="param-row">
+        <span class="param-name">X-API-Key</span>
+        <span class="param-type">string</span>
+        <span class="param-req">Required</span>
+        <span class="param-desc">Your unique API key from the credentials panel above.</span>
+      </div>
+      <div class="param-row">
+        <span class="param-name">Content-Type</span>
+        <span class="param-type">string</span>
+        <span class="param-desc">Set to <code style="font-family:var(--font-mono);font-size:0.71rem;background:var(--surface);padding:1px 5px;border-radius:4px;">application/json</code></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-lbl">Code Examples</div>
+  <div class="code-card">
+    <div class="cc-topbar">
+      <div class="cc-dots">
+        <div class="cc-dot" style="background:#ff5f57;"></div>
+        <div class="cc-dot" style="background:#febc2e;"></div>
+        <div class="cc-dot" style="background:#28c840;"></div>
+      </div>
+      <div class="cc-lang-tabs">
+        <button class="cc-tab active" onclick="switchTab('python',this)">Python</button>
+        <button class="cc-tab" onclick="switchTab('js',this)">JavaScript</button>
+        <button class="cc-tab" onclick="switchTab('curl',this)">cURL</button>
+      </div>
+      <button class="cc-copy" id="codeBlockCopy" onclick="copyCode()">
+        <i class="fa-regular fa-copy"></i> Copy
+      </button>
+    </div>
+    <div class="code-block">
+      <pre id="codeContent"></pre>
+    </div>
+  </div>
+
+  <div class="section-lbl">Responses</div>
+  <div class="resp-card">
+    <div class="resp-header">
+      <span class="resp-code resp-200">200</span>
+      <span class="resp-lbl">OK — Successful response</span>
+    </div>
+    <div class="resp-body">
+      <div class="resp-block">
+        <pre id="resp200"></pre>
+      </div>
+    </div>
+  </div>
+  <div class="resp-card">
+    <div class="resp-header">
+      <span class="resp-code resp-401">401</span>
+      <span class="resp-lbl">Unauthorized — Invalid or missing API key</span>
+    </div>
+    <div class="resp-body">
+      <div class="resp-block">
+        <pre id="resp401"></pre>
+      </div>
+    </div>
+  </div>
+  <div class="resp-card">
+    <div class="resp-header">
+      <span class="resp-code resp-403">429</span>
+      <span class="resp-lbl">Rate limit exceeded</span>
+    </div>
+    <div class="resp-body">
+      <div class="resp-block">
+        <pre id="resp429"></pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast-mini" id="toastMini"></div>
+
+<script>
+const API_KEY_REAL = "{{ api_key|default:'wbs_a3f9e1c72b84d05f6e2a' }}";
+const SECRET_KEY_REAL = "{{ secret_key|default:'sk_9d2f0a6b3e1c84759f2d' }}";
+const MASKED = "••••••••••••••••••••••••••••••";
+let apiVisible = false;
+let secretVisible = false;
+
+function toggleKey(which) {
+  if (which === 'api') {
+    apiVisible = !apiVisible;
+    document.getElementById('apiKeyDisplay').textContent = apiVisible ? API_KEY_REAL : MASKED;
+    document.getElementById('eyeApiKey').className = apiVisible ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+  } else {
+    secretVisible = !secretVisible;
+    document.getElementById('secretKeyDisplay').textContent = secretVisible ? SECRET_KEY_REAL : MASKED;
+    document.getElementById('eyeSecretKey').className = secretVisible ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+  }
+}
+
+function copyKey(which) {
+  const val = which === 'api' ? API_KEY_REAL : SECRET_KEY_REAL;
+  const btnId = which === 'api' ? 'copyApiKey' : 'copySecretKey';
+  navigator.clipboard.writeText(val).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+    showToastMini('Copied to clipboard!');
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="fa-regular fa-copy"></i>'; }, 2000);
+  });
+}
+
+// --- Proper token-based syntax highlighter ---
+function span(cls, text) {
+  return '<span class="' + cls + '">' + esc(text) + '</span>';
+}
+function esc(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightPython(code) {
+  const keywords = /\b(import|from|as|if|else|elif|for|in|return|def|class|True|False|None|try|except|with|and|or|not|is|pass|raise|print)\b/g;
+  const lines = code.split('\n');
+  return lines.map(line => {
+    if (line.trim().startsWith('#')) return span('t-cmt', line);
+    let out = '';
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '#') { out += span('t-cmt', line.slice(i)); break; }
+      if (line[i] === '"' || line[i] === "'") {
+        const q = line[i];
+        let j = i+1;
+        while (j < line.length && line[j] !== q) j++;
+        out += span('t-str', line.slice(i, j+1)); i = j+1; continue;
+      }
+      const kwMatch = line.slice(i).match(/^(import|from|as|if|else|elif|for|in|return|def|class|True|False|None|try|except|with|and|or|not|is|pass|raise|print)\b/);
+      if (kwMatch) { out += span('t-kw', kwMatch[0]); i += kwMatch[0].length; continue; }
+      const numMatch = line.slice(i).match(/^\d+/);
+      if (numMatch) { out += span('t-num', numMatch[0]); i += numMatch[0].length; continue; }
+      const fnMatch = line.slice(i).match(/^([a-zA-Z_]\w*)\s*(?=\()/);
+      if (fnMatch) { out += span('t-fn', fnMatch[1]); i += fnMatch[1].length; continue; }
+      const varMatch = line.slice(i).match(/^[A-Z_][A-Z_0-9]+/);
+      if (varMatch) { out += span('t-var', varMatch[0]); i += varMatch[0].length; continue; }
+      out += esc(line[i]); i++;
+    }
+    return out;
+  }).join('\n');
+}
+
+function highlightJS(code) {
+  const lines = code.split('\n');
+  return lines.map(line => {
+    if (line.trim().startsWith('//')) return span('t-cmt', line);
+    let out = '';
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '/' && line[i+1] === '/') { out += span('t-cmt', line.slice(i)); break; }
+      if (line[i] === '`') {
+        let j = i+1;
+        while (j < line.length && line[j] !== '`') j++;
+        out += span('t-str', line.slice(i, j+1)); i = j+1; continue;
+      }
+      if (line[i] === '"' || line[i] === "'") {
+        const q = line[i]; let j = i+1;
+        while (j < line.length && line[j] !== q) j++;
+        out += span('t-str', line.slice(i, j+1)); i = j+1; continue;
+      }
+      const kwMatch = line.slice(i).match(/^(const|let|var|async|await|function|if|else|for|of|in|return|new|true|false|null|undefined|try|catch|throw|class|import|export|from)\b/);
+      if (kwMatch) { out += span('t-kw', kwMatch[0]); i += kwMatch[0].length; continue; }
+      const numMatch = line.slice(i).match(/^\d+/);
+      if (numMatch) { out += span('t-num', numMatch[0]); i += numMatch[0].length; continue; }
+      const fnMatch = line.slice(i).match(/^([a-zA-Z_$]\w*)\s*(?=\()/);
+      if (fnMatch) { out += span('t-fn', fnMatch[1]); i += fnMatch[1].length; continue; }
+      out += esc(line[i]); i++;
+    }
+    return out;
+  }).join('\n');
+}
+
+function highlightCurl(code) {
+  return code.split('\n').map(line => {
+    let out = '';
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '"') {
+        let j = i+1;
+        while (j < line.length && line[j] !== '"') j++;
+        out += span('t-str', line.slice(i, j+1)); i = j+1; continue;
+      }
+      const flagMatch = line.slice(i).match(/^(-X|-H|--header|--request)\b/);
+      if (flagMatch) { out += span('t-kw', flagMatch[0]); i += flagMatch[0].length; continue; }
+      const cmdMatch = line.slice(i).match(/^curl\b/);
+      if (cmdMatch) { out += span('t-fn', cmdMatch[0]); i += cmdMatch[0].length; continue; }
+      out += esc(line[i]); i++;
+    }
+    return out;
+  }).join('\n');
+}
+
+function highlightJSON(code) {
+  return code.split('\n').map(line => {
+    let out = '';
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '"') {
+        let j = i+1;
+        while (j < line.length && line[j] !== '"') j++;
+        const tok = line.slice(i, j+1);
+        const after = line.slice(j+1).trim();
+        out += after.startsWith(':') ? span('t-var', tok) : span('t-str', tok);
+        i = j+1; continue;
+      }
+      const boolMatch = line.slice(i).match(/^(true|false|null)\b/);
+      if (boolMatch) { out += span('t-kw', boolMatch[0]); i += boolMatch[0].length; continue; }
+      const numMatch = line.slice(i).match(/^\d+/);
+      if (numMatch) { out += span('t-num', numMatch[0]); i += numMatch[0].length; continue; }
+      out += esc(line[i]); i++;
+    }
+    return out;
+  }).join('\n');
+}
+
+const SNIPPETS = {
+  python: `import requests
+
+API_KEY = "wbs_a3f9e1c72b84d05f6e2a"
+BASE_URL = "https://websapp.up.railway.app"
+
+headers = {
+    "X-API-Key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+response = requests.get(
+    f"{BASE_URL}/sports/get_matches",
+    headers=headers
+)
+
+if response.status_code == 200:
+    data = response.json()
+    matches = data["data"]
+    for match in matches:
+        home = match["home_team"]["name"]
+        away = match["away_team"]["name"]
+        score = f"{match['home_team_scores']} - {match['away_team_scores']}"
+        print(f"{home} vs {away}  |  {score}")
+else:
+    print("Error:", response.json()["detail"])`,
+
+  js: `const API_KEY = "wbs_a3f9e1c72b84d05f6e2a";
+const BASE_URL = "https://websapp.up.railway.app";
+
+async function getMatches() {
+  const response = await fetch(
+    \`\${BASE_URL}/sports/get_matches\`,
+    {
+      method: "GET",
+      headers: {
+        "X-API-Key": API_KEY,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  if (data.success) {
+    // Loop through all matches
+    data.data.forEach(match => {
+      const { home_team, away_team,
+              home_team_scores, away_team_scores } = match;
+      console.log(
+        \`\${home_team.name} \${home_team_scores} - \` +
+        \`\${away_team_scores} \${away_team.name}\`
+      );
+    });
+  } else {
+    console.error("API Error:", data.detail);
+  }
+}
+
+getMatches();`,
+
+  curl: `curl -X GET \\
+  "https://websapp.up.railway.app/sports/get_matches" \\
+  -H "X-API-Key: wbs_a3f9e1c72b84d05f6e2a" \\
+  -H "Content-Type: application/json"`
+};
+
+const HIGHLIGHTERS = { python: highlightPython, js: highlightJS, curl: highlightCurl };
+let currentLang = 'python';
+
+function switchTab(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.cc-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCode(lang);
+  const copyBtn = document.getElementById('codeBlockCopy');
+  copyBtn.classList.remove('copied');
+  copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+}
+
+function renderCode(lang) {
+  document.getElementById('codeContent').innerHTML = HIGHLIGHTERS[lang](SNIPPETS[lang]);
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(SNIPPETS[currentLang]).then(() => {
+    const btn = document.getElementById('codeBlockCopy');
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+    showToastMini('Code snippet copied!');
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy'; }, 2000);
+  });
+}
+
+function showRegen() { showToastMini('Regenerate from your Django admin or settings page'); }
+
+const resp200 = `{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "league": { "leage_name": "Charity Shield" },
+      "home_team": { "name": "Mighty Wanderers", "short_hand": "MW" },
+      "away_team": { "name": "Civo United", "short_hand": "CU" },
+      "home_team_scores": 2,
+      "away_team_scores": 1,
+      "is_played": false,
+      "time_started": "72'"
+    }
+  ]
+}`;
+
+const resp401 = `{
+  "success": false,
+  "detail": "Invalid API key. Check your credentials."
+}`;
+
+const resp429 = `{
+  "success": false,
+  "detail": "Rate limit exceeded. Try again later.",
+  "retry_after": 60
+}`;
+
+document.getElementById('resp200').innerHTML = highlightJSON(resp200);
+document.getElementById('resp401').innerHTML = highlightJSON(resp401);
+document.getElementById('resp429').innerHTML = highlightJSON(resp429);
+
+let toastTimer;
+function showToastMini(msg) {
+  const t = document.getElementById('toastMini');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+renderCode('python');
+</script>

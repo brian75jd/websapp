@@ -7,6 +7,7 @@ from events.forms import OrganizerCreationForm
 from events.forms import UserCreationForm
 from events.utils import check_phone_Number
 from django.urls import reverse
+from django.shortcuts import redirect
 
 
 User = get_user_model()

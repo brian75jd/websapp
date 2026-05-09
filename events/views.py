@@ -19,6 +19,11 @@ def Events(request):
     return render(request,'pages/events.html', {'user':user})
 
 def Loggin(request):
+    if request.user.is_authenticated:
+        if request.user.is_organizer:
+            return redirect('events:dashboard')
+        return redirect('authuser:feed')
+
     return render(request,template_name='pages/login.html')
 
 @organizer_required

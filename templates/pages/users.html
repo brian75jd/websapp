@@ -276,7 +276,7 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
 
     <span class="dr-sec-lbl">Management</span>
     <button class="dr-nav-item"><i class="fa-solid fa-gears" aria-hidden="true"></i> Settings</button>
-    <button class="dr-nav-item"><i class="fa-solid fa-computer" aria-hidden="true"></i>Developer</button>
+    <button class="dr-nav-item" onclick="GoDeveloper();"><i class="fa-solid fa-computer" aria-hidden="true"></i>Developer</button>
     <div class="dr-divider"></div>
 
     <div class="planned-section">
@@ -336,6 +336,10 @@ const VAC_TYPE={full:{cls:'vt-full',lbl:'Full-time'},part:{cls:'vt-part',lbl:'Pa
 let planned=new Set();
 let activeFilter='all';
 let pendingDeleteId=null;
+
+function GoDeveloper(){
+  window.location.href = '/sports/settings/developer/';
+}
 
 function setFilter(t,btn){
   activeFilter=t;

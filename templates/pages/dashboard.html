@@ -494,6 +494,17 @@
     </div>
   </div>
 
+    <div class="settings-section">
+    <div class="settings-section-title">Developer</div>
+    <div class="settings-card">
+      <div class="settings-row" onclick="GoDeveloper();">
+        <div class="settings-ico si-surface"><i class="fa-solid fa-key"></i></div>
+        <div class="settings-row-text"><div class="settings-row-lbl">API KEYS</div><div class="settings-row-sub">Check API key </div></div>
+        <i class="fa-solid fa-chevron-right settings-row-arrow"></i>
+      </div>
+    </div>
+  </div>
+
   <div class="settings-section">
     <div class="settings-section-title">Session</div>
     <div class="settings-card">
@@ -743,6 +754,9 @@ function getCSRF() {
 
 function GoHome(){
   window.location.href = '/'
+}
+function GoDeveloper(){
+  window.location.href = '/sports/settings/developer/'
 }
 
 function api(url, opts = {}) {
