@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 import secrets
 from django.contrib.auth import get_user_model
+from datetime import date
 
 User = get_user_model()
 
@@ -63,3 +64,23 @@ class APIClient(models.Model):
 
     def __str__(self):
         return self.user.get_username()
+
+
+class Vacancy(models.Model):
+    position = models.CharField(max_length=200)
+    description = models.TextField()
+    location = models.CharField(max_length=300)
+    salary = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    dead_line = models.DateField()
+    date_posted = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(unique=False,null=True,blank=True)
+    organization = models.CharField(max_length=300,null=True,blank=True)
+    type = models.CharField(max_length=300, default='full time')
+
+    @property
+    def check_validity(self):
+        
+        return self.dead_line >= date.today()
+    
+    def __str__(self):
+        return self.position

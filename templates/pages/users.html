@@ -373,10 +373,12 @@ const EVENTS = [
 
 */  ];
 const VACANCIES=[
+/*
   {id:1,role:'Research Assistant — Computer Science',org:'Faculty of Science · MZUNI',type:'part',pay:'MK 15K/mo',location:'On-campus',deadline:'Closes May 20',accent:'#1a6fd4'},
   {id:2,role:'Student Union Events Coordinator',org:'MZUNI Student Union',type:'vol',pay:'Volunteer',location:'On-campus',deadline:'Closes May 25',accent:'#1a7a6e'},
   {id:3,role:'Graduate Intern — Business Development',org:'NICO Holdings PLC',type:'full',pay:'MK 45K/mo',location:'Blantyre',deadline:'Closes Jun 5',accent:'#c9a84c'},
   {id:4,role:'Library Assistant',org:'MZUNI Library Services',type:'part',pay:'MK 8K/mo',location:'On-campus',deadline:'Closes Jun 2',accent:'#cc1f1f'},
+*/
 ];
 const SPORTS=[
 /*
@@ -405,6 +407,18 @@ function setFilter(t,btn){
   renderEvents();
 }
 
+
+window.addEventListener('DOMContentLoaded',()=>{
+  fetch('{% url "apis:vacancy" %}',{
+    method:'GET'
+  })
+  .then(resp=>resp.json())
+  .then(data=>{
+    console.log(data);
+    VACANCIES.splice(0,0,...data.data);
+    renderVacancies();
+  })
+})
 window.addEventListener('DOMContentLoaded',()=>{
   FetchSports();
 })
@@ -497,7 +511,7 @@ function BuyTicket(Id) {
 
 function renderVacancies(){
   document.getElementById('vacList').innerHTML=VACANCIES.map((v,i)=>{
-    const vt=VAC_TYPE[v.type];
+    const vt= VAC_TYPE[v.type];
     return`<div class="vac-card" style="animation:fadeUp 0.32s ease ${i*0.06}s both;">
   <div class="vac-card-top">
     <div class="vac-accent" style="background:${v.accent};"></div>
@@ -515,9 +529,13 @@ function renderVacancies(){
   </div>
   <div class="vac-footer">
     <div class="vac-location"><i class="fa-solid fa-location-dot" style="font-size:0.65rem;" aria-hidden="true"></i>${v.location}</div>
-    <button class="apply-btn">Apply Now</button>
+    <button class="apply-btn" onclick  = ViewVacancy(${v.id})>View more</button>
   </div>
 </div>`;}).join('');
+}
+
+function ViewVacancy(id){
+  window.location.href = `/sports/view_vacancy/${id}/`;
 }
 
 function renderSports(){
