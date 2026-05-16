@@ -57,6 +57,7 @@ class Dasboard_Data(APIView):
             .count()
         )
 
+
         return Response({
             "total_events":       events.count(),
             "total_tickets_sold": total_tickets_sold,
@@ -120,6 +121,9 @@ def organizer_attendees(request):
         .select_related("user", "event")
         .order_by("-created_at")
     )
+    attend_count = EventAttendance.objects.filter(
+        event__created_by = request.user
+    ).count()
 
     data = []
     for att in attendances:
@@ -136,7 +140,10 @@ def organizer_attendees(request):
             "profile_pic": profile_pic,
         })
 
-    return Response({"attendees": data})
+    return Response({
+        "attendees": data,
+        'total':attend_count,
+        'success':True},status=status.HTTP_200_OK)
 
 
 

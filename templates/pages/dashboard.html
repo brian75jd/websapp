@@ -318,7 +318,7 @@
   <button class="nav-tab active" onclick="switchTab('overview')"      id="tab-overview"><i class="fa-solid fa-chart-line"></i> Overview</button>
   <button class="nav-tab"        onclick="switchTab('events')"        id="tab-events"><i class="fa-solid fa-calendar-days"></i> Events <span class="tab-count" id="events-count">—</span></button>
   <button class="nav-tab"        onclick="switchTab('tickets')"       id="tab-tickets"><i class="fa-solid fa-ticket"></i> Tickets</button>
-  <button class="nav-tab"        onclick="switchTab('attendees')"     id="tab-attendees"><i class="fa-solid fa-users"></i> Attendees</button>
+  <button class="nav-tab"        onclick="switchTab('attendees')"     id="tab-attendees"><i class="fa-solid fa-users"></i> Attendees (<span id='count'>8</span>)</button>
   <button class="nav-tab"        onclick="switchTab('qa')"            id="tab-qa"><i class="fa-solid fa-circle-question"></i> Q&amp;A <span class="tab-count red" id="qa-count" style="display:none;">0</span></button>
   <button class="nav-tab"        onclick="switchTab('notifications')" id="tab-notifications"><i class="fa-solid fa-bell"></i> Alerts <span class="tab-count red" id="notif-count" style="display:none;">0</span></button>
   <button class="nav-tab"        onclick="switchTab('create')"        id="tab-create"><i class="fa-solid fa-plus"></i> Create</button>
@@ -1041,6 +1041,7 @@ function loadDashboard() {
       document.getElementById('stat-revenue').textContent   = 'MK' + data.total_revenue;
       document.getElementById('stat-attendees').textContent = data.total_attendees;
       document.getElementById('events-count').textContent   = data.total_events;
+      document.getElementById('count').innerHTML =data.total_attendees
 
       if (data.unanswered_count > 0) {
          const b = document.getElementById('qa-count'); 
@@ -1107,8 +1108,18 @@ let allAttendees = [];
 function loadAttendees() {
   document.getElementById('attendee-list').innerHTML = skeleton(4);
   api(URLS.attendees)
-    .then(data => { allAttendees = data.attendees; renderAttendees(allAttendees); })
-    .catch(() => { document.getElementById('attendee-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load attendees.'); });
+    .then(data => { 
+      if(data.success){
+      document.getElementById('count').innerHTML = data.total;
+      allAttendees = data.attendees;
+       renderAttendees(allAttendees); 
+      }else{
+        showToast(`Failed to load attendees`);
+      }
+      })
+      
+    .catch(() => {
+       document.getElementById('attendee-list').innerHTML = empty('fa-solid fa-triangle-exclamation', 'Could not load attendees.'); });
 }
 
 function renderAttendees(items) {

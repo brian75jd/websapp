@@ -74,8 +74,11 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
 .tb-sports{background:var(--crimson);color:#fff;}
 .tb-cultural{background:var(--violet);color:#fff;}
 .tb-workshop{background:var(--success);color:#fff;}
-.poster-dl{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.46);color:#fff;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;text-decoration:none;}
-.poster-wrap:hover .poster-dl{opacity:1;}
+
+/* Zoom icon instead of download icon on poster */
+.poster-zoom{position:absolute;top:9px;right:9px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(0,0,0,0.46);color:#fff;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;}
+.poster-wrap:hover .poster-zoom{opacity:1;}
+
 .poster-bottom{position:absolute;bottom:0;left:0;right:0;padding:11px 13px 13px;pointer-events:none;}
 .poster-name{font-family:var(--font-head);font-weight:800;font-size:1rem;color:#fff;line-height:1.3;margin-bottom:2px;}
 .poster-org{font-size:0.71rem;color:rgba(255,255,255,0.68);}
@@ -183,7 +186,16 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
 .clear-all-btn{width:100%;padding:9px;border-radius:30px;border:1px solid rgba(204,31,31,0.4);background:transparent;color:#f87171;font-family:var(--font-head);font-weight:600;font-size:0.79rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 0 12px;}
 .clear-all-btn:hover{background:var(--crimson);color:#fff;border-color:var(--crimson);}
 
-.confirm-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:700;display:none;align-items:flex-end;justify-content:center;min-height:100vh;}
+/* ── FIX 2 & 3: Confirm modal — fixed viewport center, always visible ── */
+.confirm-overlay{
+  position:fixed;           /* was absolute — now truly sticks to viewport */
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  z-index:9000;             /* above drawer (501) and everything else */
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+}
 .confirm-overlay.open{display:flex;}
 .confirm-sheet{background:#fff;width:100%;max-width:420px;border-radius:var(--radius) var(--radius) 0 0;padding:16px 15px 26px;}
 .confirm-handle{width:34px;height:4px;background:var(--surface-2);border-radius:4px;margin:0 auto 13px;}
@@ -192,6 +204,27 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
 .confirm-actions{display:flex;gap:8px;}
 .c-cancel{flex:1;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:#fff;font-family:var(--font-body);font-weight:700;font-size:0.8rem;cursor:pointer;color:var(--text-2);}
 .c-delete{flex:1;padding:10px;border-radius:var(--radius-sm);border:none;background:var(--crimson);color:#fff;font-family:var(--font-head);font-weight:700;font-size:0.8rem;cursor:pointer;}
+
+/* ── FIX 1: Lightbox ── */
+.lb-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.92);
+  z-index:9500;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:16px;
+}
+.lb-overlay.open{display:flex;}
+.lb-img-wrap{position:relative;max-width:100%;max-height:calc(100vh - 110px);display:flex;align-items:center;justify-content:center;}
+.lb-img-wrap img{max-width:100%;max-height:calc(100vh - 110px);border-radius:var(--radius);object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,0.7);}
+.lb-close{position:absolute;top:-14px;right:-14px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.15);color:#fff;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.18s;}
+.lb-close:hover{background:var(--crimson);}
+.lb-footer{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.lb-title{font-family:var(--font-head);font-weight:700;font-size:0.85rem;color:rgba(255,255,255,0.85);flex:1;text-align:center;}
+.lb-dl-btn{padding:8px 18px;border-radius:30px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:#fff;font-family:var(--font-head);font-weight:700;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none;transition:all 0.18s;flex-shrink:0;}
+.lb-dl-btn:hover{background:var(--primary);border-color:var(--primary);}
 
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--ink);color:var(--gold-light);border:1px solid rgba(201,168,76,0.22);padding:8px 18px;border-radius:30px;font-size:0.77rem;font-weight:700;opacity:0;transition:all 0.28s;pointer-events:none;z-index:9999;white-space:nowrap;font-family:var(--font-body);}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -291,6 +324,7 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
   </div>
 </div>
 
+<!-- FIX 2 & 3: Confirm modal now position:fixed via CSS, closeConfirm() called on confirm -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-sheet">
     <div class="confirm-handle"></div>
@@ -303,9 +337,32 @@ body{font-family:var(--font-body);background:var(--surface);color:var(--text);-w
   </div>
 </div>
 
+<!-- FIX 1: Lightbox overlay -->
+<div class="lb-overlay" id="lbOverlay" onclick="closeLb(event)">
+  <div class="lb-img-wrap" id="lbImgWrap">
+    <img id="lbImg" src="" alt="" />
+    <button class="lb-close" onclick="closeLb()" aria-label="Close image"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="lb-footer">
+    <div class="lb-title" id="lbTitle"></div>
+    <a class="lb-dl-btn" id="lbDl" href="" download="poster.jpg">
+      <i class="fa-solid fa-download" aria-hidden="true"></i> Download
+    </a>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
+  function getCSRF() {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+     const t = c.trim();
+      if (t.startsWith('csrftoken=')) v = t.substring('csrftoken='.length); 
+    });
+  return v;
+}
+
 const EVENTS = [
 /*
   {id:1,type:'academic',title:'Annual Science Fair 2025',org:'Faculty of Science · MZUNI',date:'May 15, 2025',start:'09:00',end:'17:00',venue:'MZUNI Main Hall',desc:'A showcase of student research projects across all science disciplines. Exhibits, demos, prizes and guest lectures from leading academics and industry professionals.',is_paid:false,poster:'https://images.unsplash.com/photo-1564069114051-6a12914679e7?w=600&q=70',seeds:['alice','bob','carol']},
@@ -360,8 +417,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     console.log(data);
       EVENTS.splice(0, 0, ...data.events)
       renderEvents();
-      
-    
   })
   .catch((error)=>{
     console.log(error);
@@ -404,11 +459,13 @@ function evCardHTML(ev,i){
   const hasMore=words.length>20;
   const stack=[`https://api.dicebear.com/7.x/avataaars/svg?seed=${ev.seeds[0]}`,`https://api.dicebear.com/7.x/avataaars/svg?seed=${ev.seeds[1]}`,`https://api.dicebear.com/7.x/avataaars/svg?seed=${ev.seeds[2]}`].map(s=>`<img src="${s}" alt="attendee"/>`).join('');
   return`<div class="event-card t-${ev.type}" style="animation:fadeUp 0.32s ease ${i*0.06}s both;" id="ecard-${ev.id}">
-  <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.title}')">
+  <div class="poster-wrap" onclick="openLb('${ev.poster}','${ev.title.replace(/'/g,"\\'")}')">
     <img src="${ev.poster}" alt="${ev.title}" loading="lazy"/>
     <div class="poster-grad"></div>
     <span class="type-badge ${TYPE_BADGE[ev.type]}">${TYPE_LBL[ev.type]}</span>
-    <a class="poster-dl" href="${ev.poster}" download="poster.jpg" title="Download poster" onclick="event.stopPropagation();showToast('Downloading poster…')"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
+    <button class="poster-zoom" onclick="event.stopPropagation();openLb('${ev.poster}','${ev.title.replace(/'/g,"\\'")}');" title="View full poster" aria-label="View full poster">
+      <i class="fa-solid fa-magnifying-glass-plus" aria-hidden="true"></i>
+    </button>
     <div class="poster-bottom">
       <div class="poster-name">${ev.title}</div>
       <div class="poster-org">${ev.organizers}</div>
@@ -425,12 +482,11 @@ function evCardHTML(ev,i){
     <div class="ev-footer">
       ${!ev.is_paid?`<div class="av-stack">${stack}</div><span class="av-label">6 interested</span>`:''}
       ${ev.is_paid
-        ?`<span style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--text);"></span><button class="plan-btn off" onclick = "BuyTicket(${ev.id})"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Buy Ticket</button>`
-        :`<button class="plan-btn ${on?'on':'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id})"><i class="fa-${on?'solid fa-check':'regular fa-calendar-plus'}" aria-hidden="true"></i> ${on?'Planned':'Plan to Attend'}</button>`}
+        ?`<span style="font-family:var(--font-head);font-weight:800;font-size:1rem;color:var(--text);"></span><button class="plan-btn off" onclick="BuyTicket(${ev.id})"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Buy Ticket</button>`
+        :`<button class="plan-btn ${ev.is_planned?'on':'off'}" id="pb-${ev.id}" onclick="togglePlan(${ev.id},'POST')"><i class="fa-${on?'solid fa-check':'regular fa-calendar-plus'}" aria-hidden="true"></i> ${ev.is_planned?'Planned':'Plan to Attend'}</button>`}
     </div>
   </div>
 </div>`;
-
 }
 
 
@@ -506,20 +562,42 @@ function togDesc(btn){
   btn.textContent=shown?'…more':' less';
 }
 
-function togglePlan(id){
-  const on=planned.has(id);
-  if(on){askDelete(id,EVENTS.find(e=>e.id===id).title);}
-  else{
-    planned.add(id);
-    updatePlanBtn(id,true);
-    rebuildDrawerList();
-    showToast('Added to your planned events 🎉');
+async function togglePlan(id){
+  try{
+    const response = await fetch('{% url "events:add_attend" %}',{
+      method:`POST`,
+      headers:{
+        'X-CSRFToken':getCSRF(),
+        'Content-Type':"application/json"
+      },
+      body:JSON.stringify({id:id})
+    })
+    const data = await response.json();
+    console.log(data)
+    if(data.success){
+      const on=planned.has(data.id);
+      if(data.on){
+        planned.add(data.id);
+        updatePlanBtn(id,data.on);
+        rebuildDrawerList();
+        showToast(`${data.detail}`)
+      }else{
+        askDelete(data.id,data.title);
+        EVENTS.find(e=>e.id===data.id);
+      }
+    }else{
+      showToast(`${data.detail}`)
+    }
+  }
+  catch(error){
+    console.log(error)
   }
 }
 
 function updatePlanBtn(id,on){
+  console.log(on)
   const btn=document.getElementById(`pb-${id}`);
-  if(!btn)return;
+  if(!btn){console.log('btn not found');return;}
   btn.className=`plan-btn ${on?'on':'off'}`;
   btn.innerHTML=`<i class="fa-${on?'solid fa-check':'regular fa-calendar-plus'}" aria-hidden="true"></i> ${on?'Planned':'Plan to Attend'}`;
 }
@@ -536,10 +614,12 @@ function rebuildDrawerList(){
   clearBtn.style.display='flex';
   countEl.style.display='inline';
   countEl.textContent=n;
+
   [...planned].forEach((id,idx)=>{
     const ev=EVENTS.find(e=>e.id===id);if(!ev)return;
     const d=document.createElement('div');
-    d.className='planned-ev';d.id=`pev-${ev.id}`;
+    d.className='planned-ev';
+    d.id=`pev-${ev.id}`;
     d.style.animationDelay=`${idx*0.05}s`;
     d.innerHTML=`<div class="pev-thumb"><img src="${ev.poster}" alt="${ev.title}" loading="lazy"/></div>
 <div class="pev-info">
@@ -555,24 +635,61 @@ function rebuildDrawerList(){
 let pendingDeleteName='';
 let pendingFromDrawer=false;
 function askDelete(id,name,fromDrawer=false){
-  pendingDeleteId=id;pendingDeleteName=name;pendingFromDrawer=fromDrawer;
+  pendingDeleteId=id;
+  pendingDeleteName=name;
+  //pendingFromDrawer=fromDrawer;
   document.getElementById('confirmName').textContent=name;
   document.getElementById('confirmOverlay').classList.add('open');
 }
-function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('open');pendingDeleteId=null;}
+
+function closeConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('open');
+  pendingDeleteId=null;
+}
+
+// FIX 3: closeConfirm() is now called at the end so the modal always closes
 document.getElementById('confirmYes').onclick=function(){
   if(!pendingDeleteId)return;
-  planned.delete(pendingDeleteId);
-  const pev=document.getElementById(`pev-${pendingDeleteId}`);
-  if(pev){pev.style.opacity='0';pev.style.transform='translateX(20px)';setTimeout(()=>{pev.remove();rebuildDrawerList();},240);}
-  else{rebuildDrawerList();}
-  updatePlanBtn(pendingDeleteId,false);
-  closeConfirm();
+  const idToDelete = pendingDeleteId;
+  fetch('{% url "events:add_attend" %}',{
+    method:'DELETE',
+    headers:{
+      'X-CSRFToken':getCSRF(),
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      id:idToDelete
+  })
+  })
+  .then(response=>response.json())
+  .then(data=>{
+    if(data.success){
+      showToast(`${data.detail}`)
+    }
+    else{
+      showToast(`${data.detail}`)
+    }
+  })
+  const pev=document.getElementById(`pev-${idToDelete}`);
+  if(pev){
+    pev.style.opacity='0';
+    pev.style.transform='translateX(20px)';
+    setTimeout(()=>{
+      pev.remove();
+       rebuildDrawerList();},240);
+  }else{
+    rebuildDrawerList();
+  }
+  updatePlanBtn(idToDelete,false);
+  closeConfirm(); // ← closes the modal immediately
   showToast('Attendance removed');
 };
+
 function clearAll(){
   planned.forEach(id=>updatePlanBtn(id,false));
-  planned.clear();rebuildDrawerList();showToast('All planned events cleared');
+  planned.clear();
+  rebuildDrawerList();
+  showToast('All planned events cleared');
 }
 
 function openDrawer(){
@@ -584,9 +701,36 @@ function closeDrawer(){
   document.getElementById('backdrop').classList.remove('open');
 }
 
-function openLb(src,name){
-  event.stopPropagation();
+// FIX 1: Lightbox open/close
+function openLb(src, name){
+  const overlay = document.getElementById('lbOverlay');
+  const img = document.getElementById('lbImg');
+  const title = document.getElementById('lbTitle');
+  const dl = document.getElementById('lbDl');
+  img.src = src;
+  img.alt = name;
+  title.textContent = name;
+  dl.href = src;
+  dl.download = (name || 'poster').replace(/[^a-z0-9]/gi,'_') + '.jpg';
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
+
+function closeLb(e){
+  // Close when clicking the overlay background, not the image itself
+  if(e && e.target !== document.getElementById('lbOverlay') && !e.target.classList.contains('lb-close') && !e.target.closest('.lb-close')) return;
+  document.getElementById('lbOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Also allow Escape key to close lightbox
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    document.getElementById('lbOverlay').classList.remove('open');
+    document.getElementById('confirmOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+});
 
 let toastT;
 function showToast(msg){
@@ -601,6 +745,5 @@ renderSports();
 rebuildDrawerList();
 </script>
 
-    
 </body>
 </html>

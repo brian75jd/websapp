@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from events.models import (Event, Ticket,TicketType,Question)
+from events.models import (Event, Ticket,TicketType,Question,EventAttendance)
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -12,6 +12,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.views import APIView
 import requests
 from django.conf import settings
+from django.db.models import Exists,OuterRef
 
 
 User = get_user_model()
@@ -21,13 +22,20 @@ bad_request_status = status.HTTP_400_BAD_REQUEST
 
 @require_GET
 def GetEvents(request):
-    events = Event.objects.prefetch_related('ticket_types').all().order_by('-created_at')
+    events = Event.objects.prefetch_related('ticket_types').annotate(
+            is_planned = Exists(EventAttendance.objects.filter(
+                user=request.user if request.user.is_authenticated else None,
+                event = OuterRef('pk')
+        ))
+    ).all().order_by('-created_at','-is_planned')
     data = []
+
 
     for event in events:
         total_left = sum(t.tickets_left() for t in event.ticket_types.all())
         data.append({
             'id':event.id,
+            'is_planned':event.is_planned,
             'title':event.title,
             'desc':event.description,
             'type':event.event_type,

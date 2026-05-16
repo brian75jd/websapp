@@ -4,12 +4,14 @@ from django.contrib.auth.decorators import login_required
 from events.forms import ValidateEventCreationForm
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from events.models import Event,TicketType
+from events.models import Event,TicketType,EventAttendance
 from django.views.decorators.csrf import ensure_csrf_cookie
 from events.utils import organizer_required
 from django.contrib.auth import logout
 from django.conf import settings
 from django.core.files.storage import default_storage
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 User = get_user_model()
 
@@ -125,6 +127,61 @@ def Create_Event(request):
         'success': False,
         'errors': errors
     }, status=400)
+
+
+
+class Attend_Event(APIView):
+    def post(self,request,*args, **kwargs):
+        try:
+            ev_id = request.data.get('id')
+            event = Event.objects.get(id=ev_id)
+        
+        except Event.DoesNotExist:
+            return Response({
+                'success':False,
+                'detail':'Invalid event...'
+            },status=400)
+        
+        attendee = EventAttendance.objects.filter(
+            user = request.user,
+            event = event
+        )
+        if attendee.exists():
+            return Response({
+                'id':ev_id,
+                'success':True,
+                'on':False
+            })
+        EventAttendance.objects.create(
+            user = request.user,
+            event = event
+        )
+        return Response({
+            'success':True,
+            'detail':'Attendance created successfully...',
+            'on':True,
+            'title':event.title
+        },status=200)
+
+    def delete(self,request,*args, **kwargs):
+        try:
+            ev_id = request.data.get('id')   
+            EventAttendance.objects.get(
+                event__id = ev_id,
+                user = request.user
+            ).delete()
+
+            return Response({
+                'detail':'Attendance deleted',
+                'success':True,
+            })
+
+        except Exception as exp:
+            return Response({
+                'detail':str(exp),
+                'success':False
+            })   
+
 
 @login_required
 def LogoutUser(request):

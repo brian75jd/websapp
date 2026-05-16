@@ -28,6 +28,8 @@ urlpatterns = [
     path('await-ticket/',views.ticket_await,name='await-ticket'),
 
     path('update_event/',dashboard.UpdateEvent.as_view(),name='update_event'),
+
+    path('add_attend/',views.Attend_Event.as_view(),name='add_attend'),
     
 
     #create event
